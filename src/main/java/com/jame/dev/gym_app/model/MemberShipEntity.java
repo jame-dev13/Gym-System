@@ -4,9 +4,13 @@ import com.jame.dev.gym_app.model.enums.Membership;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Objects;
+
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
+@ToString
 @Builder
 @Entity
 @Table(name = "memberships",
@@ -24,4 +28,18 @@ public class MemberShipEntity {
    @Enumerated(EnumType.STRING)
    @Column(name = "membership", unique = true)
    private Membership membership;
+
+   @Override
+   public boolean equals(Object o) {
+      if(this == o) return true;
+      if(o == null || o.getClass() != getClass()) return false;
+      MemberShipEntity that = (MemberShipEntity) o;
+      return Objects.nonNull(that.id) && (Objects.equals(that
+              .id, id));
+   }
+
+   @Override
+   public int hashCode() {
+      return getClass().hashCode();
+   }
 }

@@ -1,13 +1,16 @@
 package com.jame.dev.gym_app.model;
 
 
-import com.jame.dev.gym_app.model.enums.MembershipStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Objects;
+
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
+@ToString
 @Builder
 @Entity
 @Table(name = "customers")
@@ -19,16 +22,25 @@ public class CustomerEntity {
    private Long id;
 
    @OneToOne(fetch = FetchType.LAZY)
+   @ToString.Exclude
    private UserEntity user;
-
-   @OneToOne(fetch = FetchType.LAZY)
-   private MemberShipEntity memberShipEntity;
 
    @Column(name = "active", nullable = false)
    @Setter(AccessLevel.NONE)
    private Boolean active;
 
-   @Column(name = "membership_status", nullable = false)
-   @Enumerated(EnumType.STRING)
-   private MembershipStatus membershipStatus;
+
+   @Override
+   public boolean equals(Object o){
+      if(this == o) return true;
+      if(o == null || o.getClass() != getClass()) return false;
+      CustomerEntity that = (CustomerEntity) o;
+      return Objects.nonNull(that.id) && (Objects.equals(that
+              .id, id));
+   }
+
+   @Override
+   public int hashCode(){
+      return getClass().hashCode();
+   }
 }

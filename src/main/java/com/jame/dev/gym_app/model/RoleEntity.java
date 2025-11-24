@@ -4,12 +4,14 @@ import com.jame.dev.gym_app.model.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Objects;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 @Builder
-@Data
 @Entity
 @Table(name = "roles", indexes = {
         @Index(name = "idx_roles_role_unq", columnList = "role", unique = true)
@@ -25,4 +27,18 @@ public class RoleEntity {
    @Enumerated(EnumType.STRING)
    private Role role;
 
+
+   @Override
+   public boolean equals(Object o){
+      if(this == o) return true;
+      if(o == null || o.getClass() != getClass()) return false;
+      RoleEntity that = (RoleEntity) o;
+      return Objects.nonNull(that.id) && (Objects.equals(that
+              .id, id));
+   }
+
+   @Override
+   public int hashCode() {
+      return getClass().hashCode();
+   }
 }

@@ -6,25 +6,21 @@ import lombok.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "subscription_period",
-        indexes = {
-                @Index(name = "idx_subscription_period_unq", columnList = "start_period", unique = true)
-        })
+@Table(name = "periods")
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
+@ToString
 @Builder
-@Data
-public class SubscriptionPeriod {
+public class PeriodEntity {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    @Column(nullable = false)
    @Setter(AccessLevel.NONE)
    private Long id;
 
-   @OneToOne(fetch = FetchType.LAZY)
-   private SubscriptionEntity subscriptionEntity;
-
-   @Column(name = "start_period", nullable = false, unique = true)
+   @Column(name = "start_period", nullable = false)
    private LocalDate startPeriod;
 
    @Column(name = "end_period", nullable = false)

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 
@@ -13,7 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@Data
+@ToString
 @Builder
 @Entity
 @Table(name = "users", indexes = {
@@ -43,12 +44,24 @@ public class UserEntity {
    @ToString.Exclude
    @ManyToMany(fetch = FetchType.LAZY)
    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"),
-           inverseJoinColumns = @JoinColumn(name = "role_id"),
-           uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "role_id"}))
+           inverseJoinColumns = @JoinColumn(name = "role_id"))
    private Set<RoleEntity> roles = new HashSet<>();
 
    @Column(name = "active", nullable = false)
    @Setter(AccessLevel.NONE)
    private Boolean active;
 
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if(o == null || getClass() != o.getClass()) return false;
+      UserEntity that = (UserEntity) o;
+      return Objects.nonNull(that.id) && (Objects.equals(that
+              .id, id));
+   }
+
+   @Override
+   public int hashCode() {
+      return getClass().hashCode();
+   }
 }
