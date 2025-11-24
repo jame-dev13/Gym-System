@@ -1,4 +1,4 @@
-package com.jame.dev.gym_app;
+package com.jame.dev.gymApp;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

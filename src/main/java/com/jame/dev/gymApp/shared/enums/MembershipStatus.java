@@ -1,4 +1,4 @@
-package com.jame.dev.gym_app.model.enums;
+package com.jame.dev.gymApp.shared.enums;
 
 public enum MembershipStatus {
    SUSPENDED, PAYMENT_PENDING, ACTIVE, DROPPED

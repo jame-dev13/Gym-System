@@ -1,4 +1,4 @@
-package com.jame.dev.gym_app.model;
+package com.jame.dev.gymApp.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;

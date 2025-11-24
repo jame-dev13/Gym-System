@@ -1,6 +1,6 @@
-package com.jame.dev.gym_app.model;
+package com.jame.dev.gymApp.entity;
 
-import com.jame.dev.gym_app.model.enums.Role;
+import com.jame.dev.gymApp.shared.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 

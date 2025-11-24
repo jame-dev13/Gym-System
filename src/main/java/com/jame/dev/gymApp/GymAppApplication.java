@@ -1,4 +1,4 @@
-package com.jame.dev.gym_app;
+package com.jame.dev.gymApp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

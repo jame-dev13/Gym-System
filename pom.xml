@@ -9,7 +9,7 @@
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.jame.dev</groupId>
-  <artifactId>gym-app</artifactId>
+  <artifactId>gymApp</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>gym-app</name>
   <description>Gym service REST with CRUD, auth and payment.</description>

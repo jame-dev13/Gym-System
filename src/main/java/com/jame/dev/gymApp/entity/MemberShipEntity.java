@@ -1,6 +1,6 @@
-package com.jame.dev.gym_app.model;
+package com.jame.dev.gymApp.entity;
 
-
+import com.jame.dev.gymApp.shared.enums.Membership;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,34 +13,33 @@ import java.util.Objects;
 @ToString
 @Builder
 @Entity
-@Table(name = "customers")
-public class CustomerEntity {
+@Table(name = "memberships",
+        indexes = @Index(name = "idx_memberships_membership",
+                columnList = "membership",
+                unique = true))
+public class MemberShipEntity {
+
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    @Column(nullable = false)
    @Setter(AccessLevel.NONE)
-   private Long id;
+   private Integer id;
 
-   @OneToOne(fetch = FetchType.LAZY)
-   @ToString.Exclude
-   private UserEntity user;
-
-   @Column(name = "active", nullable = false)
-   @Setter(AccessLevel.NONE)
-   private Boolean active;
-
+   @Enumerated(EnumType.STRING)
+   @Column(name = "membership", unique = true)
+   private Membership membership;
 
    @Override
-   public boolean equals(Object o){
+   public boolean equals(Object o) {
       if(this == o) return true;
       if(o == null || o.getClass() != getClass()) return false;
-      CustomerEntity that = (CustomerEntity) o;
+      MemberShipEntity that = (MemberShipEntity) o;
       return Objects.nonNull(that.id) && (Objects.equals(that
               .id, id));
    }
 
    @Override
-   public int hashCode(){
+   public int hashCode() {
       return getClass().hashCode();
    }
 }
