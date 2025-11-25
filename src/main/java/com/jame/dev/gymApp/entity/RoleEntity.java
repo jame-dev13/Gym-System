@@ -25,6 +25,7 @@ public class RoleEntity {
 
    @Column(name = "role", nullable = false, unique = true)
    @Enumerated(EnumType.STRING)
+   @NonNull
    private Role role;
 
 

@@ -23,10 +23,12 @@ public class CustomerEntity {
 
    @OneToOne(fetch = FetchType.LAZY, optional = false)
    @ToString.Exclude
+   @NonNull
    private UserEntity user;
 
    @Column(name = "active", nullable = false)
    @Setter(AccessLevel.NONE)
+   @NonNull
    private Boolean active;
 
    @PrePersist

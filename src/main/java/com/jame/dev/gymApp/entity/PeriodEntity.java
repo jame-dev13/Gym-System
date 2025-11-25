@@ -23,12 +23,15 @@ public class PeriodEntity {
 
    @Enumerated(EnumType.STRING)
    @Column(name = "period", nullable = false)
+   @NonNull
    private Period period;
 
    @Column(name = "start_period", nullable = false)
+   @NonNull
    private LocalDate startPeriod;
 
    @Column(name = "end_period", nullable = false)
+   @NonNull
    private LocalDate endPeriod;
 
    @PrePersist

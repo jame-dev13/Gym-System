@@ -1,4 +1,6 @@
 package com.jame.dev.gymApp.repository;
 
-public interface SubscriptionRepository extends CustomJpaRepository<SubscriptionRepository, Long>{
+import com.jame.dev.gymApp.entity.SubscriptionEntity;
+
+public interface SubscriptionRepository extends CustomJpaRepository<SubscriptionEntity, Long>{
 }

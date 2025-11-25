@@ -3,6 +3,8 @@ package com.jame.dev.gymApp.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -20,18 +22,21 @@ public class SubscriptionEntity {
    private Long id;
 
    @OneToOne(fetch = FetchType.LAZY, optional = false)
+   @NonNull
    private CustomerEntity customer;
 
    @OneToOne(fetch = FetchType.LAZY, optional = false)
+   @NonNull
    private PricingEntity pricing;
 
-   @ManyToOne(fetch = FetchType.LAZY, optional = false)
-   @JoinColumn(name = "period_id")
-   private PeriodEntity period;
-
-   @ManyToOne(fetch = FetchType.LAZY, optional = false)
-   @JoinColumn(name = "subscription_date_id")
-   private SubscriptionDateEntity subscriptionDate;
+   @OneToMany(fetch = FetchType.LAZY, cascade = {
+           CascadeType.PERSIST, CascadeType.REFRESH
+   })
+   @JoinTable(name = "subscription_periods",
+           joinColumns = @JoinColumn(name = "subscription_id"),
+           inverseJoinColumns = @JoinColumn(name = "period_id"),
+           indexes = @Index(name = "idx_subscription_period_unique", columnList = "period_id"))
+   private List<PeriodEntity> subscriptionPeriods = new ArrayList<>();
 
    @Column(name = "active", nullable = false)
    @Setter(AccessLevel.NONE)
@@ -43,9 +48,9 @@ public class SubscriptionEntity {
    private Boolean finished;
 
    @PrePersist
-   private void setFlags(){
+   private void setFlags() {
       this.active = Boolean.TRUE;
-      this.finished = Boolean.TRUE;
+      this.finished = Boolean.FALSE;
    }
 
    @Override
@@ -69,19 +74,14 @@ public class SubscriptionEntity {
                   id=%d,
                   customerId=%d,
                   pricingId=%d,
-                  periodId=%d,
-                  subscriptionDateId=%d,
                   active=%b,
                   finished=%b
               }""".formatted(
               id,
               customer.getId(),
               pricing.getId(),
-              period.getId(),
-              subscriptionDate.getId(),
               active,
               finished
       );
    }
-
 }

@@ -22,9 +22,11 @@ public class PricingEntity {
 
    @OneToOne(fetch = FetchType.LAZY, optional = false)
    @ToString.Exclude
+   @NonNull
    private MemberShipEntity memberShipEntity;
 
    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+   @NonNull
    private BigDecimal price;
 
 

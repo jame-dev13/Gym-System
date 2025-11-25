@@ -27,6 +27,7 @@ public class MemberShipEntity {
 
    @Enumerated(EnumType.STRING)
    @Column(name = "membership", unique = true)
+   @NonNull
    private Membership membership;
 
    @Override
