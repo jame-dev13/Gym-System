@@ -19,26 +19,34 @@ public class SubscriptionEntity {
    @Setter(AccessLevel.NONE)
    private Long id;
 
-   @OneToOne(fetch = FetchType.LAZY)
+   @OneToOne(fetch = FetchType.LAZY, optional = false)
    private CustomerEntity customer;
 
-   @OneToOne(fetch = FetchType.LAZY)
+   @OneToOne(fetch = FetchType.LAZY, optional = false)
    private PricingEntity pricing;
 
-   @ManyToOne(fetch = FetchType.LAZY)
+   @ManyToOne(fetch = FetchType.LAZY, optional = false)
    @JoinColumn(name = "period_id")
    private PeriodEntity period;
 
-   @ManyToOne(fetch = FetchType.LAZY)
+   @ManyToOne(fetch = FetchType.LAZY, optional = false)
    @JoinColumn(name = "subscription_date_id")
    private SubscriptionDateEntity subscriptionDate;
 
    @Column(name = "active", nullable = false)
    @Setter(AccessLevel.NONE)
+   @NonNull
    private Boolean active;
 
    @Column(name = "finished", nullable = false)
+   @NonNull
    private Boolean finished;
+
+   @PrePersist
+   private void setFlags(){
+      this.active = Boolean.TRUE;
+      this.finished = Boolean.TRUE;
+   }
 
    @Override
    public boolean equals(Object o) {

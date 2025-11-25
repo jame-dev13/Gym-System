@@ -51,6 +51,11 @@ public class UserEntity {
    @Setter(AccessLevel.NONE)
    private Boolean active;
 
+   @PrePersist
+   private void setActive(){
+      this.active = Boolean.TRUE;
+   }
+
    @Override
    public boolean equals(Object o) {
       if (this == o) return true;

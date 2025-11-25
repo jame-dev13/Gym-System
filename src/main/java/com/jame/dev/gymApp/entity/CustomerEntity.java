@@ -21,7 +21,7 @@ public class CustomerEntity {
    @Setter(AccessLevel.NONE)
    private Long id;
 
-   @OneToOne(fetch = FetchType.LAZY)
+   @OneToOne(fetch = FetchType.LAZY, optional = false)
    @ToString.Exclude
    private UserEntity user;
 
@@ -29,6 +29,10 @@ public class CustomerEntity {
    @Setter(AccessLevel.NONE)
    private Boolean active;
 
+   @PrePersist
+   private void setActive(){
+      this.active = Boolean.TRUE;
+   }
 
    @Override
    public boolean equals(Object o){

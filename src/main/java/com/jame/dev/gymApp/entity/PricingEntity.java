@@ -20,7 +20,7 @@ public class PricingEntity {
    @Column(nullable = false)
    private Integer id;
 
-   @OneToOne(fetch = FetchType.LAZY)
+   @OneToOne(fetch = FetchType.LAZY, optional = false)
    @ToString.Exclude
    private MemberShipEntity memberShipEntity;
 
