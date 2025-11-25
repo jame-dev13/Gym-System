@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.repository;
+package com.jame.dev.gymApp.repository.common;
 
 import com.jame.dev.gymApp.entity.UserEntity;
 import lombok.NonNull;
