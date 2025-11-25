@@ -30,7 +30,7 @@ public class SubscriptionEntity {
    private PricingEntity pricing;
 
    @OneToMany(fetch = FetchType.LAZY, cascade = {
-           CascadeType.PERSIST, CascadeType.REFRESH
+           CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH
    })
    @JoinTable(name = "subscription_periods",
            joinColumns = @JoinColumn(name = "subscription_id"),

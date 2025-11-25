@@ -9,6 +9,6 @@ public interface CRUDService<@NonNull E, @NonNull D> {
    List<E> getAll();
    Optional<E> getById(@NonNull Long id);
    E save(@NonNull final D dto);
-   E update(@NonNull final D dto);
+   E update(@NonNull Long id, @NonNull final D dto);
    void softDeleteById(@NonNull Long id);
 }

@@ -1,6 +1,5 @@
 package com.jame.dev.gymApp.repository.common;
 
-import com.jame.dev.gymApp.entity.UserEntity;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -19,5 +18,5 @@ public interface CustomJpaRepository<T, ID> extends JpaRepository<@NonNull T, @N
    @Query("UPDATE #{#entityName} e SET e.active = false WHERE e.id = :id")
    void softDelete(@Param("id") ID id);
 
-   List<UserEntity> findByActiveTrue();
+   List<T> findByActiveTrue();
 }
