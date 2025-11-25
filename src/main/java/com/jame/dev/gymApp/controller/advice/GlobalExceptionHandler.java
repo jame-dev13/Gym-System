@@ -67,4 +67,13 @@ public class GlobalExceptionHandler {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
               .body(errorResponse);
    }
+
+   @ExceptionHandler(NoOperationException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final NoOperationException ex,
+                                                                                        final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "UNSUPPORTED_OPERATION");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+              .body(errorResponse);
+   }
 }

@@ -13,7 +13,6 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @ToString
-@Builder
 public class PeriodEntity {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,17 +26,21 @@ public class PeriodEntity {
    private Period period;
 
    @Column(name = "start_period", nullable = false)
-   @NonNull
    private LocalDate startPeriod;
 
    @Column(name = "end_period", nullable = false)
    @NonNull
    private LocalDate endPeriod;
 
+   @Builder
+   public PeriodEntity(final @NonNull Period period, final LocalDate startPeriod){
+      this.period = period;
+      this.startPeriod = startPeriod;
+   }
+
    @PrePersist
    @PreUpdate
    private void setPeriodDates(){
-      this.startPeriod = LocalDate.now();
       this.endPeriod = switch (period){
          case FORTNIGHTLY -> startPeriod.plusDays(15);
          case MONTHLY -> startPeriod.plusMonths(1);

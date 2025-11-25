@@ -1,13 +1,18 @@
 package com.jame.dev.gymApp.service.out;
 
 import com.jame.dev.gymApp.entity.CustomerEntity;
+import com.jame.dev.gymApp.entity.UserEntity;
+import com.jame.dev.gymApp.exception.CustomerNotFoundException;
+import com.jame.dev.gymApp.exception.NoOperationException;
+import com.jame.dev.gymApp.exception.UserNotFoundException;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
+import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.CustomerService;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,29 +21,54 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CustomerServiceImplementation implements CustomerService {
    private final CustomerRepository repo;
+   private final UserRepository userRepo;
 
    @Override
    public List<CustomerEntity> getAll() {
-      return List.of();
+      return repo.findByActiveTrue();
    }
 
    @Override
    public Optional<CustomerEntity> getById(@NonNull Long id) {
-      return Optional.empty();
+      return repo.findById(id);
    }
 
    @Override
+   @Transactional
    public CustomerEntity save(@NonNull CustomerDtoInput dto) {
-      return null;
+      UserEntity user = userRepo.findById(dto.userId())
+              .orElseThrow(() -> new UserNotFoundException("User Not Found."));
+      CustomerEntity customerEntity = new CustomerEntity(null, user, Boolean.TRUE);
+      return repo.save(customerEntity);
    }
 
    @Override
-   public CustomerEntity update(@NonNull CustomerDtoInput dto) {
-      return null;
+   @Transactional
+   public CustomerEntity update(@NonNull Long id, @NonNull CustomerDtoInput dto) {
+      throw new NoOperationException("Unsupported Operation.");
    }
 
    @Override
+   @Transactional
    public void softDeleteById(@NonNull Long id) {
+      CustomerEntity customer = repo.findById(id)
+              .orElseThrow(() -> new CustomerNotFoundException("Customer Not found."));
+      Optional.of(customer.getUser())
+              .ifPresentOrElse(user -> userRepo.softDelete(user.getId()),
+                      () -> {
+                         throw new RuntimeException("Can't do soft delete, no association present.");
+                      }
+              );
+      repo.softDelete(id);
+   }
 
+   private CustomerEntity fetchCustomer(final long id) {
+      return repo.findById(id)
+              .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
+   }
+
+   @Override
+   public Optional<UserEntity> getUserAssociatedById(long id) {
+      return repo.findUserAssociatedByIdUser(id);
    }
 }
