@@ -49,26 +49,16 @@ public class CustomerServiceImplementation implements CustomerService {
    }
 
    @Override
+   public Optional<UserEntity> getUserAssociatedById(long id) {
+      return repo.findUserAssociatedByIdUser(id);
+   }
+
+   @Override
    @Transactional
    public void softDeleteById(@NonNull Long id) {
       CustomerEntity customer = repo.findById(id)
               .orElseThrow(() -> new CustomerNotFoundException("Customer Not found."));
-      Optional.of(customer.getUser())
-              .ifPresentOrElse(user -> userRepo.softDelete(user.getId()),
-                      () -> {
-                         throw new RuntimeException("Can't do soft delete, no association present.");
-                      }
-              );
+      userRepo.softDelete(customer.getId());
       repo.softDelete(id);
-   }
-
-   private CustomerEntity fetchCustomer(final long id) {
-      return repo.findById(id)
-              .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
-   }
-
-   @Override
-   public Optional<UserEntity> getUserAssociatedById(long id) {
-      return repo.findUserAssociatedByIdUser(id);
    }
 }
