@@ -1,7 +1,6 @@
 package com.jame.dev.gymApp.model.dto.in;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.jame.dev.gymApp.shared.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -10,7 +9,6 @@ import lombok.Builder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Builder
-@JsonDeserialize
 public record UserDtoInput(
         @JsonProperty("name") @NotBlank String name,
         @JsonProperty("email") @NotBlank @Email String email,

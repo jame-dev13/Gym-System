@@ -16,7 +16,6 @@ public record SubscriptionDtoOutput(
         @JsonProperty("customerName") @NotBlank String customerName,
         @JsonProperty("membership") @NonNull Membership membership,
         @JsonProperty("price") @NonNull BigDecimal price,
-        @JsonProperty("period") @NonNull PeriodDtoOut periodDtoOut,
         @JsonProperty("finished") @NonNull Boolean finished
         ) {
 }
