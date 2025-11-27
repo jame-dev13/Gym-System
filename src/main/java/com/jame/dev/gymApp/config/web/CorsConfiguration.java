@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.config.app;
+package com.jame.dev.gymApp.config.web;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;

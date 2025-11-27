@@ -1,6 +1,5 @@
 package com.jame.dev.gymApp.config.web;
 
-import com.jame.dev.gymApp.config.app.CorsConfiguration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

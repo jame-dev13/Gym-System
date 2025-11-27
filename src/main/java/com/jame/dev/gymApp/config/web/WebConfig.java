@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.config.app;
+package com.jame.dev.gymApp.config.web;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,5 +24,10 @@ public class WebConfig {
       DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(userDetailsService);
       authenticationProvider.setPasswordEncoder(passwordEncoder);
       return new ProviderManager(authenticationProvider);
+   }
+
+   @Bean
+   public CookieHelper cookieHelper(){
+      return new CookieHelper();
    }
 }
