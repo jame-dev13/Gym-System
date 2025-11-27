@@ -3,6 +3,7 @@ package com.jame.dev.gymApp.jwt.service;
 import com.jame.dev.gymApp.exception.ExtractClaimException;
 import com.jame.dev.gymApp.jwt.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +11,10 @@ import java.util.Date;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class JwtServiceImplementation implements JwtService {
+
+   private final JwtUtils jwtUtils;
 
    @Value("${jwt.secret.expiration}")
    private Long expiration;
@@ -21,12 +25,12 @@ public class JwtServiceImplementation implements JwtService {
 
    @Override
    public String generateAccessToken(String username) {
-      return JwtUtils.buildToken(username, expiration);
+      return jwtUtils.buildToken(username, expiration);
    }
 
    @Override
    public String generateRefreshToken(String username) {
-      return JwtUtils.buildToken(username, refreshExpiration);
+      return jwtUtils.buildToken(username, refreshExpiration);
    }
 
    @Override
@@ -47,11 +51,11 @@ public class JwtServiceImplementation implements JwtService {
 
    @Override
    public Optional<String> extractSubject(String token) {
-      return JwtUtils.getClaim(token, Claims::getSubject);
+      return jwtUtils.getClaim(token, Claims::getSubject);
    }
 
    @Override
    public Optional<Date> extractExpiration(String token) {
-      return JwtUtils.getClaim(token, Claims::getExpiration);
+      return jwtUtils.getClaim(token, Claims::getExpiration);
    }
 }
