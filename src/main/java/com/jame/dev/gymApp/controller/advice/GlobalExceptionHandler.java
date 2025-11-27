@@ -72,8 +72,17 @@ public class GlobalExceptionHandler {
    public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final NoOperationException ex,
                                                                                         final HttpServletRequest request) {
       final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "UNSUPPORTED_OPERATION");
+              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "UNSUPPORTED_OPERATION");
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
+              .body(errorResponse);
+   }
+
+   @ExceptionHandler(ExtractClaimException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final ExtractClaimException ex,
+                                                                               final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "EXTRACTION_OPERATION");
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
               .body(errorResponse);
    }
 }
