@@ -1,5 +1,7 @@
 package com.jame.dev.gymApp.config.web;
 
+import com.jame.dev.gymApp.auth.filters.CustomAuthorizationFilter;
+import com.jame.dev.gymApp.auth.handlers.CustomOAuth2AuthenticationHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +20,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class WebSecurityConfig {
 
    private final CorsConfiguration corsConfiguration;
+   private final CustomAuthorizationFilter customAuthorizationFilter;
+   private final CustomOAuth2AuthenticationHandler authenticationHandler;
 
    @Bean
    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
