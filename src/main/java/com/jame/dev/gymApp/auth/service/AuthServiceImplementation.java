@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.auth.service;
 
+import com.jame.dev.gymApp.cache.service.BlacklistService;
 import com.jame.dev.gymApp.config.web.CookieHelper;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AuthenticationAttemptFailureException;
@@ -29,6 +30,7 @@ public class AuthServiceImplementation implements AuthService {
    private final JwtService jwtService;
    private final CookieHelper cookieHelper;
    private final AuthenticationManager authenticationManager;
+   private final BlacklistService blacklistService;
 
    @Override
    public void signUp(UserDtoInput dto) {
@@ -54,13 +56,13 @@ public class AuthServiceImplementation implements AuthService {
 
    @Override
    public CookieResponseDto refresh(String token) {
+      blacklistService.blacklistToken(token);
       final String subject = jwtService.extractSubject(token)
               .orElseThrow(() -> new UserNotFoundException("User Not Found."));
       final boolean isValid = jwtService.isValid(token, subject);
       if (!isValid) {
          throw new InvalidJwtException("Not valid Jwt.");
       }
-      //Add logic to blacklist the refresh tokens
       return handleCookieResponse(subject);
    }
 

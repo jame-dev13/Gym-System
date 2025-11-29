@@ -1,6 +1,8 @@
 package com.jame.dev.gymApp.auth.filters;
 
+import com.jame.dev.gymApp.cache.service.BlacklistService;
 import com.jame.dev.gymApp.exception.ExtractClaimException;
+import com.jame.dev.gymApp.exception.TokenAlreadyBlacklistedException;
 import com.jame.dev.gymApp.jwt.service.JwtService;
 import com.jame.dev.gymApp.shared.enums.CookieNames;
 import jakarta.servlet.FilterChain;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
    private final JwtService jwtService;
    private final UserDetailsService userDetailsService;
+   private final BlacklistService blacklistService;
 
    private final String ACCESS_COOKIE = CookieNames.COOKIE_JWT_ACCESS.getValue();
    private final String REFRESH_COOKIE = CookieNames.COOKIE_JWT_REFRESH.getValue();
@@ -56,6 +59,10 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
       }
 
       final String refresh = cookies.get(REFRESH_COOKIE);
+      if(blacklistService.isBlacklisted(refresh)){
+         throw new TokenAlreadyBlacklistedException("Token is blacklisted.");
+      }
+
       if (jwtService.isValid(refresh, subject)) {
          authorizationHelper(subject);
          filterChain.doFilter(request, response);
