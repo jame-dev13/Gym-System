@@ -2,9 +2,9 @@ package com.jame.dev.gymApp.cache.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jame.dev.gymApp.exception.EmptyCacheObjectException;
 import com.jame.dev.gymApp.exception.IndexNotFoundException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.JedisPooled;
 
@@ -14,11 +14,16 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Slf4j
-@RequiredArgsConstructor
 public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
-   private final Class<T> type;
+   private Class<T> type;
    private final JedisPooled cacheAppPool;
-   private final ObjectMapper mapper;
+   private final ObjectMapper mapper =
+           new ObjectMapper().registerModule(new JavaTimeModule());
+
+   public AppCacheServiceImplementation(Class<T> type, JedisPooled cacheAppPool) {
+      this.type = type;
+      this.cacheAppPool = cacheAppPool;
+   }
 
    private final Function<String, T> mapperHelper = s -> {
       try {
@@ -77,6 +82,7 @@ public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
          }
          String value = mapper.writeValueAsString(item);
          cacheAppPool.lset(key, index, value);
+
          long ttl = cacheAppPool.expireTime(key);
          cacheAppPool.expire(key, (ttl <= 0) ? 420 : ttl);
       } catch (JsonProcessingException e) {
@@ -84,12 +90,13 @@ public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
       }
    }
 
-   private boolean cacheContainsHelper(final String key, T t) throws JsonProcessingException {
+   public boolean cacheContainsHelper(final String key, T t) throws JsonProcessingException {
       List<String> cache = cacheAppPool.lrange(key, 0, -1);
       return cache.contains(mapper.writeValueAsString(t));
    }
 
    private int getIndexLinear(List<T> items, Predicate<T> test) throws JsonProcessingException {
+      if(items.isEmpty()) return -1;
       for (int i = 0; i < items.size(); i++) {
          T item = items.get(i);
          if(test.test(item)){
@@ -100,8 +107,8 @@ public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
    }
 
    private int getIndexTwoPointers(List<T> items, Predicate<T> test) {
+      if (items.isEmpty()) return -1;
       int front = 0, rear = items.size() - 1;
-
       while (front <= rear) {
          if (test.test(items.get(rear))) {
             return rear;

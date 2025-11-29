@@ -1,6 +1,5 @@
 package com.jame.dev.gymApp.config.app;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jame.dev.gymApp.cache.service.AppCacheService;
 import com.jame.dev.gymApp.cache.service.AppCacheServiceImplementation;
 import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
@@ -17,25 +16,23 @@ import redis.clients.jedis.JedisPooled;
 public class CacheConfig {
 
    private final JedisPooled cacheAppPool;
-   private final ObjectMapper mapper;
-
    @Bean
    public AppCacheService<UserDtoOutput> cacheUsers(){
-      return new AppCacheServiceImplementation<>(UserDtoOutput.class, cacheAppPool, mapper);
+      return new AppCacheServiceImplementation<>(UserDtoOutput.class, cacheAppPool);
    }
 
    @Bean
    public AppCacheService<CustomerDtoOutput> cacheCustomers(){
-      return new AppCacheServiceImplementation<>(CustomerDtoOutput.class, cacheAppPool, mapper);
+      return new AppCacheServiceImplementation<>(CustomerDtoOutput.class, cacheAppPool);
    }
 
    @Bean
    public AppCacheService<SubscriptionDtoOutput> cacheSubscriptions(){
-      return new AppCacheServiceImplementation<>(SubscriptionDtoOutput.class, cacheAppPool, mapper);
+      return new AppCacheServiceImplementation<>(SubscriptionDtoOutput.class, cacheAppPool);
    }
 
    @Bean
    public AppCacheService<PricingDtoOutput> cachePrices(){
-      return new AppCacheServiceImplementation<>(PricingDtoOutput.class, cacheAppPool, mapper);
+      return new AppCacheServiceImplementation<>(PricingDtoOutput.class, cacheAppPool);
    }
 }

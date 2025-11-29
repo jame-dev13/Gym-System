@@ -11,7 +11,7 @@ import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
-public class TokenServiceImplementation implements TokenService {
+public class TokenServiceImplementation implements BlacklistService {
 
    private final JedisPooled tokensPool;
    private final JwtService jwtService;
