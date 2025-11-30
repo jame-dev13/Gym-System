@@ -38,7 +38,7 @@ public class CustomerServiceImplementation implements CustomerService {
    public CustomerEntity save(@NonNull CustomerDtoInput dto) {
       UserEntity user = userRepo.findById(dto.userId())
               .orElseThrow(() -> new UserNotFoundException("User Not Found."));
-      CustomerEntity customerEntity = new CustomerEntity(null, user, Boolean.TRUE);
+      CustomerEntity customerEntity = new CustomerEntity(null, user, dto.contact(), Boolean.TRUE);
       return repo.save(customerEntity);
    }
 
@@ -52,6 +52,15 @@ public class CustomerServiceImplementation implements CustomerService {
    public Optional<UserEntity> getUserAssociatedById(long id) {
       return repo.findUserAssociatedByIdUser(id);
    }
+
+   @Override
+   public CustomerEntity updateContact(@NonNull Long id, @NonNull CustomerDtoInput dto) {
+      CustomerEntity customer = repo.findById(id)
+              .orElseThrow(() -> new CustomerNotFoundException("Customer not found, id: " + id));
+      customer.setPhoneContact(dto.contact());
+      return repo.save(customer);
+   }
+
 
    @Override
    @Transactional

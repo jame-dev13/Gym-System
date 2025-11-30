@@ -57,6 +57,7 @@ public class CustomerServiceTest {
       this.customerTest = CustomerEntity.builder()
               .id(1L)
               .user(this.testUser)
+              .phoneContact("123456789")
               .active(true)
               .build();
    }
@@ -92,7 +93,7 @@ public class CustomerServiceTest {
    @DisplayName("Save Customer")
    void saveCustomer() {
       Long idUser = this.testUser.getId();
-      CustomerDtoInput dto = new CustomerDtoInput(idUser, true);
+      CustomerDtoInput dto = new CustomerDtoInput(idUser, "4270143", true);
       when(userRepo.findById(idUser))
               .thenReturn(Optional.ofNullable(this.testUser));
       when(repo.save(any(CustomerEntity.class)))
@@ -115,15 +116,28 @@ public class CustomerServiceTest {
    @Test
    @DisplayName("Update customer")
    void updateCustomer() {
-      Long id = this.customerTest.getId();
-      when(repo.findById(id)).thenReturn(Optional.of(this.customerTest));
-      CustomerEntity customerEntity = service.getById(id)
-              .orElseThrow();
       Assertions.assertThrows(NoOperationException.class,
-              () -> service.update(id, new CustomerDtoInput(customerEntity.getUser().getId(), true)),
+              () -> service.update(1L, new CustomerDtoInput(1L, "13794234", true)),
               "Should throws an 'NoOperationException' cause update method is not supported in CustomerService.");
+   }
+
+   @Test
+   @DisplayName("Update contact.")
+   void updateCustomerContact() {
+      final Long id = this.customerTest.getId();
+      final CustomerDtoInput dto = new CustomerDtoInput(this.testUser.getId(), "1236482", true);
+      final String oldPhoneContact = this.customerTest.getPhoneContact();
+      when(repo.findById(id))
+              .thenReturn(Optional.of(customerTest));
+      when(repo.save(this.customerTest)).thenReturn(this.customerTest);
+
+      CustomerEntity customerUpdated = Assertions.assertDoesNotThrow(() -> service.updateContact(id, dto), "Should not throws exceptions.");
+
+      Assertions.assertNotNull(customerUpdated, "Should not be null.");
+      Assertions.assertNotEquals(oldPhoneContact, customerUpdated.getPhoneContact(), "Should not be the same value.");
 
       verify(repo).findById(id);
+      verify(repo).save(this.customerTest);
    }
 
    @Test

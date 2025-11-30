@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.entity;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.util.Objects;
@@ -25,6 +26,11 @@ public class CustomerEntity {
    @ToString.Exclude
    @NonNull
    private UserEntity user;
+
+   @NotBlank
+   @NonNull
+   @Column(name = "contact",length = 15, nullable = false)
+   private String phoneContact;
 
    @Column(name = "active", nullable = false)
    @Setter(AccessLevel.NONE)

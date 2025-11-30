@@ -59,7 +59,7 @@ class SubscriptionServiceTest {
    private Integer idPricingTest;
    @BeforeEach
    void setUp() {
-      this.customerEntityTest = new CustomerEntity(1L, USER_TEST, true);
+      this.customerEntityTest = new CustomerEntity(1L, USER_TEST, "18392434", true);
       this.pricingEntityTest = new PricingEntity(1, MEMBERSHIP_TEST, BigDecimal.valueOf(300.00));
       this.subscriptionEntityTest = SubscriptionEntity.builder()
               .id(1L)

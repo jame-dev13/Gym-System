@@ -3,6 +3,7 @@ package com.jame.dev.gymApp.cache.service;
 import com.jame.dev.gymApp.exception.TokenAlreadyBlacklistedException;
 import com.jame.dev.gymApp.jwt.service.JwtService;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,6 +34,7 @@ class BlacklistServiceTest {
    private final String TOKEN = "TOKEN-JWT-TEST";
 
    @Test
+   @DisplayName("Token Blacklisted")
    void blacklistToken() {
       when(tokensPool.exists(TOKEN)).thenReturn(false);
       when(jwtService.extractExpiration(TOKEN))
@@ -45,6 +47,7 @@ class BlacklistServiceTest {
    }
 
    @Test
+   @DisplayName("Token not blacklisted")
    void failBlacklistToken(){
       when(tokensPool.exists(TOKEN)).thenReturn(true);
       Assertions.assertThrows(TokenAlreadyBlacklistedException.class,
@@ -54,6 +57,7 @@ class BlacklistServiceTest {
    }
 
    @Test
+   @DisplayName("Check if token is blacklisted.")
    void isBlacklisted() {
       when(tokensPool.exists(TOKEN)).thenReturn(true);
       boolean isBlackListed = service.isBlacklisted(TOKEN);

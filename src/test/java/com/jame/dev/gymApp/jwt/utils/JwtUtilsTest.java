@@ -4,6 +4,7 @@ import com.jame.dev.gymApp.exception.InvalidSignedJwtKeyException;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -22,6 +23,7 @@ class JwtUtilsTest {
    }
 
    @Test
+   @DisplayName("Signed key")
    void signWith() {
       ReflectionTestUtils.setField(jwtUtils, "secret", VALID_SECRET);
       Key signedKey = jwtUtils.signWith();
@@ -30,12 +32,14 @@ class JwtUtilsTest {
    }
 
    @Test
+   @DisplayName("Invalid Sign")
    void invalidSignWith() {
       ReflectionTestUtils.setField(jwtUtils, "secret", INVALID_SECRET);
       Assertions.assertThrows(InvalidSignedJwtKeyException.class, jwtUtils::signWith, "Should throws an Exception.");
    }
 
    @Test
+   @DisplayName("Token build.")
    void successfulTokenBuild() {
       ReflectionTestUtils.setField(jwtUtils, "secret", VALID_SECRET);
       String token = Assertions.assertDoesNotThrow(() -> jwtUtils.buildToken("Angel", 10_000L),
@@ -46,6 +50,7 @@ class JwtUtilsTest {
    }
 
    @Test
+   @DisplayName("Fail built token with invalid secret.")
    void failureTokenBuild() {
       ReflectionTestUtils.setField(jwtUtils, "secret", INVALID_SECRET);
       Assertions.assertThrows(InvalidSignedJwtKeyException.class, () -> jwtUtils.buildToken("Angel", 10_000L),
@@ -53,6 +58,7 @@ class JwtUtilsTest {
    }
 
    @Test
+   @DisplayName("Returns claims.")
    void returnsClaim() {
       ReflectionTestUtils.setField(jwtUtils, "secret", VALID_SECRET);
       String token = jwtUtils.buildToken("Angel", 10_000L);
@@ -64,6 +70,7 @@ class JwtUtilsTest {
    }
 
    @Test
+   @DisplayName("Do not return claims on modifying token.")
    void tokenModifiedFails() {
       ReflectionTestUtils.setField(jwtUtils, "secret", VALID_SECRET);
       String token = jwtUtils.buildToken("Angel", 10_000L);
@@ -75,6 +82,7 @@ class JwtUtilsTest {
    }
 
    @Test
+   @DisplayName("Token expires")
    void tokenExpired() throws InterruptedException {
       ReflectionTestUtils.setField(jwtUtils, "secret", VALID_SECRET);
       String token = jwtUtils.buildToken("Angel", 2000L);
