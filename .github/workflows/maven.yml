@@ -6,18 +6,16 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Java Tests Only on Test Changes
+name: Java CI
 
 on:
   push:
-    paths:
-      - 'src/test/**'
+    branches: [ "main" ]
   pull_request:
-    paths:
-      - 'src/test/**'
+    branches: [ "main" ]
 
 jobs:
-  run-tests:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,4 +29,4 @@ jobs:
           cache: maven
 
       - name: Run tests
-        run: mvn -B test --file pom.xml
+        run: mvn -B test
