@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jame.dev.gymApp.exception.IndexNotFoundException;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
+import com.jame.dev.gymApp.shared.enums.Role;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -63,8 +64,8 @@ class AppCacheServiceTest {
    @DisplayName("Save List in cache.")
    void saveCache() throws JsonProcessingException{
       List<UserDtoOutput> list = List.of(
-              new UserDtoOutput( "A", "B"),
-              new UserDtoOutput( "C", "D")
+              new UserDtoOutput(1L, "A", "B", Role.USER),
+              new UserDtoOutput( 2L, "C", "D", Role.USER)
       );
 
       when(cacheAppPool.del(eq("users"))).thenReturn(1L);
@@ -114,7 +115,7 @@ class AppCacheServiceTest {
    @DisplayName("Update item in cache collection.")
    void updateItemInCache() throws JsonProcessingException {
       String email = userDto.email();
-      UserDtoOutput updateDto = new UserDtoOutput("updateName", "update@mail.com");
+      UserDtoOutput updateDto = new UserDtoOutput(1L, "updateName", "update@mail.com", Role.USER);
       Predicate<UserDtoOutput> filter = dto -> dto.email().equals(email);
       String existingJson = mapper.writeValueAsString(userDto);
       when(cacheAppPool.lrange(eq("users"), eq(0L), eq(-1L)))
@@ -145,8 +146,8 @@ class AppCacheServiceTest {
    @Test
    @DisplayName("TTL sets to 420 on 0")
    void setTtl() throws JsonProcessingException {
-      UserDtoOutput existing = new UserDtoOutput("john", "john@mail.com");
-      UserDtoOutput updated  = new UserDtoOutput("john", "new@mail.com");
+      UserDtoOutput existing = new UserDtoOutput(1L, "john", "john@mail.com", Role.USER);
+      UserDtoOutput updated  = new UserDtoOutput(2L, "john", "new@mail.com", Role.USER);
 
       String existingJson = mapper.writeValueAsString(existing);
       String updatedJson  = mapper.writeValueAsString(updated);

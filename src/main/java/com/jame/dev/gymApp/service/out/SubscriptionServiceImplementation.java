@@ -4,10 +4,7 @@ import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.entity.PeriodEntity;
 import com.jame.dev.gymApp.entity.PricingEntity;
 import com.jame.dev.gymApp.entity.SubscriptionEntity;
-import com.jame.dev.gymApp.exception.CustomerNotFoundException;
-import com.jame.dev.gymApp.exception.NoOperationException;
-import com.jame.dev.gymApp.exception.PricingNotFoundException;
-import com.jame.dev.gymApp.exception.SubscriptionNotFoundException;
+import com.jame.dev.gymApp.exception.*;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.PricingRepository;
@@ -52,6 +49,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
          case MONTHLY -> Period.MONTHLY;
          case QUARTERLY -> Period.QUARTERLY;
          case ANNUAL -> Period.ANNUAL;
+         case null -> throw new PeriodNotFoundException("Not mapping for : " + pricing.getMemberShipEntity());
       };
       SubscriptionEntity subscription = SubscriptionEntity.builder()
               .customer(customer)
