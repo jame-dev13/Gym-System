@@ -5,6 +5,7 @@ import com.jame.dev.gymApp.shared.enums.Membership;
 import lombok.Builder;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Builder
 public record SubscriptionDtoOutput(
@@ -12,7 +13,7 @@ public record SubscriptionDtoOutput(
         @JsonProperty("customer") CustomerDtoOutput customer,
         @JsonProperty("membership") Membership membership,
         @JsonProperty("price") BigDecimal price,
-        @JsonProperty("period") PeriodDtoOutput period,
+        @JsonProperty("periods") List<PeriodDtoOutput> periods,
         @JsonProperty("finished") Boolean finished
 ) {
 }

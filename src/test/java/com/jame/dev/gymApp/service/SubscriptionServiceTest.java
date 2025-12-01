@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.service;
 
 import com.jame.dev.gymApp.entity.*;
 import com.jame.dev.gymApp.exception.NoOperationException;
+import com.jame.dev.gymApp.mapper.SubscriptionMapper;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.PricingRepository;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +39,8 @@ class SubscriptionServiceTest {
    private CustomerRepository customerRepo;
    @Mock
    private PricingRepository pricingRepo;
+   @Mock
+   private SubscriptionMapper subscriptionMapper;
    @InjectMocks
    private SubscriptionServiceImplementation service;
 
@@ -108,20 +111,32 @@ class SubscriptionServiceTest {
    @Test
    @DisplayName("Save subscription")
    void save() {
-      when(customerRepo.findById(idCustomerTest)).thenReturn(Optional.of(this.customerEntityTest));
-      when(pricingRepo.findById(idPricingTest)).thenReturn(Optional.of(this.pricingEntityTest));
-      when(repo.save(any(SubscriptionEntity.class))).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
+      PeriodEntity period =  new PeriodEntity(1L, Period.MONTHLY, LocalDate.now(), LocalDate.now().plusMonths(1));
+      when(customerRepo.findById(idCustomerTest))
+              .thenReturn(Optional.of(this.customerEntityTest));
+      when(pricingRepo.findById(idPricingTest))
+              .thenReturn(Optional.of(this.pricingEntityTest));
+      when(subscriptionMapper.toEntity(
+              eq(dtoTest),
+              eq(customerEntityTest),
+              eq(pricingEntityTest),
+              anyList()
+      )).thenReturn(subscriptionEntityTest);
+      when(repo.save(any(SubscriptionEntity.class)))
+              .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
       SubscriptionEntity subscriptionAdded = service.save(this.dtoTest);
 
       ArgumentCaptor<SubscriptionEntity> captor = ArgumentCaptor.forClass(SubscriptionEntity.class);
       verify(customerRepo).findById(idCustomerTest);
       verify(pricingRepo).findById(idPricingTest);
+      verify(subscriptionMapper)
+              .toEntity(eq(dtoTest), eq(customerEntityTest), eq(pricingEntityTest), anyList());
       verify(repo).save(captor.capture());
 
       SubscriptionEntity subscriptionSaved = captor.getValue();
 
-      Assertions.assertAll("",
+      Assertions.assertAll("Not null, and equals.",
               () -> Assertions.assertNotNull(subscriptionSaved, "Should not be null."),
               () -> Assertions.assertEquals(subscriptionAdded, subscriptionSaved, "Should be the same object.")
       );

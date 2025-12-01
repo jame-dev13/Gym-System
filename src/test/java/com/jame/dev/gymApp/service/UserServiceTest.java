@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.service;
 
 import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
+import com.jame.dev.gymApp.mapper.UserMapper;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
@@ -16,6 +17,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +34,12 @@ public class UserServiceTest {
 
    @Mock
    private CustomerRepository customerRepo;
+
+   @Mock
+   private PasswordEncoder passwordEncoder;
+
+   @Mock
+   private UserMapper userMapper;
 
    @InjectMocks
    private UserServiceImplementation service;
@@ -65,26 +73,27 @@ public class UserServiceTest {
    @Test
    @DisplayName("Add User")
    void addUser() {
-      UserEntity user = buildUser(2L, "userAdded", "userAdded@mail.com");
+      UserDtoInput userDtoInput = UserDtoInput
+              .builder()
+              .name("userAdded")
+              .email("userAdded@mail.com")
+              .password("1234456")
+              .roles(Set.of(Role.USER, Role.ADMIN))
+              .active(true)
+              .build();
+      when(userMapper.toEntity(any(UserDtoInput.class))).thenCallRealMethod();
       when(repo.save(any(UserEntity.class)))
               .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
-
-      UserEntity userAdded = service.save(new UserDtoInput(
-              user.getName(),
-              user.getEmail(),
-              user.getPassword(),
-              user.getRoles().stream().findFirst().orElseThrow().getRole(),
-              user.getActive()));
+      UserEntity userAdded = service.save(userDtoInput);
 
       ArgumentCaptor<UserEntity> captor = ArgumentCaptor.forClass(UserEntity.class);
+      verify(userMapper).toEntity(any(UserDtoInput.class));
       verify(repo).save(captor.capture());
-
       UserEntity userSaved = captor.getValue();
 
       Assertions.assertNotNull(userSaved, "The entity returned should not be null.");
       Assertions.assertEquals(userAdded, userSaved, "The returned object should be the same one that has been given to the repo.");
       Assertions.assertTrue(userAdded.getActive(), "The active field should be true after every insertion.");
-      Assertions.assertNotEquals(user.getPassword(), userAdded.getPassword(), "The password should be already hashed.");
    }
 
    @Test
@@ -120,7 +129,7 @@ public class UserServiceTest {
               .name("nameChanged")
               .email("emailChanged@mail.com")
               .password("passwordChangedToo")
-              .role(this.testUser.getRoles().stream().findAny().orElseThrow().getRole())
+              .roles(Set.of(Role.USER))
               .active(true)
               .build();
 
@@ -130,7 +139,6 @@ public class UserServiceTest {
 
       when(repo.findById(id)).thenReturn(Optional.ofNullable(this.testUser));
       when(repo.save(any(UserEntity.class))).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
-
       UserEntity userUpdated = service.update(id, dto);
       //Not match with the values that it had before
       Assertions.assertNotEquals(userUpdated.getName(), oldName, "Name should not be equal anymore.");

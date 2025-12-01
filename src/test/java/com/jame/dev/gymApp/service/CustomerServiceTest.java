@@ -5,6 +5,7 @@ import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.NoOperationException;
 import com.jame.dev.gymApp.exception.UserNotFoundException;
+import com.jame.dev.gymApp.mapper.CustomerMapper;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
@@ -36,6 +37,9 @@ public class CustomerServiceTest {
 
    @Mock
    private UserRepository userRepo;
+
+   @Mock
+   private CustomerMapper customerMapper;
 
    @InjectMocks
    private CustomerServiceImplementation service;
@@ -93,16 +97,18 @@ public class CustomerServiceTest {
    @DisplayName("Save Customer")
    void saveCustomer() {
       Long idUser = this.testUser.getId();
-      CustomerDtoInput dto = new CustomerDtoInput(idUser, "4270143", true);
+      CustomerDtoInput dto = new CustomerDtoInput(idUser, "4270143");
       when(userRepo.findById(idUser))
               .thenReturn(Optional.ofNullable(this.testUser));
+      when(customerMapper.toEntity(dto, testUser))
+              .thenReturn(customerTest);
       when(repo.save(any(CustomerEntity.class)))
               .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
       CustomerEntity customerAdded = service.save(dto);
-
       ArgumentCaptor<CustomerEntity> captor = ArgumentCaptor.forClass(CustomerEntity.class);
       verify(userRepo).findById(idUser);
+      verify(customerMapper).toEntity(dto, testUser);
       verify(repo).save(captor.capture());
 
       CustomerEntity customerSaved = captor.getValue();
@@ -117,7 +123,7 @@ public class CustomerServiceTest {
    @DisplayName("Update customer")
    void updateCustomer() {
       Assertions.assertThrows(NoOperationException.class,
-              () -> service.update(1L, new CustomerDtoInput(1L, "13794234", true)),
+              () -> service.update(1L, new CustomerDtoInput(1L, "13794234")),
               "Should throws an 'NoOperationException' cause update method is not supported in CustomerService.");
    }
 
@@ -125,7 +131,7 @@ public class CustomerServiceTest {
    @DisplayName("Update contact.")
    void updateCustomerContact() {
       final Long id = this.customerTest.getId();
-      final CustomerDtoInput dto = new CustomerDtoInput(this.testUser.getId(), "1236482", true);
+      final CustomerDtoInput dto = new CustomerDtoInput(this.testUser.getId(), "1236482");
       final String oldPhoneContact = this.customerTest.getPhoneContact();
       when(repo.findById(id))
               .thenReturn(Optional.of(customerTest));

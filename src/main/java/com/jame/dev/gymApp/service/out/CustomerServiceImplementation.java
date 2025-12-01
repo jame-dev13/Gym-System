@@ -5,6 +5,7 @@ import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.exception.NoOperationException;
 import com.jame.dev.gymApp.exception.UserNotFoundException;
+import com.jame.dev.gymApp.mapper.CustomerMapper;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
@@ -22,6 +23,7 @@ import java.util.Optional;
 public class CustomerServiceImplementation implements CustomerService {
    private final CustomerRepository repo;
    private final UserRepository userRepo;
+  private final CustomerMapper customerMapper;
 
    @Override
    public List<CustomerEntity> getAll() {
@@ -38,7 +40,7 @@ public class CustomerServiceImplementation implements CustomerService {
    public CustomerEntity save(@NonNull CustomerDtoInput dto) {
       UserEntity user = userRepo.findById(dto.userId())
               .orElseThrow(() -> new UserNotFoundException("User Not Found."));
-      CustomerEntity customerEntity = new CustomerEntity(null, user, dto.contact(), Boolean.TRUE);
+      CustomerEntity customerEntity = customerMapper.toEntity(dto, user);
       return repo.save(customerEntity);
    }
 

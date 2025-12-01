@@ -5,6 +5,7 @@ import com.jame.dev.gymApp.entity.PeriodEntity;
 import com.jame.dev.gymApp.entity.PricingEntity;
 import com.jame.dev.gymApp.entity.SubscriptionEntity;
 import com.jame.dev.gymApp.exception.*;
+import com.jame.dev.gymApp.mapper.SubscriptionMapper;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.PricingRepository;
@@ -26,6 +27,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    private final SubscriptionRepository repo;
    private final CustomerRepository customerRepo;
    private final PricingRepository pricingRepo;
+   private final SubscriptionMapper subscriptionMapper;
 
    @Override
    public List<SubscriptionEntity> getAll() {
@@ -51,13 +53,8 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
          case ANNUAL -> Period.ANNUAL;
          case null -> throw new PeriodNotFoundException("Not mapping for : " + pricing.getMemberShipEntity());
       };
-      SubscriptionEntity subscription = SubscriptionEntity.builder()
-              .customer(customer)
-              .pricing(pricing)
-              .subscriptionPeriods(List.of(new PeriodEntity(period, LocalDate.now())))
-              .active(true)
-              .finished(false)
-              .build();
+      List<PeriodEntity> periods = List.of(new PeriodEntity(period, LocalDate.now()));
+      SubscriptionEntity subscription = subscriptionMapper.toEntity(dto, customer, pricing, periods);
       return repo.save(subscription);
    }
 

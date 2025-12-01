@@ -6,18 +6,15 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import java.util.Set;
 
 @Builder
 public record UserDtoInput(
         @JsonProperty("name") @NotBlank String name,
         @JsonProperty("email") @NotBlank @Email String email,
         @JsonProperty("password") @NotBlank String password,
-        @JsonProperty("role") @NotNull Role role,
+        @JsonProperty("roles") @NotNull Set<Role> roles,
         @JsonProperty("active") @NotNull Boolean active
-        ) {
-   public UserDtoInput{
-      password = new BCryptPasswordEncoder().encode(password);
-      active = Boolean.TRUE;
-   }
+) {
 }

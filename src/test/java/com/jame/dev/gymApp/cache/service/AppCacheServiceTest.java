@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import redis.clients.jedis.JedisPooled;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -64,8 +65,8 @@ class AppCacheServiceTest {
    @DisplayName("Save List in cache.")
    void saveCache() throws JsonProcessingException{
       List<UserDtoOutput> list = List.of(
-              new UserDtoOutput(1L, "A", "B", Role.USER),
-              new UserDtoOutput( 2L, "C", "D", Role.USER)
+              new UserDtoOutput(1L, "A", "B", Set.of(Role.USER)),
+              new UserDtoOutput( 2L, "C", "D", Set.of(Role.USER))
       );
 
       when(cacheAppPool.del(eq("users"))).thenReturn(1L);
@@ -115,7 +116,8 @@ class AppCacheServiceTest {
    @DisplayName("Update item in cache collection.")
    void updateItemInCache() throws JsonProcessingException {
       String email = userDto.email();
-      UserDtoOutput updateDto = new UserDtoOutput(1L, "updateName", "update@mail.com", Role.USER);
+      UserDtoOutput updateDto =
+              new UserDtoOutput(1L, "updateName", "update@mail.com", Set.of( Role.USER));
       Predicate<UserDtoOutput> filter = dto -> dto.email().equals(email);
       String existingJson = mapper.writeValueAsString(userDto);
       when(cacheAppPool.lrange(eq("users"), eq(0L), eq(-1L)))
@@ -146,8 +148,8 @@ class AppCacheServiceTest {
    @Test
    @DisplayName("TTL sets to 420 on 0")
    void setTtl() throws JsonProcessingException {
-      UserDtoOutput existing = new UserDtoOutput(1L, "john", "john@mail.com", Role.USER);
-      UserDtoOutput updated  = new UserDtoOutput(2L, "john", "new@mail.com", Role.USER);
+      UserDtoOutput existing = new UserDtoOutput(1L, "john", "john@mail.com", Set.of(Role.USER));
+      UserDtoOutput updated  = new UserDtoOutput(2L, "john", "new@mail.com", Set.of(Role.USER));
 
       String existingJson = mapper.writeValueAsString(existing);
       String updatedJson  = mapper.writeValueAsString(updated);

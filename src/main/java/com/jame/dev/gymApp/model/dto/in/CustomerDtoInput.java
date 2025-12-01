@@ -8,10 +8,7 @@ import lombok.NonNull;
 @Builder
 public record CustomerDtoInput(
         @JsonProperty("userId") @NonNull Long userId,
-        @JsonProperty("contact") @NonNull @NotBlank String contact,
-        @JsonProperty("active") @NonNull Boolean active
+        @JsonProperty("contact") @NonNull @NotBlank String contact
 ) {
-   public CustomerDtoInput{
-      active = Boolean.TRUE;
-   }
+
 }
