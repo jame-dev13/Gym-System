@@ -1,12 +1,11 @@
-package com.jame.dev.gymApp.repository;
+package com.jame.dev.gymApp.service.in;
 
 import com.jame.dev.gymApp.entity.PeriodEntity;
 import com.jame.dev.gymApp.shared.enums.Period;
 import lombok.NonNull;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface PeriodRepository extends JpaRepository<@NonNull PeriodEntity, @NonNull Long> {
+public interface PeriodService {
    Optional<PeriodEntity> findByPeriod(@NonNull final Period period);
 }

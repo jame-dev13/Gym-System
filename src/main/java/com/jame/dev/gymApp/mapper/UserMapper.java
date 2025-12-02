@@ -8,7 +8,7 @@ import org.mapstruct.Builder;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 
-import java.util.stream.Collectors;
+import java.util.Set;
 
 @Mapper(componentModel = "spring",
         uses = {RoleMapper.class},
@@ -17,14 +17,12 @@ import java.util.stream.Collectors;
 public interface UserMapper {
    UserDtoOutput toDto(UserEntity user);
 
-   default UserEntity toEntity(UserDtoInput dto) {
+   default UserEntity toEntity(UserDtoInput dto, Set<RoleEntity> roles) {
       if (dto == null) return null;
       return UserEntity.builder()
               .name(dto.name())
               .email(dto.email())
-              .roles(dto.roles().stream()
-                      .map(r -> new RoleEntity(null, r))
-                      .collect(Collectors.toSet()))
+              .roles(roles)
               .active(true)
               .build();
    }

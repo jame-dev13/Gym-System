@@ -5,6 +5,7 @@ import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.mapper.UserMapper;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
+import com.jame.dev.gymApp.repository.RoleRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.out.UserServiceImplementation;
 import com.jame.dev.gymApp.shared.enums.Role;
@@ -37,6 +38,9 @@ public class UserServiceTest {
 
    @Mock
    private PasswordEncoder passwordEncoder;
+
+   @Mock
+   private RoleRepository roleRepository;
 
    @Mock
    private UserMapper userMapper;
@@ -81,13 +85,14 @@ public class UserServiceTest {
               .roles(Set.of(Role.USER, Role.ADMIN))
               .active(true)
               .build();
-      when(userMapper.toEntity(any(UserDtoInput.class))).thenCallRealMethod();
+
+      when(userMapper.toEntity(any(UserDtoInput.class), anySet())).thenCallRealMethod();
       when(repo.save(any(UserEntity.class)))
               .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
       UserEntity userAdded = service.save(userDtoInput);
 
       ArgumentCaptor<UserEntity> captor = ArgumentCaptor.forClass(UserEntity.class);
-      verify(userMapper).toEntity(any(UserDtoInput.class));
+      verify(userMapper).toEntity(any(UserDtoInput.class), anySet());
       verify(repo).save(captor.capture());
       UserEntity userSaved = captor.getValue();
 

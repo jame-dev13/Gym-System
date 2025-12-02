@@ -8,6 +8,7 @@ import com.jame.dev.gymApp.exception.*;
 import com.jame.dev.gymApp.mapper.SubscriptionMapper;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
+import com.jame.dev.gymApp.repository.PeriodRepository;
 import com.jame.dev.gymApp.repository.PricingRepository;
 import com.jame.dev.gymApp.repository.SubscriptionRepository;
 import com.jame.dev.gymApp.service.in.SubscriptionService;
@@ -27,6 +28,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    private final SubscriptionRepository repo;
    private final CustomerRepository customerRepo;
    private final PricingRepository pricingRepo;
+   private final PeriodRepository periodRepository;
    private final SubscriptionMapper subscriptionMapper;
 
    @Override

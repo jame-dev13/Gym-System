@@ -1,10 +1,12 @@
 package com.jame.dev.gymApp.service.out;
 
+import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.UserNotFoundException;
 import com.jame.dev.gymApp.mapper.UserMapper;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
+import com.jame.dev.gymApp.repository.RoleRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.UserService;
 import lombok.NonNull;
@@ -15,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +27,7 @@ public class UserServiceImplementation implements UserService {
    private final CustomerRepository customerRepo;
    private final PasswordEncoder passwordEncoder;
    private final UserMapper userMapper;
+   private final RoleRepository roleRepository;
 
    @Override
    public List<UserEntity> getAll() {
@@ -42,7 +47,12 @@ public class UserServiceImplementation implements UserService {
    @Transactional
    @Override
    public UserEntity save(@NonNull UserDtoInput dto) {
-      UserEntity userEntity = userMapper.toEntity(dto);
+      Set<RoleEntity> roles = dto.roles()
+              .stream()
+              .map(role -> roleRepository.findByRole(role)
+                      .orElse(new RoleEntity(null, role)))
+              .collect(Collectors.toSet());
+      UserEntity userEntity = userMapper.toEntity(dto, roles);
       userEntity.setPassword(passwordEncoder.encode(dto.password()));
       return repo.save(userEntity);
    }
