@@ -9,10 +9,6 @@ import lombok.NonNull;
 public record SubscriptionDtoInput(
         @JsonProperty("customerId") @NotNull Long customerId,
         @JsonProperty("pricingId") @NotNull Integer pricingId,
-        @JsonProperty("active") @NonNull Boolean active,
         @JsonProperty("finished") @NonNull Boolean finished
 ) {
-   public SubscriptionDtoInput{
-      active = Boolean.TRUE;
-   }
 }

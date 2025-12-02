@@ -17,22 +17,22 @@ import java.util.List;
         injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface SubscriptionMapper {
 
-   @Mapping(source="id", target = "id")
-   @Mapping(source="customer", target = "customer")
-   @Mapping(source = "pricing.memberShipEntity.membership", target="membership")
-   @Mapping(source="pricing.price", target = "price")
-   @Mapping(target="periods", source = "subscriptionPeriods")
+   @Mapping(source = "id", target = "id")
+   @Mapping(source = "customer", target = "customer")
+   @Mapping(source = "pricing.memberShipEntity.membership", target = "membership")
+   @Mapping(source = "pricing.price", target = "price")
+   @Mapping(target = "periods", source = "subscriptionPeriods")
    SubscriptionDtoOutput toDto(SubscriptionEntity entity);
 
    default SubscriptionEntity toEntity(SubscriptionDtoInput dto,
                                        CustomerEntity customerEntity,
                                        PricingEntity pricingEntity,
-                                       List<PeriodEntity> periods){
+                                       List<PeriodEntity> periods) {
       return SubscriptionEntity.builder()
               .customer(customerEntity)
               .pricing(pricingEntity)
               .subscriptionPeriods(periods)
-              .active(dto.active())
+              .active(true)
               .finished(dto.finished())
               .build();
    }

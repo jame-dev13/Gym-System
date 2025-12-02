@@ -75,7 +75,6 @@ class SubscriptionServiceTest {
       dtoTest = SubscriptionDtoInput.builder()
               .customerId(customerEntityTest.getId())
               .pricingId(pricingEntityTest.getId())
-              .active(true)
               .finished(false)
               .build();
       this.idSubscriptionTest = subscriptionEntityTest.getId();
@@ -111,7 +110,6 @@ class SubscriptionServiceTest {
    @Test
    @DisplayName("Save subscription")
    void save() {
-      PeriodEntity period =  new PeriodEntity(1L, Period.MONTHLY, LocalDate.now(), LocalDate.now().plusMonths(1));
       when(customerRepo.findById(idCustomerTest))
               .thenReturn(Optional.of(this.customerEntityTest));
       when(pricingRepo.findById(idPricingTest))
