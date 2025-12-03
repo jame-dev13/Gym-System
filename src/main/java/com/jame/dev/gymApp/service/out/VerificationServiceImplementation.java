@@ -33,13 +33,13 @@ public class VerificationServiceImplementation implements VerificationService {
    }
 
    @Override
-   public boolean verify(@NonNull VerificationEntity verificationEntity) {
-      final VerificationEntity entity = verificationRepository.findById(verificationEntity.getId())
-              .orElseThrow(() -> new VerificationTokenNotFoundException("Token not found: " + verificationEntity.getId()));
+   public boolean verify(@NonNull String token) {
+      final VerificationEntity entity = verificationRepository.findById(token)
+              .orElseThrow(() -> new VerificationTokenNotFoundException("Token not found: " + token));
 
       final String extractToken = entity.getId();
 
-      final boolean isSameToken = extractToken.equals(verificationEntity.getId());
+      final boolean isSameToken = extractToken.equals(token);
       final boolean isValid = Instant.now().isBefore(entity.getExpiration());
 
       if (isSameToken && isValid) {

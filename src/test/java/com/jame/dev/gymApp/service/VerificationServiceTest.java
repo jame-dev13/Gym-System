@@ -71,7 +71,7 @@ public class VerificationServiceTest {
       when(verificationRepository.save(verificationEntity))
               .thenReturn(verificationEntity);
 
-      boolean verified = service.verify(verificationEntity);
+      boolean verified = service.verify(token);
       verificationEntity.setVerified(true);
 
       assertTrue(verified, "Should have success.");

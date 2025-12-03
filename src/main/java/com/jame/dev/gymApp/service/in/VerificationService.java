@@ -6,6 +6,6 @@ import lombok.NonNull;
 
 public interface VerificationService {
    VerificationEntity save(@NonNull final UserEntity user);
-   boolean verify(@NonNull final VerificationEntity verificationEntity);
+   boolean verify(@NonNull final String token);
    void delete(@NonNull final String token);
 }
