@@ -14,8 +14,7 @@ import com.jame.dev.gymApp.model.messages.EmailDetails;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.service.in.VerificationService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,14 +22,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImplementation implements AuthService {
-   private static final Logger log = LoggerFactory.getLogger(AuthServiceImplementation.class);
+
    private final UserService userService;
    private final JwtService jwtService;
    private final CookieHelper cookieHelper;
@@ -42,12 +42,12 @@ public class AuthServiceImplementation implements AuthService {
    @Override
    public void signUp(UserDtoInput dto) throws ExecutionException, InterruptedException {
       final UserEntity user = userService.save(dto);
-      if (Objects.isNull(user)) {
+      if (user == null) {
          throw new CantSaveUserException("Operation failed.");
       }
       final VerificationEntity verification = verificationService.save(user);
       //Send Email confirmation with Email Service
-      if(verification == null){
+      if (verification == null) {
          throw new CantSaveVerifcationEntityException("Can't save the verification.");
       }
       final String recipient = user.getEmail();
@@ -58,7 +58,7 @@ public class AuthServiceImplementation implements AuthService {
               .build();
       //send email
       CompletableFuture<Boolean> emailSent = emailService.sendSimpleEmail(emailDetails);
-      log.warn((emailSent.get()) ? "email successfully sent" : "email cannot be sent");
+      log.warn((emailSent.get()) ? "email successfully sent." : "cant sent the email.");
    }
 
    @Override
