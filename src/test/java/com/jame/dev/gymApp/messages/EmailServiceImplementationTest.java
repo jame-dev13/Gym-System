@@ -16,6 +16,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,11 +45,11 @@ class EmailServiceImplementationTest {
            .build();
 
    @Test
-   void sendSimpleEmail() {
+   void sendSimpleEmail() throws ExecutionException, InterruptedException {
       doNothing().when(javaMailSender).send(any(SimpleMailMessage.class));
-      boolean mailSent = service.sendSimpleEmail(emailDetails);
+      final CompletableFuture<Boolean> mailSent = service.sendSimpleEmail(emailDetails);
 
-      assertTrue(mailSent, "Mail should had sent.");
+      assertTrue(mailSent.get(), "Mail should had sent.");
       final ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
       verify(javaMailSender, times(1)).send(captor.capture());
       SimpleMailMessage sent = captor.getValue();
@@ -59,14 +61,14 @@ class EmailServiceImplementationTest {
    }
 
    @Test
-   void sendMailWithAttachment() throws IOException, MessagingException {
+   void sendMailWithAttachment() throws IOException, MessagingException, ExecutionException, InterruptedException {
       final MimeMessage mimeMessage = new MimeMessage((Session) null);
       when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
       doNothing().when(javaMailSender).send(any(MimeMessage.class));
 
-      final boolean mailSent = service.sendMailWithAttachment(emailDetailsWAttachment);
+      final CompletableFuture<Boolean> mailSent = service.sendMailWithAttachment(emailDetailsWAttachment);
 
-      assertTrue(mailSent, "Mail should had sent.");
+      assertTrue(mailSent.get(), "Mail should had sent.");
       final ArgumentCaptor<MimeMessage> captor = ArgumentCaptor.forClass(MimeMessage.class);
       verify(javaMailSender).send(captor.capture());
 
@@ -75,7 +77,7 @@ class EmailServiceImplementationTest {
       assertAll("Not null, same subject and mail's sent.",
               () -> assertNotNull(sent, "Should not be null."),
               () -> assertEquals(emailDetailsWAttachment.subject(), sent.getSubject(), "Should be the same subject."),
-              () -> assertTrue(mailSent, "The mail should had sent.")
+              () -> assertTrue(mailSent.get(), "The mail should has been sent.")
       );
 
    }

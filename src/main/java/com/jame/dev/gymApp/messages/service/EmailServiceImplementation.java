@@ -14,10 +14,12 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -29,7 +31,8 @@ public class EmailServiceImplementation implements EmailService {
    private String sender;
 
    @Override
-   public boolean sendSimpleEmail(@NonNull EmailDetails emailDetails) {
+   @Async
+   public CompletableFuture<Boolean> sendSimpleEmail(@NonNull EmailDetails emailDetails) {
       try {
          SimpleMailMessage mailMessage = new SimpleMailMessage();
          mailMessage.setFrom(sender);
@@ -39,15 +42,15 @@ public class EmailServiceImplementation implements EmailService {
 
          javaMailSender.send(mailMessage);
          log.info("Mail message sent with success.");
-         return true;
+         return CompletableFuture.completedFuture(true);
       } catch (MailException e) {
          log.error("Cannot sent mail message: ", e);
-         return false;
+         return CompletableFuture.completedFuture(false);
       }
    }
 
    @Override
-   public boolean sendMailWithAttachment(@NonNull EmailDetailsWAttachment emailDetails) {
+   public CompletableFuture<Boolean> sendMailWithAttachment(@NonNull EmailDetailsWAttachment emailDetails) {
       MimeMessage mimeMessage = javaMailSender.createMimeMessage();
       MimeMessageHelper mimeMessageHelper;
       try {
@@ -64,10 +67,15 @@ public class EmailServiceImplementation implements EmailService {
          mimeMessageHelper.addAttachment(resource.getFilename(), resource);
          javaMailSender.send(mimeMessage);
          log.info("Mail with attachment sent successfully.");
-         return true;
+         return CompletableFuture.completedFuture(true);
       } catch (MessagingException | MailException | IOException e) {
          log.error("Cannot sent the mail with attachment: ", e);
-         return false;
+         return CompletableFuture.completedFuture(false);
       }
+   }
+
+   @Override
+   public String html(String to, String code) {
+      return String.format(HTML, to, code);
    }
 }

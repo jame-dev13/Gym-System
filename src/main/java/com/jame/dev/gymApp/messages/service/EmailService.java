@@ -4,10 +4,13 @@ import com.jame.dev.gymApp.model.messages.EmailDetails;
 import com.jame.dev.gymApp.model.messages.EmailDetailsWAttachment;
 import lombok.NonNull;
 
-public interface EmailService {
-   boolean sendSimpleEmail(@NonNull final EmailDetails emailDetails);
+import java.util.concurrent.CompletableFuture;
 
-   boolean sendMailWithAttachment(@NonNull final EmailDetailsWAttachment emailDetails);
+public interface EmailService {
+   CompletableFuture<Boolean> sendSimpleEmail(@NonNull final EmailDetails emailDetails);
+
+   CompletableFuture<Boolean> sendMailWithAttachment(@NonNull final EmailDetailsWAttachment emailDetails);
+   String html(String to, String code);
 
    String HTML = """
            <!DOCTYPE html>
@@ -19,7 +22,7 @@ public interface EmailService {
            </head>
            <body style="margin:0;padding:0;background-color:#f5f5f5;font-family:Arial,sans-serif;">
            
-               <table align="center" width="100%" cellpadding="0" cellspacing="0"
+               <table align="center" width="100%%" cellpadding="0" cellspacing="0"
                       style="max-width:600px;margin:auto;background:#ffffff;border-radius:8px;
                              padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
            
@@ -45,7 +48,7 @@ public interface EmailService {
            
                    <tr>
                        <td style="text-align:center;color:#999;font-size:12px;padding-top:20px;">
-                           © %d TuEmpresa. Todos los derechos reservados.
+                           ©GymApp. Todos los derechos reservados.
                        </td>
                    </tr>
            
