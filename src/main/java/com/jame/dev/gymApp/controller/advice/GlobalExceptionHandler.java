@@ -85,4 +85,113 @@ public class GlobalExceptionHandler {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
               .body(errorResponse);
    }
+
+   @ExceptionHandler(AuthenticationAttemptFailureException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final AuthenticationAttemptFailureException ex,
+                                                                               final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.FORBIDDEN, "AUTH_OPERATION");
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+              .body(errorResponse);
+   }
+
+   @ExceptionHandler(AuthenticationNullException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final AuthenticationNullException ex,
+                                                                               final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "AUTH_OPERATION");
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body(errorResponse);
+   }
+
+   @ExceptionHandler(CantSaveUserException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final CantSaveUserException ex,
+                                                                               final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "SERVICE_OPERATION");
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body(errorResponse);
+   }
+
+   @ExceptionHandler(CantSaveVerifcationEntityException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final CantSaveVerifcationEntityException ex,
+                                                                               final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "SERVICE_OPERATION");
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body(errorResponse);
+   }
+
+   @ExceptionHandler(EmptyCacheObjectException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final EmptyCacheObjectException ex,
+                                                                               final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "CACHE_OPERATION");
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body(errorResponse);
+   }
+
+   @ExceptionHandler(IndexNotFoundException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final IndexNotFoundException ex,
+                                                                               final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "CACHE_OPERATION");
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body(errorResponse);
+   }
+
+   @ExceptionHandler(InvalidJwtException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final InvalidJwtException ex,
+                                                                               final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.UNAUTHORIZED, "AUTH_OPERATION");
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+              .body(errorResponse);
+   }
+
+   @ExceptionHandler(InvalidJwtSecretException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final InvalidJwtSecretException ex,
+                                                                               final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.UNAUTHORIZED, "AUTH_OPERATION");
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+              .body(errorResponse);
+   }
+
+   @ExceptionHandler(InvalidSignedJwtKeyException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final InvalidSignedJwtKeyException ex,
+                                                                               final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.UNAUTHORIZED, "AUTH_OPERATION");
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+              .body(errorResponse);
+   }
+
+   @ExceptionHandler(RoleNotFoundException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final RoleNotFoundException ex,
+                                                                               final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "ROLE_NOT_FOUND_OPERATION");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+              .body(errorResponse);
+   }
+
+   @ExceptionHandler(TokenAlreadyBlacklistedException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final TokenAlreadyBlacklistedException ex,
+                                                                               final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.UNAUTHORIZED, "AUTH_OPERATION");
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+              .body(errorResponse);
+   }
+
+   @ExceptionHandler(VerificationTokenNotFoundException.class)
+   public ResponseEntity<@NonNull ApiErrorResponse> handleNoOperationException(final VerificationTokenNotFoundException ex,
+                                                                               final HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.UNAUTHORIZED, "AUTH_OPERATION");
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+              .body(errorResponse);
+   }
+
 }
