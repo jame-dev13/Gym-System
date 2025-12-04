@@ -8,11 +8,12 @@ import com.jame.dev.gymApp.mapper.RoleMapper;
 import com.jame.dev.gymApp.mapper.UserMapper;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
-import com.jame.dev.gymApp.repository.RoleRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.UserService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,11 +31,20 @@ public class UserServiceImplementation implements UserService {
    private final PasswordEncoder passwordEncoder;
    private final UserMapper userMapper;
    private final RoleMapper roleMapper;
-   private final RoleRepository roleRepository;
 
    @Override
    public List<UserEntity> getAll() {
-      return repo.findByActiveTrue();
+      return repo.findAll();
+   }
+
+   @Override
+   public List<UserEntity> getActives() {
+      return repo.findAllByActiveTrue();
+   }
+
+   @Override
+   public Page<@NonNull UserEntity> getPageOfActives(@NonNull Pageable pageable) {
+      return repo.findAllByActiveTrue(pageable);
    }
 
    @Override

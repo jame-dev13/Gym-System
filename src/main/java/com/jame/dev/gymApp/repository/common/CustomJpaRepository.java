@@ -1,6 +1,8 @@
 package com.jame.dev.gymApp.repository.common;
 
 import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,5 +20,7 @@ public interface CustomJpaRepository<T, ID> extends JpaRepository<@NonNull T, @N
    @Query("UPDATE #{#entityName} e SET e.active = false WHERE e.id = :id")
    void softDelete(@Param("id") ID id);
 
-   List<T> findByActiveTrue();
+   List<T> findAllByActiveTrue();
+
+   Page<@NonNull T> findAllByActiveTrue(@NonNull final Pageable pageable);
 }

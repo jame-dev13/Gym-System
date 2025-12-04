@@ -13,6 +13,8 @@ import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.CustomerService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +30,17 @@ public class CustomerServiceImplementation implements CustomerService {
 
    @Override
    public List<CustomerEntity> getAll() {
-      return repo.findByActiveTrue();
+      return repo.findAll();
+   }
+
+   @Override
+   public List<CustomerEntity> getActives() {
+      return repo.findAllByActiveTrue();
+   }
+
+   @Override
+   public Page<@NonNull CustomerEntity> getPageOfActives(@NonNull Pageable pageable) {
+      return repo.findAllByActiveTrue(pageable);
    }
 
    @Override

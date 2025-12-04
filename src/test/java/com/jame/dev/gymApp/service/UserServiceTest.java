@@ -6,12 +6,11 @@ import com.jame.dev.gymApp.mapper.RoleMapper;
 import com.jame.dev.gymApp.mapper.UserMapper;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
-import com.jame.dev.gymApp.repository.RoleRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.out.UserServiceImplementation;
 import com.jame.dev.gymApp.shared.enums.Role;
+import lombok.NonNull;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,12 +18,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.IntStream;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -41,9 +44,6 @@ public class UserServiceTest {
    private PasswordEncoder passwordEncoder;
 
    @Mock
-   private RoleRepository roleRepository;
-
-   @Mock
    private UserMapper userMapper;
 
    @Mock
@@ -52,30 +52,73 @@ public class UserServiceTest {
    @InjectMocks
    private UserServiceImplementation service;
 
-   private UserEntity testUser;
+   private final Sort sort = Sort.sort(UserEntity.class).by(UserEntity::getEmail).descending();
 
-   @BeforeEach
-   public void setUp() {
-      testUser = UserEntity.builder()
-              .id(1L)
-              .name("userTest")
-              .email("test@mail.com")
-              .password("testSecret123")
-              .roles(Set.of(new RoleEntity(null, Role.ADMIN)))
-              .active(true)
-              .build();
+   private final UserEntity testUser = UserEntity.builder()
+           .id(1L)
+           .name("userTest")
+           .email("test@mail.com")
+           .password("testSecret123")
+           .roles(Set.of(new RoleEntity(null, Role.ADMIN)))
+           .active(true)
+           .build();
+
+   private final List<UserEntity> testUserList = IntStream.range(0, 10)
+           .mapToObj(i -> UserEntity.builder()
+                   .id((long) (i + 1))
+                   .name("userTest" + (i + 1))
+                   .email("test" + (i + 1) + "@mail.com")
+                   .password("testSecret123")
+                   .roles(Set.of(new RoleEntity(null, Role.ADMIN)))
+                   .active(true)
+                   .build())
+           .sorted(Comparator.comparing(UserEntity::getEmail).reversed())
+           .toList();
+
+   @Test
+   @DisplayName("Get all Users")
+   void getAllUsers(){
+      when(repo.findAll()).thenReturn(testUserList);
+      List<UserEntity> users = service.getAll();
+      UserEntity first = users.getFirst();
+      UserEntity last = users.getLast();
+      assertNotNull(users, "List should not be null");
+      assertTrue(users.contains(first), "Should contain the first object.");
+      assertSame(testUserList.getFirst(), first, "Should be the same first object.");
+      assertTrue(users.contains(last), "Should contain the last object.");
+      assertSame(testUserList.getLast(), last, "Should be the same last object.");
+
+      verify(repo).findAll();
    }
 
    @Test
    @DisplayName("Get Users actives")
    void getAllUsersByActiveField() {
-      when(repo.findByActiveTrue()).thenReturn(List.of(this.testUser));
-      List<UserEntity> getAll = service.getAll();
+      when(repo.findAllByActiveTrue()).thenReturn(testUserList);
+      List<UserEntity> users = service.getActives();
+      UserEntity first = users.getFirst();
+      assertNotNull(users, "List should not be null.");
+      assertTrue(users.contains(testUser), "Should contain the test object.");
+      assertSame(first, testUserList.getFirst(), "Should be the same first object.");
+      assertTrue(users.stream().allMatch(UserEntity::getActive), "The users should be actives.");
 
-      Assertions.assertTrue(getAll.getFirst().getActive(),
-              () -> "The user should be active");
+      verify(repo).findAllByActiveTrue();
+   }
 
-      verify(repo).findByActiveTrue();
+   @Test
+   @DisplayName("Get Users by page")
+   void getUsersByPages(){
+      Pageable pageable = PageRequest.of(0, 5, sort);
+      List<UserEntity> subList = testUserList.subList(0, 5);
+      when(repo.findAllByActiveTrue(pageable))
+              .thenReturn(new PageImpl<>(testUserList.subList(0, 5)));
+      Page<@NonNull UserEntity> page = service.getPageOfActives(pageable);
+      List<UserEntity> pageList = page.getContent();
+      assertNotNull(page, "Page should not be null.");
+      assertFalse(page.isEmpty(), "Page should not be empty.");
+      assertEquals(subList, pageList, "Should be the same list.");
+      assertSame(subList.getFirst(), pageList.getFirst(), "Should contain the same first object.");
+      assertSame(subList.getLast(), pageList.getLast(), "Should contain the same first object.");
    }
 
    @Test
@@ -102,7 +145,7 @@ public class UserServiceTest {
       verify(repo).save(captor.capture());
       UserEntity userSaved = captor.getValue();
 
-      Assertions.assertNotNull(userSaved, "The entity returned should not be null.");
+      assertNotNull(userSaved, "The entity returned should not be null.");
       Assertions.assertEquals(userAdded, userSaved, "The returned object should be the same one that has been given to the repo.");
       Assertions.assertTrue(userAdded.getActive(), "The active field should be true after every insertion.");
    }
@@ -122,7 +165,7 @@ public class UserServiceTest {
 
    @Test
    @DisplayName("Get User by Email.")
-   void getUserByEmail(){
+   void getUserByEmail() {
       final String EMAIL = this.testUser.getEmail();
       when(repo.findByEmail(EMAIL)).thenReturn(Optional.of(testUser));
       Optional<UserEntity> optionalUser = service.getUserByEmail(EMAIL);
@@ -162,7 +205,7 @@ public class UserServiceTest {
 
    @Test
    @DisplayName("DeleteById: 'SoftDelete case'")
-   void softDelete(){
+   void softDelete() {
       Long id = this.testUser.getId();
       //simulate association with one Customer.
       when(customerRepo.findUserAssociatedByIdUser(id)).thenReturn(Optional.ofNullable(this.testUser));
@@ -175,7 +218,7 @@ public class UserServiceTest {
 
    @Test
    @DisplayName("DeleteById: 'Delete case'")
-   void delete(){
+   void delete() {
       Long id = this.testUser.getId();
       //There's no association
       when(customerRepo.findUserAssociatedByIdUser(id)).thenReturn(Optional.empty());
