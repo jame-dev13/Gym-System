@@ -78,7 +78,7 @@ class SubscriptionServiceTest {
    private final Long idCustomerTest = customerEntityTest.getId();
    private final Integer idPricingTest = pricingEntityTest.getId();
 
-   private final List<SubscriptionEntity> testSubsList = IntStream.range(0, 5)
+   private final List<SubscriptionEntity> testSubsList = IntStream.range(0, 10)
            .mapToObj(i -> {
               CustomerEntity customer = new CustomerEntity((long) (i + 1), new UserEntity(), "32472525" + i, true);
               PricingEntity pricing = new PricingEntity((i + 1), new MemberShipEntity((i + 1), Membership.MONTHLY), BigDecimal.valueOf(300.00d));
@@ -141,7 +141,28 @@ class SubscriptionServiceTest {
 
       Page<@NonNull SubscriptionEntity> page = service.getPageOfActives(pageable);
       List<SubscriptionEntity> pageContent = page.getContent();
+      System.out.println(pageContent);
+      assertAll("Test to non nullity and emptiness, contains, matching and equality.",
+              () -> assertNotNull(page, "Returning list should not be null."),
+              () -> assertFalse(page.isEmpty() && !page.hasContent(), "Returning list should not be empty."),
+              () -> assertTrue(pageContent.stream().allMatch(matcher), "Should match with the give predicate."),
+              () -> assertEquals(pageContent, subList, "List should be equals."),
+              () -> assertSame(pageContent.getFirst(), subList.getFirst(), "The first element should be the same."),
+              () -> assertSame(pageContent.getLast(), subList.getLast(), "The last element should be the same.")
+      );
+      verify(repo).findAllByActiveTrue(pageable);
+   }
 
+   @Test
+   @DisplayName("Next Page")
+   void nextPage() {
+      Pageable pageable = PageRequest.of(1, 5, sort);
+      List<SubscriptionEntity> subList = testSubsList.subList(5, 9);
+      when(repo.findAllByActiveTrue(pageable)).thenReturn(new PageImpl<>(subList));
+
+      Page<@NonNull SubscriptionEntity> page = service.getPageOfActives(pageable);
+      List<SubscriptionEntity> pageContent = page.getContent();
+      System.out.println(pageContent);
       assertAll("Test to non nullity and emptiness, contains, matching and equality.",
               () -> assertNotNull(page, "Returning list should not be null."),
               () -> assertFalse(page.isEmpty() && !page.hasContent(), "Returning list should not be empty."),

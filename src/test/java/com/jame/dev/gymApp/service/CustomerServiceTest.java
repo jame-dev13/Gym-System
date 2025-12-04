@@ -118,6 +118,29 @@ public class CustomerServiceTest {
 
       Page<@NonNull CustomerEntity> page = service.getPageOfActives(pageable);
       List<CustomerEntity> pageContent = page.getContent();
+      System.out.println(pageContent);
+
+      assertAll("Test to validate non-nullity or emptiness, matching and equality-same objects.",
+              () -> assertNotNull(page, "Should not be null"),
+              () -> assertFalse(page.isEmpty(), "Should not be empty"),
+              () -> assertTrue(page.stream().allMatch(allMatch), "All customer should have a user associated and should be actives"),
+              () -> assertSame(pageContent.getFirst(), subList.getFirst(), "First list object should be the same."),
+              () -> assertSame(pageContent.getLast(), subList.getLast(), "Last list object should be the same.")
+      );
+      verify(repo).findAllByActiveTrue(pageable);
+   }
+
+   @Test
+   @DisplayName("Get next page")
+   void getNext(){
+      Pageable pageable = PageRequest.of(1, 5, sort);
+      List<CustomerEntity> subList = testCustomerList.subList(5, 9);
+      when(repo.findAllByActiveTrue(pageable)).thenReturn(new PageImpl<>(subList));
+
+      Page<@NonNull CustomerEntity> page = service.getPageOfActives(pageable);
+      List<CustomerEntity> pageContent = page.getContent();
+      System.out.println(pageContent);
+
       assertAll("Test to validate non-nullity or emptiness, matching and equality-same objects.",
               () -> assertNotNull(page, "Should not be null"),
               () -> assertFalse(page.isEmpty(), "Should not be empty"),

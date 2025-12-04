@@ -111,9 +111,29 @@ public class UserServiceTest {
       Pageable pageable = PageRequest.of(0, 5, sort);
       List<UserEntity> subList = testUserList.subList(0, 5);
       when(repo.findAllByActiveTrue(pageable))
-              .thenReturn(new PageImpl<>(testUserList.subList(0, 5)));
+              .thenReturn(new PageImpl<>(subList));
       Page<@NonNull UserEntity> page = service.getPageOfActives(pageable);
       List<UserEntity> pageList = page.getContent();
+      System.out.println(pageList);
+
+      assertNotNull(page, "Page should not be null.");
+      assertFalse(page.isEmpty(), "Page should not be empty.");
+      assertEquals(subList, pageList, "Should be the same list.");
+      assertSame(subList.getFirst(), pageList.getFirst(), "Should contain the same first object.");
+      assertSame(subList.getLast(), pageList.getLast(), "Should contain the same first object.");
+   }
+
+   @Test
+   @DisplayName("Next page")
+   void nextPage(){
+      Pageable pageable = PageRequest.of(1, 5, sort);
+      List<UserEntity> subList = testUserList.subList(5, testUserList.size() - 1);
+      when(repo.findAllByActiveTrue(pageable))
+              .thenReturn(new PageImpl<>(subList));
+      Page<@NonNull UserEntity> page = service.getPageOfActives(pageable);
+      List<UserEntity> pageList = page.getContent();
+      System.out.println(pageList);
+
       assertNotNull(page, "Page should not be null.");
       assertFalse(page.isEmpty(), "Page should not be empty.");
       assertEquals(subList, pageList, "Should be the same list.");
