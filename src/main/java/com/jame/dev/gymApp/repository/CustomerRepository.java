@@ -13,4 +13,5 @@ public interface CustomerRepository extends CustomJpaRepository<CustomerEntity, 
            SELECT c.user FROM CustomerEntity c WHERE c.user.id = :id
            """)
    Optional<UserEntity> findUserAssociatedByIdUser(@Param("id") final long id);
+   boolean existsByUser_IdAndActiveTrue(final long userId);
 }

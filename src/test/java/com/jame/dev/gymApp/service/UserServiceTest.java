@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.service;
 
 import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
+import com.jame.dev.gymApp.mapper.RoleMapper;
 import com.jame.dev.gymApp.mapper.UserMapper;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
@@ -45,6 +46,9 @@ public class UserServiceTest {
    @Mock
    private UserMapper userMapper;
 
+   @Mock
+   private RoleMapper roleMapper;
+
    @InjectMocks
    private UserServiceImplementation service;
 
@@ -86,12 +90,14 @@ public class UserServiceTest {
               .active(true)
               .build();
 
+      when(repo.existsByEmail(userDtoInput.email())).thenReturn(false);
       when(userMapper.toEntity(any(UserDtoInput.class), anySet())).thenCallRealMethod();
       when(repo.save(any(UserEntity.class)))
               .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
       UserEntity userAdded = service.save(userDtoInput);
 
       ArgumentCaptor<UserEntity> captor = ArgumentCaptor.forClass(UserEntity.class);
+      verify(repo).existsByEmail(userDtoInput.email());
       verify(userMapper).toEntity(any(UserDtoInput.class), anySet());
       verify(repo).save(captor.capture());
       UserEntity userSaved = captor.getValue();

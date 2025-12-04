@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.service.out;
 
 import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
+import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.exception.NoOperationException;
 import com.jame.dev.gymApp.exception.UserNotFoundException;
@@ -38,6 +39,10 @@ public class CustomerServiceImplementation implements CustomerService {
    @Override
    @Transactional
    public CustomerEntity save(@NonNull CustomerDtoInput dto) {
+      boolean userExists = repo.existsByUser_IdAndActiveTrue(dto.userId());
+      if(userExists){
+         throw new AlreadyExistsException("User id already exists.");
+      }
       UserEntity user = userRepo.findById(dto.userId())
               .orElseThrow(() -> new UserNotFoundException("User Not Found."));
       CustomerEntity customerEntity = customerMapper.toEntity(dto, user);

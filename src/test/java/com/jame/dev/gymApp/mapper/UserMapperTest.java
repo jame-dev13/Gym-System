@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class UserMapperTest {
    private RoleMapper roleMapper = new RoleMapperImpl();
@@ -40,6 +41,12 @@ public class UserMapperTest {
               .roles(Set.of(Role.USER))
               .active(true)
               .build();
+      Set<RoleEntity> entitySet = dto.roles()
+              .stream()
+              .map(roleMapper::toEntity)
+              .collect(Collectors.toSet());
+      Assertions.assertNotNull(entitySet, "Should not be null.");
+      Assertions.assertFalse(entitySet.isEmpty(), "Should not be empty.");
    }
 }
 

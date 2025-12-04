@@ -110,6 +110,7 @@ class SubscriptionServiceTest {
    @Test
    @DisplayName("Save subscription")
    void save() {
+      when(repo.existsByCustomer_IdAndActiveTrue(customerEntityTest.getId())).thenReturn(false);
       when(customerRepo.findById(idCustomerTest))
               .thenReturn(Optional.of(this.customerEntityTest));
       when(pricingRepo.findById(idPricingTest))
@@ -126,6 +127,7 @@ class SubscriptionServiceTest {
       SubscriptionEntity subscriptionAdded = service.save(this.dtoTest);
 
       ArgumentCaptor<SubscriptionEntity> captor = ArgumentCaptor.forClass(SubscriptionEntity.class);
+      verify(repo).existsByCustomer_IdAndActiveTrue(customerEntityTest.getId());
       verify(customerRepo).findById(idCustomerTest);
       verify(pricingRepo).findById(idPricingTest);
       verify(subscriptionMapper)

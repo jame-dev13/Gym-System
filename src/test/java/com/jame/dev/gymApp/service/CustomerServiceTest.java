@@ -98,6 +98,7 @@ public class CustomerServiceTest {
    void saveCustomer() {
       Long idUser = this.testUser.getId();
       CustomerDtoInput dto = new CustomerDtoInput(idUser, "4270143");
+      when(repo.existsByUser_IdAndActiveTrue(dto.userId())).thenReturn(false);
       when(userRepo.findById(idUser))
               .thenReturn(Optional.ofNullable(this.testUser));
       when(customerMapper.toEntity(dto, testUser))
@@ -107,6 +108,7 @@ public class CustomerServiceTest {
 
       CustomerEntity customerAdded = service.save(dto);
       ArgumentCaptor<CustomerEntity> captor = ArgumentCaptor.forClass(CustomerEntity.class);
+      verify(repo).existsByUser_IdAndActiveTrue(dto.userId());
       verify(userRepo).findById(idUser);
       verify(customerMapper).toEntity(dto, testUser);
       verify(repo).save(captor.capture());

@@ -44,6 +44,10 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Transactional
    @Override
    public SubscriptionEntity save(@NonNull SubscriptionDtoInput dto) {
+      boolean existsCustomer = repo.existsByCustomer_IdAndActiveTrue(dto.customerId());
+      if(existsCustomer){
+         throw new AlreadyExistsException("Customer has an active subscription.");
+      }
       CustomerEntity customer = customerRepo.findById(dto.customerId())
               .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
       PricingEntity pricing = pricingRepo.findById(dto.pricingId())
