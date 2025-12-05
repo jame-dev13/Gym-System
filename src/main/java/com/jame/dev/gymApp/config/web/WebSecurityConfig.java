@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Slf4j
 @Configuration
@@ -51,6 +52,7 @@ public class WebSecurityConfig {
                     SecurityContextHolder.clearContext();
                  });
               })
+              .addFilterBefore(customAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
               .build();
    }
 
