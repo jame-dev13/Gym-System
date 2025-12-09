@@ -8,9 +8,11 @@ import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring", uses = UserMapper.class, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
-public interface CustomerMapper {
+public interface CustomerMapper extends BaseMapper<CustomerEntity, CustomerDtoOutput>{
 
+   @Override
    CustomerDtoOutput toDto(CustomerEntity entity);
+
    default CustomerEntity toEntity(CustomerDtoInput dto, UserEntity user){
       return CustomerEntity.builder()
               .user(user)

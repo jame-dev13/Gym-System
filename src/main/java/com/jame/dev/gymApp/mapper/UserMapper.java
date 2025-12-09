@@ -14,7 +14,8 @@ import java.util.Set;
         uses = {RoleMapper.class},
         injectionStrategy = InjectionStrategy.CONSTRUCTOR,
         builder = @Builder)
-public interface UserMapper {
+public interface UserMapper extends BaseMapper<UserEntity, UserDtoOutput> {
+   @Override
    UserDtoOutput toDto(UserEntity user);
 
    default UserEntity toEntity(UserDtoInput dto, Set<RoleEntity> roles) {

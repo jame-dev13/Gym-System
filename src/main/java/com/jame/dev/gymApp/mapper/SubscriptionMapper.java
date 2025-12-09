@@ -15,8 +15,9 @@ import java.util.List;
 @Mapper(componentModel = "spring",
         uses = {CustomerMapper.class, PeriodMapper.class},
         injectionStrategy = InjectionStrategy.CONSTRUCTOR)
-public interface SubscriptionMapper {
+public interface SubscriptionMapper extends BaseMapper<SubscriptionEntity, SubscriptionDtoOutput> {
 
+   @Override
    @Mapping(source = "id", target = "id")
    @Mapping(source = "customer", target = "customer")
    @Mapping(source = "pricing.memberShipEntity.membership", target = "membership")

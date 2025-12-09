@@ -3,10 +3,9 @@ package com.jame.dev.gymApp.cache.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.jame.dev.gymApp.exception.IndexNotFoundException;
+import com.jame.dev.gymApp.model.dto.out.PageMetaData;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.shared.enums.Role;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,154 +14,151 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import redis.clients.jedis.JedisPooled;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AppCacheServiceTest {
    @Mock
    private JedisPooled cacheAppPool;
+
    @InjectMocks
    private AppCacheServiceImplementation<UserDtoOutput> service;
 
-   private UserDtoOutput userDto;
    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+   private final UserDtoOutput dto = UserDtoOutput.builder()
+           .id(1L)
+           .name("dto")
+           .email("dto@mail.com")
+           .roles(Set.of(Role.ADMIN))
+           .build();
+
+   private final Page<UserDtoOutput> page =
+           new PageImpl<>(List.of(dto), PageRequest.of(0, 1, Sort.by(Sort.Order.asc("id"))), 1);
+   private final PageMetaData metaData =
+           new PageMetaData(page.getNumber(),
+                   page.getSize(),
+                   page.getTotalElements(),
+                   page.getTotalPages(),
+                   page.getSort().getOrderFor("id").getProperty(), "ASC");
+   private final String key = "users:0:1";
 
    @BeforeEach
    void setUp() {
       service = new AppCacheServiceImplementation<>(UserDtoOutput.class, cacheAppPool);
-      this.userDto = UserDtoOutput.builder()
-              .name("someone")
-              .email("someone@mail.com")
-              .build();
+   }
+
+   private <T> String mapToJson(T t) throws JsonProcessingException {
+      return mapper.writeValueAsString(t);
    }
 
    @Test
-   @DisplayName("Get cache list.")
+   @DisplayName("Should gets the cache list")
    void getCache() throws JsonProcessingException {
-      String expected = mapper.writeValueAsString(userDto);
-      when(cacheAppPool.lrange(eq("users"), eq(0L), eq(-1L)))
-              .thenReturn(List.of(expected));
-      List<UserDtoOutput> list = Assertions
-              .assertDoesNotThrow(() -> service.getCache("users"), "Should not throw Exceptions.");
-      Assertions.assertAll("List not null, not empty, and contains the DTO object",
-              () -> Assertions.assertNotNull(list, "Should not be null."),
-              () -> Assertions.assertFalse(list.isEmpty(), "Should not be empty."),
-              () -> Assertions.assertTrue(list.contains(userDto), "Should contain the DTO object.")
-      );
+      final List<String> lines = List.of(mapToJson(dto));
+      final String metadata = mapToJson(metaData);
+      when(cacheAppPool.lrange(key, 0, -1))
+              .thenReturn(lines);
+      when(cacheAppPool.get(key.concat(":meta"))).thenReturn(metadata);
 
-      verify(cacheAppPool).lrange(eq("users"), eq(0L), eq(-1L));
+      Optional<Page<UserDtoOutput>> optionalPage = service.getCache(key);
+
+      verify(cacheAppPool).lrange(key, 0, -1);
+      verify(cacheAppPool).get(key.concat(":meta"));
+      verifyNoMoreInteractions(cacheAppPool);
    }
 
    @Test
-   @DisplayName("Save List in cache.")
-   void saveCache() throws JsonProcessingException{
-      List<UserDtoOutput> list = List.of(
-              new UserDtoOutput(1L, "A", "B", Set.of(Role.USER)),
-              new UserDtoOutput( 2L, "C", "D", Set.of(Role.USER))
-      );
+   @DisplayName("Should save the page data")
+   void saveCache() throws JsonProcessingException {
+      final String json = mapToJson(dto);
+      final String metadataSerialized = mapToJson(metaData);
 
-      when(cacheAppPool.del(eq("users"))).thenReturn(1L);
-      when(cacheAppPool.rpush(eq("users"), anyString())).thenReturn(1L);
-      when(cacheAppPool.expire(eq("users"), eq(420L))).thenReturn(1L);
+      when(cacheAppPool.del(key)).thenReturn(1L);
+      when(cacheAppPool.rpush(key, json)).thenReturn(1L);
+      when(cacheAppPool.expire(key, 420)).thenReturn(1L);
+      when(cacheAppPool.setex(key.concat(":meta"), 420, metadataSerialized)).thenReturn("OK");
 
-      service.saveCache("users", list);
+      service.saveCache(key, page);
 
-      ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-      verify(cacheAppPool).del(eq("users"));
-      verify(cacheAppPool, times(2)).rpush(eq("users"), captor.capture());
-      verify(cacheAppPool).expire(eq("users"), eq(420L));
-
-      List<String> jsonValues = captor.getAllValues();
-
-      Assertions.assertEquals(jsonValues.getFirst(),
-              mapper.writeValueAsString(list.getFirst()), "Should be equals.");
-      Assertions.assertEquals(jsonValues.getLast(),
-              mapper.writeValueAsString(list.getLast()), "Should be equals");
+      verify(cacheAppPool).del(key);
+      verify(cacheAppPool, atLeastOnce()).rpush(key, json);
+      verify(cacheAppPool).expire(key, 420);
+      verify(cacheAppPool).setex(key.concat(":meta"), 420, metadataSerialized);
    }
 
    @Test
-   @DisplayName("Add item to an element into the cache collection.")
-   void addToCache() throws JsonProcessingException {
-      String value = mapper.writeValueAsString(userDto);
-      when(cacheAppPool.lrange(eq("users"), eq(0L), eq((-1L))))
-              .thenReturn(List.of());
-      when(cacheAppPool.rpush(eq("users"), eq(value))).thenReturn(1L);
+   @DisplayName("Should get object with any id given")
+   void getUser() throws JsonProcessingException {
+      final String json = mapToJson(dto);
+      when(cacheAppPool.exists(eq("users:0:1"))).thenReturn(true);
+      when(cacheAppPool.lrange("users:0:1", 0, -1))
+              .thenReturn(List.of(json));
+      Optional<UserDtoOutput> optionalDto = service.get(key, 1L);
 
-      service.addToCache("users", userDto);
-
-      verify(cacheAppPool).rpush(eq("users"), eq(value));
+      verify(cacheAppPool).exists(key);
+      verify(cacheAppPool).lrange(key, 0, -1);
+      verifyNoMoreInteractions(cacheAppPool);
+      assertNotSame(Optional.empty(), optionalDto, "Should not be empty");
+      assertNotNull(optionalDto.orElse(null), "Should not be null.");
    }
 
    @Test
-   @DisplayName("Not addition when the item is already in the cache collection.")
-   void failAddCacheWhenExistTheElement() throws JsonProcessingException {
-      String value = mapper.writeValueAsString(userDto);
-      when(cacheAppPool.lrange(eq("users"), eq(0L), eq((-1L))))
-              .thenReturn(List.of(value));
-      service.addToCache("users", userDto);
+   @DisplayName("Should invalidates the given page key")
+   void invalidates(){
+      when(cacheAppPool.exists(key))
+              .thenReturn(true);
+      when(cacheAppPool.del(key)).thenReturn(1L);
 
-      verify(cacheAppPool, never()).rpush(eq("users"), eq(value));
+      service.invalidatePage(key);
+
+      verify(cacheAppPool).exists(key);
+      verify(cacheAppPool).del(key);
    }
 
    @Test
-   @DisplayName("Update item in cache collection.")
-   void updateItemInCache() throws JsonProcessingException {
-      String email = userDto.email();
-      UserDtoOutput updateDto =
-              new UserDtoOutput(1L, "updateName", "update@mail.com", Set.of( Role.USER));
-      Predicate<UserDtoOutput> filter = dto -> dto.email().equals(email);
-      String existingJson = mapper.writeValueAsString(userDto);
-      when(cacheAppPool.lrange(eq("users"), eq(0L), eq(-1L)))
-              .thenReturn(List.of(existingJson));
-      when(cacheAppPool.expireTime(eq("users"))).thenReturn(200L);
+   @DisplayName("Should not invalidate any non-existing key")
+   void notValidates(){
+      when(cacheAppPool.exists(anyString())).thenReturn(false);
 
-      service.updateItemInCache("users", filter, updateDto);
-      String updatedJson = mapper.writeValueAsString(updateDto);
+      service.invalidatePage(key);
+      ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
 
-      verify(cacheAppPool).lset(eq("users"), eq(0L), eq(updatedJson));
-      verify(cacheAppPool).expire(eq("users"), eq(200L));
+      verify(cacheAppPool).exists(keyCaptor.capture());
+      verify(cacheAppPool, never()).del(keyCaptor.capture());
    }
 
    @Test
-   @DisplayName("Index == -1")
-   void indexNotFound(){
-      Predicate<UserDtoOutput> filter = u -> u.email().equals("unkwon@mail.com");
-      when(cacheAppPool.lrange(eq("users"), eq(0L), eq(-1L)))
-              .thenReturn(List.of());
-      Assertions.assertThrows(IndexNotFoundException.class,
-              () -> service.updateItemInCache("users", filter, this.userDto), "Should throws an Exception");
-      verify(cacheAppPool).lrange(eq("users"), eq(0L), eq(-1L));
-      verify(cacheAppPool, never()).lset(eq("users"), anyLong(), anyString());
-      verify(cacheAppPool, never()).expireTime(eq("users"));
-      verify(cacheAppPool, never()).expire(eq("users"), anyLong());
+   @DisplayName("Should validate if any given key exists.")
+   void keyExists(){
+      when(cacheAppPool.exists(anyString())).thenReturn(true);
+
+      boolean keyExists = service.keyExists(key);
+      ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
+      verify(cacheAppPool).exists(keyCaptor.capture());
+
+      assertTrue(keyExists, "key should exists.");
    }
 
    @Test
-   @DisplayName("TTL sets to 420 on 0")
-   void setTtl() throws JsonProcessingException {
-      UserDtoOutput existing = new UserDtoOutput(1L, "john", "john@mail.com", Set.of(Role.USER));
-      UserDtoOutput updated  = new UserDtoOutput(2L, "john", "new@mail.com", Set.of(Role.USER));
+   @DisplayName("Should validate if any given key not exists.")
+   void keyNotExists(){
+      when(cacheAppPool.exists(anyString())).thenReturn(false);
 
-      String existingJson = mapper.writeValueAsString(existing);
-      String updatedJson  = mapper.writeValueAsString(updated);
-      when(cacheAppPool.lrange(eq("users"), eq(0L), eq(-1L)))
-              .thenReturn(List.of(existingJson));
-      when(cacheAppPool.expireTime(eq("users"))).thenReturn(0L);
+      boolean keyExists = service.keyExists(key);
+      ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
+      verify(cacheAppPool).exists(keyCaptor.capture());
 
-      Predicate<UserDtoOutput> filter = u -> u.name().equals("john");
-      service.updateItemInCache("users", filter, updated);
-
-      verify(cacheAppPool).lrange(eq("users"), eq(0L), eq(-1L));
-      verify(cacheAppPool).lset("users", 0, updatedJson);
-      verify(cacheAppPool).expireTime("users");
-      verify(cacheAppPool).expire("users", 420L);
+      assertFalse(keyExists, "key should not exists.");
    }
 }

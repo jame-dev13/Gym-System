@@ -1,17 +1,24 @@
 package com.jame.dev.gymApp.cache.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.jame.dev.gymApp.exception.CacheKeyNotExistsException;
 import com.jame.dev.gymApp.exception.EmptyCacheObjectException;
-import com.jame.dev.gymApp.exception.IndexNotFoundException;
+import com.jame.dev.gymApp.model.dto.out.PageMetaData;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import redis.clients.jedis.JedisPooled;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 @Slf4j
 public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
@@ -33,92 +40,113 @@ public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
       }
    };
 
-   @Override
-   public List<T> getCache(String key) {
-      List<String> list = cacheAppPool.lrange(key, 0, -1);
-      if (list == null || list.isEmpty()) {
-         throw new EmptyCacheObjectException("Cache list is empty.");
+   private boolean matchId(final String line, final long id) {
+      try {
+         JsonNode json = mapper.readTree(line);
+         return json.path("id").asLong() == id;
+      } catch (JsonProcessingException ignored) {
+         return false;
       }
+   }
+
+
+   @Override
+   public Optional<Page<@NonNull T>> getCache(String key) {
+      List<String> list = cacheAppPool.lrange(key, 0, -1);
+      if (list == null || list.isEmpty()) return Optional.empty();
+
       Collections.reverse(list);
-      return list.stream()
+      final List<T> pageContent = list.stream()
               .map(mapperHelper)
               .toList();
+
+      final String jsonMetaData = cacheAppPool.get(key.concat(":meta"));
+      final Optional<PageMetaData> optionalMetadata = deserializeMetaDataJson(jsonMetaData);
+
+      if (optionalMetadata.isEmpty()) return Optional.empty();
+
+      final PageMetaData metadata = optionalMetadata.get();
+      final Sort sort = metadata.sortProperty() == null
+              ? Sort.unsorted()
+              : Sort.by(Sort.Direction.fromString(metadata.sortDirection()), metadata.sortProperty());
+
+      final Page<@NonNull T> page = new PageImpl<>(pageContent,
+              PageRequest.of(metadata.number(), metadata.size(), sort),
+              metadata.totalElements());
+
+      return Optional.of(page);
    }
 
    @Override
-   public void saveCache(String key, List<T> t) {
+   public void saveCache(final String key, final Page<@NonNull T> page) {
+      final long exp = 420;
       try {
          cacheAppPool.del(key);
-         for (T type : t) {
+         for (T type : page.getContent()) {
             cacheAppPool.rpush(key, mapper.writeValueAsString(type));
          }
-         cacheAppPool.expire(key, 420);
+         final PageMetaData metaData = getPageMetaDataHelper(page);
+         final String metaSerialized = mapper.writeValueAsString(metaData);
+         cacheAppPool.expire(key, exp);
+         cacheAppPool.setex(key.concat(":meta"), exp, metaSerialized);
       } catch (JsonProcessingException e) {
          log.error("Error processing Json: ", e);
       }
    }
 
    @Override
-   public void addToCache(String key, T t) {
-      try {
-         if (!cacheContainsHelper(key, t)) {
-            cacheAppPool.rpush(key, mapper.writeValueAsString(t));
-         }
-      } catch (JsonProcessingException e) {
-         log.error("Error processing Json: ", e);
+   public Optional<T> get(final String key, final long id) {
+      if (!cacheAppPool.exists(key)) {
+         throw new CacheKeyNotExistsException("Key: " + key + " doesn't exists.");
       }
+
+      final List<String> cacheJson = cacheAppPool.lrange(key, 0, -1);
+      if (cacheJson.isEmpty()) {
+         throw new EmptyCacheObjectException("No cache associated with key: " + key);
+      }
+      return getItem(cacheJson, id);
+   }
+
+   private Optional<T> getItem(List<String> jsonList, long id){
+      for (String json : jsonList) {
+         T item = mapperHelper.apply(json);
+         if(matchId(json, id))
+            return Optional.of(item);
+      }
+      return Optional.empty();
    }
 
    @Override
-   public void updateItemInCache(String key, Predicate<T> filter, T item) {
+   public void invalidatePage(final String key) {
+      if (cacheAppPool.exists(key))
+         cacheAppPool.del(key);
+   }
+
+   @Override
+   public boolean keyExists(final String key) {
+      return cacheAppPool.exists(key);
+   }
+
+
+   private PageMetaData getPageMetaDataHelper(final Page<@NonNull T> page) {
+      Sort sort = page.getSort();
+      var order = sort.stream().findFirst().orElse(null);
+      final String sortProperty = (order != null) ? order.getProperty() : "id";
+      final String sortDirection = (order != null) ? order.getDirection().name(): "ASC";
+
+      return new PageMetaData(
+              page.getNumber(), page.getSize(),
+              page.getTotalElements(), page.getTotalPages(),
+              sortProperty, sortDirection
+      );
+   }
+
+   private Optional<PageMetaData> deserializeMetaDataJson(final String json) {
       try {
-         List<T> items = cacheAppPool.lrange(key, 0, -1)
-                 .stream()
-                 .map(mapperHelper)
-                 .toList();
-         int index = getIndexTwoPointers(items, filter);
-         if(index == -1){
-            throw new IndexNotFoundException("Item not found.");
-         }
-         String value = mapper.writeValueAsString(item);
-         cacheAppPool.lset(key, index, value);
-
-         long ttl = cacheAppPool.expireTime(key);
-         cacheAppPool.expire(key, (ttl <= 0) ? 420 : ttl);
+         return Optional.of(mapper.readValue(json, PageMetaData.class));
       } catch (JsonProcessingException e) {
-         log.error("Error processing Json: ", e);
+         log.error("Error deserializing json object.", e);
+         return Optional.empty();
       }
-   }
-
-   public boolean cacheContainsHelper(final String key, T t) throws JsonProcessingException {
-      List<String> cache = cacheAppPool.lrange(key, 0, -1);
-      return cache.contains(mapper.writeValueAsString(t));
-   }
-
-   private int getIndexLinear(List<T> items, Predicate<T> test) throws JsonProcessingException {
-      if(items.isEmpty()) return -1;
-      for (int i = 0; i < items.size(); i++) {
-         T item = items.get(i);
-         if(test.test(item)){
-            return i;
-         }
-      }
-      return -1;
-   }
-
-   private int getIndexTwoPointers(List<T> items, Predicate<T> test) {
-      if (items.isEmpty()) return -1;
-      int front = 0, rear = items.size() - 1;
-      while (front <= rear) {
-         if (test.test(items.get(rear))) {
-            return rear;
-         }
-         if (test.test(items.get(front))) {
-            return front;
-         }
-         front++;
-         rear--;
-      }
-      return -1;
    }
 }
