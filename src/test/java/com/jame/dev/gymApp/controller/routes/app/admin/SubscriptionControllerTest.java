@@ -254,7 +254,7 @@ class SubscriptionControllerTest {
       verify(service, atLeastOnce()).finalizeSubscription(eq(1L));
       verify(mapper, atLeastOnce()).toDto(subscriptionCaptor.capture());
 
-      assertTrue(subscriptionCopy.getFinished(), "Should be finished.");
+      assertTrue(subscriptionCopy.isFinished(), "Should be finished.");
    }
 
    @Test

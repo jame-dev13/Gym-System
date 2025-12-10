@@ -94,7 +94,7 @@ class SubscriptionServiceTest {
            .sorted(Comparator.comparing(SubscriptionEntity::getId).reversed())
            .toList();
    private final Predicate<SubscriptionEntity> matcher = s ->
-           (s.getCustomer() != null && s.getPricing() != null) && (s.getActive() && !s.getFinished());
+           (s.getCustomer() != null && s.getPricing() != null) && (s.isActive() && !s.isFinished());
 
    @Test
    @DisplayName("Get All Subscriptions")
@@ -242,7 +242,7 @@ class SubscriptionServiceTest {
 
       assertAll("",
               () -> Assertions.assertNotNull(finalizedSubscription, "Should not be null."),
-              () -> Assertions.assertNotEquals(false, finalizedSubscription.getFinished(),
+              () -> Assertions.assertNotEquals(false, finalizedSubscription.isFinished(),
                       "Should be finalized."));
    }
 

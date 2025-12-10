@@ -8,6 +8,7 @@ import com.jame.dev.gymApp.mapper.RoleMapper;
 import com.jame.dev.gymApp.mapper.UserMapper;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
+import com.jame.dev.gymApp.repository.RoleRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.UserService;
 import lombok.NonNull;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserServiceImplementation implements UserService {
    private final UserRepository repo;
+   private final RoleRepository roleRepository;
    private final CustomerRepository customerRepo;
    private final PasswordEncoder passwordEncoder;
    private final UserMapper userMapper;
@@ -60,12 +62,13 @@ public class UserServiceImplementation implements UserService {
    @Transactional
    @Override
    public UserEntity save(@NonNull UserDtoInput dto) {
-      boolean userExists = repo.existsByEmail(dto.email());
+      final boolean userExists = repo.existsByEmail(dto.email());
       if(userExists){
          throw new AlreadyExistsException("User already exists.");
       }
-      Set<RoleEntity> roles = dto.roles().stream()
-              .map(roleMapper::toEntity).collect(Collectors.toSet());
+      final Set<RoleEntity> roles = dto.roles().stream()
+              .map(r -> roleMapper.toEntity(r, roleRepository))
+              .collect(Collectors.toSet());
       UserEntity userEntity = userMapper.toEntity(dto, roles);
       userEntity.setPassword(passwordEncoder.encode(dto.password()));
       return repo.save(userEntity);

@@ -37,11 +37,12 @@ public class UserEntity {
 
    @NotBlank
    @Column(name = "password", nullable = false)
+   @ToString.Exclude
    private String password;
 
    @EqualsAndHashCode.Exclude
    @ToString.Exclude
-   @ManyToMany(fetch = FetchType.LAZY)
+   @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
    @JoinTable(name = "user_roles",
            joinColumns = @JoinColumn(name = "user_id"),
            inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -49,7 +50,7 @@ public class UserEntity {
 
    @Column(name = "active", nullable = false)
    @Setter(AccessLevel.NONE)
-   private Boolean active;
+   private boolean active;
 
    @PrePersist
    private void setActive(){
@@ -61,8 +62,7 @@ public class UserEntity {
       if (this == o) return true;
       if(o == null || getClass() != o.getClass()) return false;
       UserEntity that = (UserEntity) o;
-      return Objects.nonNull(that.id) && (Objects.equals(that
-              .id, id));
+      return Objects.nonNull(that.id) && (Objects.equals(that.id, id));
    }
 
    @Override

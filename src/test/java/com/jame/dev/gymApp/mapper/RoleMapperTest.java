@@ -1,65 +1,93 @@
 package com.jame.dev.gymApp.mapper;
 
 import com.jame.dev.gymApp.entity.RoleEntity;
+import com.jame.dev.gymApp.repository.RoleRepository;
 import com.jame.dev.gymApp.shared.enums.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class RoleMapperTest {
-   private final RoleMapper roleMapper = new RoleMapperImpl();
-   private final RoleEntity entity = new RoleEntity(1, Role.USER);
-   private final Role role = Role.ADMIN;
 
-   private final Set<Role> roles = Set.of(Role.USER, Role.ADMIN);
-   private final Set<RoleEntity> entities = Set.of(entity, new RoleEntity(2, Role.ADMIN));
+   @Mock
+   private RoleRepository roleRepository;
+
+   private final RoleMapper roleMapper = new RoleMapperImpl() {
+   };
+
+   @Captor
+   private ArgumentCaptor<Role> roleCaptor;
+
+   private final Role userRole = Role.USER;
+   private final Role adminRole = Role.ADMIN;
+
+   private final RoleEntity roleUserEntity = new RoleEntity(1, userRole);
+   private final RoleEntity roleAdminEntity = new RoleEntity(2, adminRole);
+
+   private final Set<RoleEntity> entityRoles = Set.of(roleUserEntity, roleAdminEntity);
+   private final Set<Role> roles = Set.of(userRole, adminRole);
 
    @Test
    @DisplayName("To Role")
    void toRole() {
-      final Role role = roleMapper.toDto(this.entity);
-      assertAll("Not null and Roles are the same.",
-              () -> assertNotNull(role, "Should not be null."),
-              () -> assertEquals(role, entity.getRole(), "Should be the same."));
+      final Role role = roleMapper.toDto(this.roleAdminEntity);
+      assertNotNull(role, "Should not be null.");
+      assertEquals(role, this.roleAdminEntity.getRole(), "Should be the same.");
    }
 
    @Test
    @DisplayName("To Role Set")
    void toRoleSet() {
-      final Set<Role> roleSet = entities.stream()
+      final Set<Role> roleSet = entityRoles.stream()
               .map(roleMapper::toDto)
               .collect(Collectors.toSet());
-      assertAll("Not null, not empty and contains both existing Roles.",
-              () -> assertNotNull(roleSet, "Should not be null."),
-              () -> assertFalse(roles.isEmpty(), "Should not be empty"),
-              () -> assertTrue(roles.contains(Role.USER), "Should contains Role.USER"),
-              () -> assertTrue(roles.contains(Role.ADMIN), "Should contains Role.ADMIN"));
+      assertNotNull(roleSet, "Should not be null.");
+      assertFalse(roles.isEmpty(), "Should not be empty");
+      assertTrue(roles.contains(Role.USER), "Should contains Role.USER");
+      assertTrue(roles.contains(Role.ADMIN), "Should contains Role.ADMIN");
    }
 
    @Test
    @DisplayName("To Entity")
    void toEntity() {
-      final RoleEntity entity = roleMapper.toEntity(this.role);
+      when(roleRepository.findByRole(adminRole)).thenReturn(Optional.of(this.roleAdminEntity));
+
+      final RoleEntity entity = roleMapper.toEntity(this.adminRole, roleRepository);
+
+      verify(roleRepository, times(1)).findByRole(adminRole);
+
       assertNotNull(entity, "Should not be null.");
+      assertEquals(roleAdminEntity, entity, "Role entities should be equals.");
+      assertSame(roleAdminEntity, entity, "Should be the same object");
    }
 
    @Test
-   @DisplayName("To Entity Set")
+   @DisplayName("Should return an RoleEntity Set")
    void toEntitySet() {
-      final Set<RoleEntity> roleEntitySet = roles.stream()
-              .map(roleMapper::toEntity)
-              .collect(Collectors.toSet());
-      final Set<Role> roles = roleEntitySet.stream()
-              .map(RoleEntity::getRole)
-              .collect(Collectors.toSet());
-      assertAll("Not null, not empty and contains both existing roles.",
-              () -> assertNotNull(roleEntitySet, "Should not be null."),
-              () -> assertFalse(roleEntitySet.isEmpty(), "Should not be empty."),
-              () -> assertTrue(roles.containsAll(this.roles), "Should have the same content"));
+      when(roleRepository.findByRole(eq(Role.USER)))
+              .thenReturn(Optional.of(roleUserEntity));
+      when(roleRepository.findByRole(eq(Role.ADMIN)))
+              .thenReturn(Optional.of(roleAdminEntity));
 
+      Set<RoleEntity> roleEntitySet = roles.stream()
+              .map(r -> roleMapper.toEntity(r, roleRepository))
+              .collect(Collectors.toSet());
+
+      verify(roleRepository, atMost(2)).findByRole(roleCaptor.capture());
+
+      assertNotNull(roleEntitySet, "Role set should not be null.");
+      assertEquals(entityRoles, roleEntitySet, "Entities set should be equals.");
    }
 }

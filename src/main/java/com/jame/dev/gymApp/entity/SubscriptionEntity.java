@@ -40,12 +40,10 @@ public class SubscriptionEntity {
 
    @Column(name = "active", nullable = false)
    @Setter(AccessLevel.NONE)
-   @NonNull
-   private Boolean active;
+   private boolean active;
 
    @Column(name = "finished", nullable = false)
-   @NonNull
-   private Boolean finished;
+   private boolean finished;
 
    @PrePersist
    private void setFlags() {

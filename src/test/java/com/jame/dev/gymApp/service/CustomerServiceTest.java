@@ -77,7 +77,7 @@ public class CustomerServiceTest {
            .sorted(Comparator.comparing(CustomerEntity::getId).reversed())
            .toList();
 
-   private final Predicate<CustomerEntity> allMatch = c -> c.getUser() != null && c.getActive();
+   private final Predicate<CustomerEntity> allMatch = c -> c.getUser() != null && c.isActive();
 
    @Test
    @DisplayName("Get all customer")

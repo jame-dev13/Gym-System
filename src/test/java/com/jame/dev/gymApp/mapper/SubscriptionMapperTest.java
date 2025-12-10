@@ -79,6 +79,6 @@ public class SubscriptionMapperTest {
               () -> assertEquals(customer, subs.getCustomer(), "Should be the same."),
               () -> assertEquals(pricing, subs.getPricing(), "Should be the same."),
               () -> assertEquals(periods, subs.getSubscriptionPeriods(), "Should be the same."),
-              () -> assertFalse(subs.getFinished(), "Should be finished."));
+              () -> assertFalse(subs.isFinished(), "Should be finished."));
    }
 }

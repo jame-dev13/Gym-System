@@ -4,35 +4,50 @@ import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
+import com.jame.dev.gymApp.repository.RoleRepository;
 import com.jame.dev.gymApp.shared.enums.Role;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
 public class UserMapperTest {
-   private RoleMapper roleMapper = new RoleMapperImpl();
-   private UserMapper userMapper = new UserMapperImpl(roleMapper);
+   @Mock
+   private RoleRepository roleRepository;
+
+   private final RoleMapper roleMapper = new RoleMapperImpl() {};
+   private final UserMapper userMapper = new UserMapperImpl(roleMapper) {};
+
+   private final RoleEntity userRoleEntity = new RoleEntity(1, Role.USER);
 
    @Test
-   @DisplayName("To Dto")
+   @DisplayName("Should map to Dto")
    void toDto(){
       UserEntity user = UserEntity.builder()
               .id(1L)
               .name("userEntity")
               .email("userEntity@mail.com")
               .password("1223432")
-              .roles(Set.of(new RoleEntity(1, Role.USER)))
+              .roles(Set.of(userRoleEntity))
               .active(true)
               .build();
       UserDtoOutput dto = userMapper.toDto(user);
-      Assertions.assertNotNull(dto, "Should not be null.");
+      assertNotNull(dto, "Should not be null.");
    }
 
    @Test
-   @DisplayName("To Entity")
+   @DisplayName("Should map To Entity")
    void toEntity(){
       UserDtoInput dto = UserDtoInput.builder()
               .name("dtoname")
@@ -41,12 +56,16 @@ public class UserMapperTest {
               .roles(Set.of(Role.USER))
               .active(true)
               .build();
+      when(roleRepository.findByRole(any(Role.class))).thenReturn(Optional.of(userRoleEntity));
       Set<RoleEntity> entitySet = dto.roles()
               .stream()
-              .map(roleMapper::toEntity)
+              .map(r -> roleMapper.toEntity(r, roleRepository))
               .collect(Collectors.toSet());
-      Assertions.assertNotNull(entitySet, "Should not be null.");
-      Assertions.assertFalse(entitySet.isEmpty(), "Should not be empty.");
+
+      verify(roleRepository, atLeastOnce()).findByRole(any(Role.class));
+
+      assertNotNull(entitySet, "Should not be null.");
+      assertFalse(entitySet.isEmpty(), "Should not be empty.");
    }
 }
 

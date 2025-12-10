@@ -34,8 +34,7 @@ public class CustomerEntity {
 
    @Column(name = "active", nullable = false)
    @Setter(AccessLevel.NONE)
-   @NonNull
-   private Boolean active;
+   private boolean active;
 
    @PrePersist
    private void setActive(){

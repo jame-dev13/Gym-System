@@ -27,19 +27,18 @@ class CustomerMapperTest {
 
    @Test
    void toDto() {
-      CustomerDtoOutput dto = customerMapper
-              .toDto(
-                      CustomerEntity.builder()
-                              .id(1L)
-                              .user(testUser)
-                              .phoneContact("128133")
-                              .active(true)
-                              .build());
+      CustomerDtoOutput dto = customerMapper.toDto(
+              CustomerEntity.builder()
+                      .id(1L)
+                      .user(testUser)
+                      .phoneContact("128133")
+                      .active(true)
+                      .build());
       Assertions.assertNotNull(dto, "Should not be null.");
    }
 
    @Test
-   void toEntity(){
+   void toEntity() {
       CustomerDtoInput dto = new CustomerDtoInput(1L, "347293");
       CustomerEntity entity = customerMapper.toEntity(dto, testUser);
       Assertions.assertNotNull(entity, "Should not be null.");
