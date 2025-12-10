@@ -100,7 +100,7 @@ class SubscriptionControllerTest {
            .finished(false)
            .build();
    private final SubscriptionDtoOutput dto = mapToDto(subscriptionEntity);
-   private final SubscriptionDtoInput dtoInput = new SubscriptionDtoInput(1L, 1, false);
+   private final SubscriptionDtoInput dtoInput = new SubscriptionDtoInput(1L, 1);
    private final ObjectMapper objectMapper = new ObjectMapper()
            .registerModule(new JavaTimeModule());
 

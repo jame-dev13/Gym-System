@@ -68,7 +68,6 @@ public class AuthServiceImplementationTest {
               .email("dto@mail.com")
               .password("133453")
               .roles(Set.of(Role.USER))
-              .active(true)
               .build();
       when(userService.save(dto)).thenReturn(user);
       when(verificationService.save(user)).thenReturn(verification);

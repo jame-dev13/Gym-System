@@ -34,7 +34,7 @@ public interface SubscriptionMapper extends BaseMapper<SubscriptionEntity, Subsc
               .pricing(pricingEntity)
               .subscriptionPeriods(periods)
               .active(true)
-              .finished(dto.finished())
+              .finished(false)
               .build();
    }
 }

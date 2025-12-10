@@ -14,7 +14,6 @@ public record UserDtoInput(
         @JsonProperty("name") @NotBlank String name,
         @JsonProperty("email") @NotBlank @Email String email,
         @JsonProperty("password") @NotBlank String password,
-        @JsonProperty("roles") @NotNull Set<Role> roles,
-        @JsonProperty("active") @NotNull Boolean active
+        @JsonProperty("roles") @NotNull Set<Role> roles
 ) {
 }

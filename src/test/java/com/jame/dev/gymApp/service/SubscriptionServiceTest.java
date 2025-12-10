@@ -64,7 +64,6 @@ class SubscriptionServiceTest {
    private final SubscriptionDtoInput dtoTest = SubscriptionDtoInput.builder()
            .customerId(customerEntityTest.getId())
            .pricingId(pricingEntityTest.getId())
-           .finished(false)
            .build();
    private final SubscriptionEntity subscriptionEntityTest = SubscriptionEntity.builder()
            .id(1L)

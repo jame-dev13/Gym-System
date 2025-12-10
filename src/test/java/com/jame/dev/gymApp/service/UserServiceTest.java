@@ -158,7 +158,6 @@ public class UserServiceTest {
               .email("userAdded@mail.com")
               .password("1234456")
               .roles(Set.of(Role.USER, Role.ADMIN))
-              .active(true)
               .build();
 
       when(repo.existsByEmail(userDtoInput.email())).thenReturn(false);
@@ -213,7 +212,6 @@ public class UserServiceTest {
               .email("emailChanged@mail.com")
               .password("passwordChangedToo")
               .roles(Set.of(Role.USER))
-              .active(true)
               .build();
 
       String oldName = this.testUser.getName();
@@ -254,16 +252,5 @@ public class UserServiceTest {
       service.softDeleteById(id);
       verify(repo).deleteById(id);
       verify(repo, never()).softDelete(id);
-   }
-
-   private UserEntity buildUser(Long id, String name, String email) {
-      return UserEntity.builder()
-              .id(id)
-              .name(name)
-              .email(email)
-              .password("12345")
-              .roles(Set.of(new RoleEntity(null, Role.USER)))
-              .active(true)
-              .build();
    }
 }

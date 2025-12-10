@@ -69,7 +69,6 @@ public class SubscriptionMapperTest {
       final SubscriptionDtoInput dtoInput = SubscriptionDtoInput.builder()
               .customerId(1L)
               .pricingId(1)
-              .finished(false)
               .build();
       final List<PeriodEntity> periods = new ArrayList<>();
 

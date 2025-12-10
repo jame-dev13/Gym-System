@@ -54,7 +54,6 @@ public class UserMapperTest {
               .email("dto@mail")
               .password("324524")
               .roles(Set.of(Role.USER))
-              .active(true)
               .build();
       when(roleRepository.findByRole(any(Role.class))).thenReturn(Optional.of(userRoleEntity));
       Set<RoleEntity> entitySet = dto.roles()

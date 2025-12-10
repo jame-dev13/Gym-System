@@ -79,7 +79,6 @@ class UserControllerTest {
            .email("in@mail.com")
            .password("d39f02n4")
            .roles(Set.of(Role.ADMIN))
-           .active(true)
            .build();
    final UserEntity userEntity = UserEntity.builder()
            .id(1L)
@@ -231,7 +230,6 @@ class UserControllerTest {
               .email("in1@mail.com")
               .password("d39f02n4")
               .roles(Set.of(Role.ADMIN))
-              .active(true)
               .build();
       final UserEntity userEntity = UserEntity.builder()
               .id(1L)

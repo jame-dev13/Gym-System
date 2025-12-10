@@ -51,14 +51,12 @@ public class InitConfig {
                  .email(emailAdmin)
                  .password(passwordAdmin)
                  .roles(Set.of(Role.ADMIN, Role.USER))
-                 .active(true)
                  .build();
          final UserDtoInput user = UserDtoInput.builder()
                  .name("user")
                  .email(emailUser)
                  .password(passwordUser)
                  .roles(Set.of(Role.USER))
-                 .active(true)
                  .build();
          userService.save(admin);
          final UserEntity userEntity = userService.save(user);
