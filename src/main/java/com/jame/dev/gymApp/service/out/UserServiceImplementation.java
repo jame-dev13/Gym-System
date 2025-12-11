@@ -19,7 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,19 +33,26 @@ public class UserServiceImplementation implements UserService {
    private final UserMapper userMapper;
    private final RoleMapper roleMapper;
 
-   @Override
-   public List<UserEntity> getAll() {
-      return repo.findAll();
-   }
 
    @Override
-   public List<UserEntity> getActives() {
-      return repo.findAllByActiveTrue();
-   }
-
-   @Override
-   public Page<@NonNull UserEntity> getPageOfActives(@NonNull Pageable pageable) {
+   public Page<@NonNull UserEntity> getPage(@NonNull Pageable pageable) {
       return repo.findAllByActiveTrue(pageable);
+   }
+
+
+   @Transactional
+   @Override
+   public UserEntity save(@NonNull UserDtoInput dto) {
+      final boolean userExists = repo.existsByEmail(dto.email());
+      if(userExists){
+         throw new AlreadyExistsException("User already exists.");
+      }
+      final Set<RoleEntity> roles = dto.roles().stream()
+              .map(r -> roleMapper.toEntity(r, roleRepository))
+              .collect(Collectors.toSet());
+      final UserEntity userEntity = userMapper.toEntity(dto, roles);
+      userEntity.setPassword(passwordEncoder.encode(dto.password()));
+      return repo.save(userEntity);
    }
 
    @Override
@@ -61,35 +67,21 @@ public class UserServiceImplementation implements UserService {
 
    @Transactional
    @Override
-   public UserEntity save(@NonNull UserDtoInput dto) {
-      final boolean userExists = repo.existsByEmail(dto.email());
-      if(userExists){
-         throw new AlreadyExistsException("User already exists.");
-      }
-      final Set<RoleEntity> roles = dto.roles().stream()
-              .map(r -> roleMapper.toEntity(r, roleRepository))
-              .collect(Collectors.toSet());
-      UserEntity userEntity = userMapper.toEntity(dto, roles);
-      userEntity.setPassword(passwordEncoder.encode(dto.password()));
-      return repo.save(userEntity);
+   public void softDelete(@NonNull Long id) {
+      customerRepo.findUserAssociatedByIdUser(id)
+              .ifPresentOrElse(
+                      u -> repo.softDelete(id),
+                      () -> repo.deleteById(id));
    }
 
    @Transactional
    @Override
    public UserEntity update(@NonNull Long id, @NonNull UserDtoInput dto) {
-      UserEntity userEntity = repo.findById(id)
+      final UserEntity userEntity = repo.findById(id)
               .orElseThrow(() -> new UserNotFoundException("User Not Found."));
       userEntity.setName(dto.name());
       userEntity.setEmail(dto.email());
       userEntity.setPassword(passwordEncoder.encode(dto.password()));
       return repo.save(userEntity);
-   }
-
-   @Transactional
-   @Override
-   public void softDeleteById(@NonNull Long id) {
-      customerRepo
-              .findUserAssociatedByIdUser(id)
-              .ifPresentOrElse(u -> repo.softDelete(id), () -> repo.deleteById(id));
    }
 }

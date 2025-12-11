@@ -1,7 +1,6 @@
 package com.jame.dev.gymApp.service.out;
 
 import com.jame.dev.gymApp.entity.MemberShipEntity;
-import com.jame.dev.gymApp.exception.NoOperationException;
 import com.jame.dev.gymApp.repository.MembershipRepository;
 import com.jame.dev.gymApp.service.in.MembershipService;
 import com.jame.dev.gymApp.shared.enums.Membership;
@@ -32,16 +31,5 @@ public class MembershipServiceImplementation implements MembershipService {
    @Transactional
    public MemberShipEntity save(@NonNull MemberShipEntity entity) {
       return repo.save(entity);
-   }
-
-   @Override
-   public Optional<MemberShipEntity> findById(@NonNull Integer id) {
-      return repo.findById(id);
-   }
-
-   @Override
-   @Transactional
-   public void deleteById(@NonNull Integer id) {
-      throw new NoOperationException("Unsupported Operation");
    }
 }

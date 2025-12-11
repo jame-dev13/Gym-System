@@ -14,7 +14,7 @@ public class TokenGeneratorServiceTest {
    @DisplayName("Generates token of 6 character alphanumerics")
    @RepeatedTest(value = 10, name = "generateToken method rep: {currentRepetition} of {totalRepetitions}")
    void generateToken(){
-      String token = service.generateToken();
+      final String token = service.generateToken();
       assertAll("Generates a token non-null of 6 characters alphanumeric",
               () -> assertNotNull(token, "Should not be null."),
               () -> assertSame(6, token.length(), "The length should be 6."),

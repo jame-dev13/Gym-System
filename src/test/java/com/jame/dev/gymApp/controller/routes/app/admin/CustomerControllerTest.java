@@ -73,25 +73,24 @@ class CustomerControllerTest {
    private final ObjectMapper objectMapper = new ObjectMapper();
 
    private final String URI_TEMPLATE = "/admin/customers";
+   private final CustomerEntity customer = CustomerEntity.builder()
+           .id(1L)
+           .user(new UserEntity())
+           .phoneContact("2244234")
+           .active(true)
+           .build();
 
    @Test
    @DisplayName("Should get the page")
    void getPage() throws Exception {
       final Pageable pageable = PageRequest.of(0, 2);
-      final CustomerEntity customer = CustomerEntity.builder()
-              .id(1L)
-              .user(new UserEntity())
-              .phoneContact("2244234")
-              .active(true)
-              .build();
-
       final CustomerDtoOutput customerDto =
               new CustomerDtoOutput(customer.getId(), new UserDtoOutput(1L, "userdto", "user@mail.com", Set.of(Role.USER)), customer.getPhoneContact());
       final Page<@NonNull CustomerEntity> entityPage = new PageImpl<>(List.of(customer), pageable, 1);
       final Page<@NonNull CustomerDtoOutput> dtoPage = new PageImpl<>(List.of(customerDto), pageable, 1);
 
       when(cache.getCache(anyString())).thenReturn(Optional.empty());
-      when(customerService.getPageOfActives(any(Pageable.class))).thenReturn(entityPage);
+      when(customerService.getPage(any(Pageable.class))).thenReturn(entityPage);
       when(mapper.toDto(any(CustomerEntity.class))).thenReturn(customerDto);
 
       final String jsonExpected = objectMapper.writeValueAsString(dtoPage);
@@ -106,7 +105,7 @@ class CustomerControllerTest {
       final ArgumentCaptor<CustomerEntity> customerEntityCaptor = ArgumentCaptor.forClass(CustomerEntity.class);
 
       verify(cache).getCache(keyCaptor.capture());
-      verify(customerService).getPageOfActives(pageableCaptor.capture());
+      verify(customerService).getPage(pageableCaptor.capture());
       verify(mapper).toDto(customerEntityCaptor.capture());
       verifyNoMoreInteractions(customerService, mapper);
 
@@ -260,7 +259,7 @@ class CustomerControllerTest {
 
       final long ID = customerDto.id();
       final String URI = URI_TEMPLATE + '/' + ID;
-      when(customerService.updateContact(ID, customerDtoInput)).thenReturn(customerEntity);
+      when(customerService.update(ID, customerDtoInput)).thenReturn(customerEntity);
       when(mapper.toDto(customerEntity)).thenReturn(customerDto);
 
       final String jsonInput = objectMapper.writeValueAsString(customerDtoInput);
@@ -276,7 +275,7 @@ class CustomerControllerTest {
       assertNotNull(customerDto, "Should not be null.");
       assertNotSame(oldPhone, customerDto.contact(), "Should not be the same 'phone'");
 
-      verify(customerService).updateContact(ID, customerDtoInput);
+      verify(customerService).update(ID, customerDtoInput);
       verify(mapper).toDto(customerEntity);
       verifyNoMoreInteractions(customerService, mapper);
    }
@@ -291,7 +290,7 @@ class CustomerControllerTest {
                       .param("id", "1"))
               .andExpect(status().isNoContent());
 
-      verify(customerService).softDeleteById(ID);
+      verify(customerService).softDelete(ID);
       verifyNoMoreInteractions(customerService, mapper);
    }
 }

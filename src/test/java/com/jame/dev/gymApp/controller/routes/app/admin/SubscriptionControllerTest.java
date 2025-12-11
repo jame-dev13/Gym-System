@@ -117,7 +117,7 @@ class SubscriptionControllerTest {
       final Page<@NonNull SubscriptionDtoOutput> dtoPage = new PageImpl<>(List.of(dto), pageableDto, 1);
 
       when(cache.getCache(anyString())).thenReturn(Optional.empty());
-      when(service.getPageOfActives(any(Pageable.class))).thenReturn(entityPage);
+      when(service.getPage(any(Pageable.class))).thenReturn(entityPage);
       when(mapper.toDto(any(SubscriptionEntity.class))).thenReturn(dto);
 
       final String jsonExpected = objectMapper.writeValueAsString(dtoPage);
@@ -131,7 +131,7 @@ class SubscriptionControllerTest {
                       content().json(jsonExpected));
 
       verify(cache).getCache(keyCaptor.capture());
-      verify(service).getPageOfActives(pageableCaptor.capture());
+      verify(service).getPage(pageableCaptor.capture());
       verify(mapper).toDto(subscriptionCaptor.capture());
       verify(cache, atLeastOnce()).saveCache(keyCaptor.capture(), pageDtoCaptor.capture());
       verifyNoMoreInteractions(cache, service, mapper);
@@ -238,7 +238,7 @@ class SubscriptionControllerTest {
       subscriptionCopy.setFinished(true);
       SubscriptionDtoOutput subscriptionDtoOutput = mapToDto(subscriptionCopy);
 
-      when(service.finalizeSubscription(eq(1L))).thenReturn(subscriptionCopy);
+      when(service.patch(eq(1L))).thenReturn(subscriptionCopy);
       when(mapper.toDto(any(SubscriptionEntity.class))).thenReturn(subscriptionDtoOutput);
 
       final String jsonExpected = objectMapper.writeValueAsString(subscriptionDtoOutput);
@@ -251,7 +251,7 @@ class SubscriptionControllerTest {
                       content().json(jsonExpected)
               );
 
-      verify(service, atLeastOnce()).finalizeSubscription(eq(1L));
+      verify(service, atLeastOnce()).patch(eq(1L));
       verify(mapper, atLeastOnce()).toDto(subscriptionCaptor.capture());
 
       assertTrue(subscriptionCopy.isFinished(), "Should be finished.");
@@ -271,7 +271,7 @@ class SubscriptionControllerTest {
               );
 
       verify(cache, times(1)).keyExists(keyCaptor.capture());
-      verify(service, times(1)).softDeleteById(eq(1L));
+      verify(service, times(1)).softDelete(eq(1L));
       verify(cache, times(1)).invalidatePage(keyCaptor.capture());
       verifyNoMoreInteractions(service, cache);
    }

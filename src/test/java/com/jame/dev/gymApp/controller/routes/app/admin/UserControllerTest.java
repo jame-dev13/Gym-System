@@ -99,25 +99,27 @@ class UserControllerTest {
    @Test
    @DisplayName("Should get page of Users")
    void getPage() throws Exception {
-      Pageable pageable = PageRequest.of(0, 1);
+      final Pageable pageable = PageRequest.of(0, 1);
 
-      Page<@NonNull UserEntity> entityPage = new PageImpl<>(List.of(userEntity), pageable, pageable.getPageSize());
-      when(cache.getCache("users:0:1")).thenReturn(Optional.empty());
-      when(service.getPageOfActives(pageable)).thenReturn(entityPage);
-      when(mapper.toDto(userEntity)).thenReturn(dto);
+      final Page<@NonNull UserEntity> entityPage = new PageImpl<>(List.of(userEntity), pageable, pageable.getPageSize());
+      when(cache.getCache(anyString())).thenReturn(Optional.empty());
+      when(service.getPage(any(Pageable.class))).thenReturn(entityPage);
+      when(mapper.toDto(any(UserEntity.class))).thenReturn(dto);
 
-      Page<@NonNull UserDtoOutput> pageDto = new PageImpl<>(List.of(dto), pageable, 1);
-      String jsonExpected = objectMapper.writeValueAsString(pageDto);
+      final Page<@NonNull UserDtoOutput> pageDto = new PageImpl<>(List.of(dto), pageable, 1);
+      final String jsonExpected = objectMapper.writeValueAsString(pageDto);
       mockMvc.perform(get(URI_TEMPLATE)
                       .param("page", "0")
                       .param("size", "1")
                       .accept(MediaType.APPLICATION_JSON.toString()))
               .andExpectAll(status().isOk(), content().json(jsonExpected));
 
-      ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-      ArgumentCaptor<UserEntity> entityCaptor = ArgumentCaptor.forClass(UserEntity.class);
+      final ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
+      final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+      final ArgumentCaptor<UserEntity> entityCaptor = ArgumentCaptor.forClass(UserEntity.class);
 
-      verify(service).getPageOfActives(pageableCaptor.capture());
+      verify(cache).getCache(keyCaptor.capture());
+      verify(service).getPage(pageableCaptor.capture());
       verify(mapper).toDto(entityCaptor.capture());
       verifyNoMoreInteractions(service, mapper);
    }
@@ -292,7 +294,7 @@ class UserControllerTest {
                       .accept(org.springframework.http.MediaType.APPLICATION_JSON)
                       .param("id", "1"))
               .andExpect(status().isNoContent());
-      verify(service).softDeleteById(id);
+      verify(service).softDelete(id);
       verifyNoMoreInteractions(service, mapper);
    }
 }

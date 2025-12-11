@@ -42,7 +42,7 @@ public class PeriodEntity {
    @PreUpdate
    private void setPeriodDates(){
       this.endPeriod = switch (period){
-         case FORTNIGHTLY -> startPeriod.plusDays(15);
+         case BIWEEKLY -> startPeriod.plusDays(15);
          case MONTHLY -> startPeriod.plusMonths(1);
          case QUARTERLY -> startPeriod.plusMonths(3);
          case ANNUAL -> startPeriod.plusYears(1);

@@ -31,19 +31,27 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    private final PricingRepository pricingRepo;
    private final SubscriptionMapper subscriptionMapper;
 
-   @Override
-   public List<SubscriptionEntity> getAll() {
-      return repo.findAll();
-   }
 
    @Override
-   public List<SubscriptionEntity> getActives() {
-      return repo.findAllByActiveTrue();
-   }
-
-   @Override
-   public Page<@NonNull SubscriptionEntity> getPageOfActives(@NonNull Pageable pageable) {
+   public Page<@NonNull SubscriptionEntity> getPage(@NonNull Pageable pageable) {
       return repo.findAllByActiveTrue(pageable);
+   }
+
+   @Transactional
+   @Override
+   public SubscriptionEntity save(@NonNull SubscriptionDtoInput dto) {
+      final boolean existsCustomer = repo.existsByCustomer_IdAndActiveTrue(dto.customerId());
+      if (existsCustomer) {
+         throw new AlreadyExistsException("Customer has an active subscription.");
+      }
+      final CustomerEntity customer = customerRepo.findById(dto.customerId())
+              .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
+      final PricingEntity pricing = pricingRepo.findById(dto.pricingId())
+              .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
+      final Period period = this.extractPeriod(pricing);
+      final List<PeriodEntity> periods = List.of(new PeriodEntity(period, LocalDate.now()));
+      final SubscriptionEntity subscription = subscriptionMapper.toEntity(dto, customer, pricing, periods);
+      return repo.save(subscription);
    }
 
    @Override
@@ -53,45 +61,27 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
 
    @Transactional
    @Override
-   public SubscriptionEntity save(@NonNull SubscriptionDtoInput dto) {
-      boolean existsCustomer = repo.existsByCustomer_IdAndActiveTrue(dto.customerId());
-      if (existsCustomer) {
-         throw new AlreadyExistsException("Customer has an active subscription.");
-      }
-      CustomerEntity customer = customerRepo.findById(dto.customerId())
-              .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
-      PricingEntity pricing = pricingRepo.findById(dto.pricingId())
-              .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
-      Period period = switch (pricing.getMemberShipEntity().getMembership()) {
-         case BIWEEKLY -> Period.FORTNIGHTLY;
-         case MONTHLY -> Period.MONTHLY;
-         case QUARTERLY -> Period.QUARTERLY;
-         case ANNUAL -> Period.ANNUAL;
-         case null -> throw new PeriodNotFoundException("Not mapping for : " + pricing.getMemberShipEntity());
-      };
-      List<PeriodEntity> periods = List.of(new PeriodEntity(period, LocalDate.now()));
-      SubscriptionEntity subscription = subscriptionMapper.toEntity(dto, customer, pricing, periods);
-      return repo.save(subscription);
+   public SubscriptionEntity patch(Long id) {
+      return this.finalizeSubscription(id);
    }
 
    @Transactional
    @Override
-   public SubscriptionEntity update(@NonNull Long id, @NonNull SubscriptionDtoInput dto) {
-      throw new NoOperationException("Unsupported Operation.");
+   public void softDelete(@NonNull Long id) {
+      repo.softDelete(id);
    }
 
    @Transactional
-   @Override
-   public SubscriptionEntity finalizeSubscription(@NonNull Long id) {
-      SubscriptionEntity subscription = repo.findById(id)
+   private SubscriptionEntity finalizeSubscription(@NonNull Long id) {
+      final SubscriptionEntity subscription = repo.findById(id)
               .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
       subscription.setFinished(true);
       return repo.save(subscription);
    }
 
-   @Transactional
-   @Override
-   public void softDeleteById(@NonNull Long id) {
-      repo.softDelete(id);
+   private Period extractPeriod(PricingEntity pricing) {
+      final String valueName = pricing.getMemberShipEntity().getMembership().name();
+      final Optional<Period> periodOptional = Optional.of(Period.valueOf(valueName));
+      return periodOptional.orElseThrow(() -> new IllegalArgumentException("No period value present for: " + valueName));
    }
 }

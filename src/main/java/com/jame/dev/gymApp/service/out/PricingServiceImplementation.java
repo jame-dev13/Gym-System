@@ -1,9 +1,9 @@
 package com.jame.dev.gymApp.service.out;
 
 import com.jame.dev.gymApp.entity.PricingEntity;
-import com.jame.dev.gymApp.exception.NoOperationException;
 import com.jame.dev.gymApp.repository.PricingRepository;
 import com.jame.dev.gymApp.service.in.PricingService;
+import com.jame.dev.gymApp.shared.enums.Membership;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,12 +29,13 @@ public class PricingServiceImplementation implements PricingService {
    }
 
    @Override
-   public Optional<PricingEntity> findById(@NonNull Integer id) {
+   public Optional<PricingEntity> getById(int id) {
       return repo.findById(id);
    }
 
    @Override
-   public void deleteById(@NonNull Integer id) {
-      throw new NoOperationException("Unsupported Operation");
+   public Optional<PricingEntity> getByMembership(Membership membership) {
+      return repo.findByMembershipEntity_Membership(membership);
    }
+
 }

@@ -1,7 +1,6 @@
 package com.jame.dev.gymApp.service;
 
 import com.jame.dev.gymApp.entity.*;
-import com.jame.dev.gymApp.exception.NoOperationException;
 import com.jame.dev.gymApp.mapper.SubscriptionMapper;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
@@ -12,7 +11,6 @@ import com.jame.dev.gymApp.shared.enums.Membership;
 import com.jame.dev.gymApp.shared.enums.Period;
 import com.jame.dev.gymApp.shared.enums.Role;
 import lombok.NonNull;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,8 +31,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SubscriptionServiceTest {
@@ -95,52 +92,18 @@ class SubscriptionServiceTest {
    private final Predicate<SubscriptionEntity> matcher = s ->
            (s.getCustomer() != null && s.getPricing() != null) && (s.isActive() && !s.isFinished());
 
-   @Test
-   @DisplayName("Get All Subscriptions")
-   void getAllSubs() {
-      when(repo.findAll()).thenReturn(testSubsList);
-      List<SubscriptionEntity> subs = service.getAll();
-      assertAll("Test to non nullity and emptiness, contains, matching and equality.",
-              () -> assertNotNull(subs, "Returning list should not be null."),
-              () -> assertFalse(subs.isEmpty(), "Returning list should not be empty."),
-              () -> assertTrue(subs.contains(testSubsList.getFirst()), "Should contain the first element."),
-              () -> assertTrue(subs.stream().allMatch(s -> (s.getCustomer() != null && s.getPricing() != null)),
-                      "Should match with the given predicate."),
-              () -> assertEquals(subs, testSubsList, "List should be equals."),
-              () -> assertSame(subs.getFirst(), testSubsList.getFirst(), "The first element should be the same."),
-              () -> assertSame(subs.getLast(), testSubsList.getLast(), "The last element should be the same.")
-      );
-      verify(repo).findAll();
-   }
 
    @Test
-   @DisplayName("Get all Actives")
-   void getAllActives() {
-      when(repo.findAllByActiveTrue()).thenReturn(testSubsList);
-      List<SubscriptionEntity> subs = service.getActives();
-
-      assertAll("Test to non nullity and emptiness, contains, matching and equality.",
-              () -> assertNotNull(subs, "Returning list should not be null."),
-              () -> assertFalse(subs.isEmpty(), "Returning list should not be empty."),
-              () -> assertTrue(subs.contains(testSubsList.getFirst()), "Should contain the first element."),
-              () -> assertTrue(subs.stream().allMatch(matcher), "Should match with the give predicate."),
-              () -> assertEquals(subs, testSubsList, "List should be equals."),
-              () -> assertSame(subs.getFirst(), testSubsList.getFirst(), "The first element should be the same."),
-              () -> assertSame(subs.getLast(), testSubsList.getLast(), "The last element should be the same.")
-      );
-      verify(repo).findAllByActiveTrue();
-   }
-
-   @Test
-   @DisplayName("Get Page with actives only")
+   @DisplayName("Should Get Page of subscriptions")
    void getPageByActive() {
-      Pageable pageable = PageRequest.of(0, 5, sort);
-      List<SubscriptionEntity> subList = testSubsList.subList(0, 5);
+      final Pageable pageable = PageRequest.of(0, 5, sort);
+      final List<SubscriptionEntity> subList = testSubsList.subList(0, 5);
       when(repo.findAllByActiveTrue(pageable)).thenReturn(new PageImpl<>(subList));
 
-      Page<@NonNull SubscriptionEntity> page = service.getPageOfActives(pageable);
-      List<SubscriptionEntity> pageContent = page.getContent();
+      final Page<@NonNull SubscriptionEntity> page = service.getPage(pageable);
+      final List<SubscriptionEntity> pageContent = page.getContent();
       System.out.println(pageContent);
+
       assertAll("Test to non nullity and emptiness, contains, matching and equality.",
               () -> assertNotNull(page, "Returning list should not be null."),
               () -> assertFalse(page.isEmpty() && !page.hasContent(), "Returning list should not be empty."),
@@ -149,39 +112,20 @@ class SubscriptionServiceTest {
               () -> assertSame(pageContent.getFirst(), subList.getFirst(), "The first element should be the same."),
               () -> assertSame(pageContent.getLast(), subList.getLast(), "The last element should be the same.")
       );
-      verify(repo).findAllByActiveTrue(pageable);
+      verify(repo, atLeastOnce()).findAllByActiveTrue(pageable);
+      verifyNoMoreInteractions(repo);
    }
 
    @Test
-   @DisplayName("Next Page")
-   void nextPage() {
-      Pageable pageable = PageRequest.of(1, 5, sort);
-      List<SubscriptionEntity> subList = testSubsList.subList(5, 9);
-      when(repo.findAllByActiveTrue(pageable)).thenReturn(new PageImpl<>(subList));
-
-      Page<@NonNull SubscriptionEntity> page = service.getPageOfActives(pageable);
-      List<SubscriptionEntity> pageContent = page.getContent();
-      System.out.println(pageContent);
-      assertAll("Test to non nullity and emptiness, contains, matching and equality.",
-              () -> assertNotNull(page, "Returning list should not be null."),
-              () -> assertFalse(page.isEmpty() && !page.hasContent(), "Returning list should not be empty."),
-              () -> assertTrue(pageContent.stream().allMatch(matcher), "Should match with the give predicate."),
-              () -> assertEquals(pageContent, subList, "List should be equals."),
-              () -> assertSame(pageContent.getFirst(), subList.getFirst(), "The first element should be the same."),
-              () -> assertSame(pageContent.getLast(), subList.getLast(), "The last element should be the same.")
-      );
-      verify(repo).findAllByActiveTrue(pageable);
-   }
-
-   @Test
-   @DisplayName("Get by id")
+   @DisplayName("Should Get subscription by id")
    void getById() {
       when(repo.findById(idSubscriptionTest)).thenReturn(Optional.of(this.subscriptionEntityTest));
-      var optionalSubs = service.getById(idSubscriptionTest);
-      verify(repo).findById(idSubscriptionTest);
+      final Optional<SubscriptionEntity> optionalSubs = service.getById(idSubscriptionTest);
 
-      Assertions.assertNotEquals(Optional.empty(), optionalSubs, "Should not be an Optional empty.");
-      Assertions.assertDoesNotThrow(optionalSubs::get, "Should doesn't throw Exception");
+      verify(repo, atLeastOnce()).findById(idSubscriptionTest);
+      verifyNoMoreInteractions(repo);
+      assertNotEquals(Optional.empty(), optionalSubs, "Should not be an Optional empty.");
+      assertDoesNotThrow(optionalSubs::get, "Should doesn't throw Exception");
    }
 
    @Test
@@ -201,53 +145,52 @@ class SubscriptionServiceTest {
       when(repo.save(any(SubscriptionEntity.class)))
               .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
-      SubscriptionEntity subscriptionAdded = service.save(this.dtoTest);
+      final SubscriptionEntity subscriptionAdded = service.save(this.dtoTest);
 
-      ArgumentCaptor<SubscriptionEntity> captor = ArgumentCaptor.forClass(SubscriptionEntity.class);
-      verify(repo).existsByCustomer_IdAndActiveTrue(customerEntityTest.getId());
-      verify(customerRepo).findById(idCustomerTest);
-      verify(pricingRepo).findById(idPricingTest);
-      verify(subscriptionMapper)
+      final ArgumentCaptor<SubscriptionEntity> captor = ArgumentCaptor.forClass(SubscriptionEntity.class);
+
+      verify(repo, atLeastOnce()).existsByCustomer_IdAndActiveTrue(customerEntityTest.getId());
+      verify(customerRepo, atLeastOnce()).findById(idCustomerTest);
+      verify(pricingRepo, atLeastOnce()).findById(idPricingTest);
+      verify(subscriptionMapper, atLeastOnce())
               .toEntity(eq(dtoTest), eq(customerEntityTest), eq(pricingEntityTest), anyList());
-      verify(repo).save(captor.capture());
+      verify(repo, atLeastOnce()).save(captor.capture());
+      verifyNoMoreInteractions(repo);
 
-      SubscriptionEntity subscriptionSaved = captor.getValue();
+      final SubscriptionEntity subscriptionSaved = captor.getValue();
 
       assertAll("Not null, and equals.",
-              () -> Assertions.assertNotNull(subscriptionSaved, "Should not be null."),
-              () -> Assertions.assertEquals(subscriptionAdded, subscriptionSaved, "Should be the same object.")
+              () -> assertNotNull(subscriptionSaved, "Should not be null."),
+              () -> assertEquals(subscriptionAdded, subscriptionSaved, "Should be the same object.")
       );
    }
 
    @Test
+   @DisplayName("Should update the SubscriptionEntity")
    void update() {
-      Assertions.assertThrows(NoOperationException.class,
-              () -> service.update(idSubscriptionTest, dtoTest), "Should throw the Exception.");
-   }
-
-   @Test
-   void finalizeSubscription() {
       when(repo.findById(idSubscriptionTest)).thenReturn(Optional.of(subscriptionEntityTest));
       when(repo.save(any(SubscriptionEntity.class)))
               .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
-      service.finalizeSubscription(idSubscriptionTest);
+      final SubscriptionEntity subscription = service.patch(idSubscriptionTest);
 
-      ArgumentCaptor<SubscriptionEntity> captor = ArgumentCaptor.forClass(SubscriptionEntity.class);
-      verify(repo).findById(idSubscriptionTest);
-      verify(repo).save(captor.capture());
+      final ArgumentCaptor<SubscriptionEntity> captor = ArgumentCaptor.forClass(SubscriptionEntity.class);
 
-      SubscriptionEntity finalizedSubscription = captor.getValue();
+      verify(repo, atLeastOnce()).findById(idSubscriptionTest);
+      verify(repo, atLeastOnce()).save(captor.capture());
+      verifyNoMoreInteractions(repo);
+
+      final SubscriptionEntity finalizedSubscription = captor.getValue();
 
       assertAll("",
-              () -> Assertions.assertNotNull(finalizedSubscription, "Should not be null."),
-              () -> Assertions.assertNotEquals(false, finalizedSubscription.isFinished(),
+              () -> assertNotNull(finalizedSubscription, "Should not be null."),
+              () -> assertNotEquals(false, finalizedSubscription.isFinished(),
                       "Should be finalized."));
    }
 
    @Test
    void softDeleteById() {
-      service.softDeleteById(idSubscriptionTest);
-      verify(repo).softDelete(idSubscriptionTest);
+      service.softDelete(idSubscriptionTest);
+      verify(repo, times(1)).softDelete(idSubscriptionTest);
    }
 }
