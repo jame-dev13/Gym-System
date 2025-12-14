@@ -11,6 +11,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,13 +21,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
    private final JwtService jwtService;
    private final UserDetailsService userDetailsService;
@@ -39,15 +39,21 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
    protected void doFilterInternal(HttpServletRequest request,
                                    HttpServletResponse response,
                                    FilterChain filterChain) throws ServletException, IOException {
-      //Letting unprotected requests through.
+
+      log.info(request.getRequestURI());
       final boolean authDoor = isAuthDoor(request);
       if (authDoor) {
+         log.info("[FILTER] skipping: {}", request.getRequestURI());
          filterChain.doFilter(request, response);
          return;
       }
-      //get cookies
-      final Map<String, String> cookies = getCookies(request)
-              .orElseThrow(() -> new ServletException("Cookies are null."));
+
+      if (request.getCookies() == null) {
+         return;
+      }
+
+      final Map<String, String> cookies = getCookies(request);
+
       final String access = cookies.get(ACCESS_COOKIE);
 
       final String subject = jwtService.extractSubject(access)
@@ -56,41 +62,42 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
       if (jwtService.isValid(access, subject)) {
          authorizationHelper(subject);
          filterChain.doFilter(request, response);
+         return;
       }
 
       final String refresh = cookies.get(REFRESH_COOKIE);
-      if(blacklistService.isBlacklisted(refresh)){
+      if (blacklistService.isBlacklisted(refresh)) {
          throw new TokenAlreadyBlacklistedException("Token is blacklisted.");
       }
 
       if (jwtService.isValid(refresh, subject)) {
          authorizationHelper(subject);
          filterChain.doFilter(request, response);
+         return;
       }
-
       filterChain.doFilter(request, response);
    }
 
-   private static boolean isAuthDoor(HttpServletRequest request) {
-      final String requestUri = request.getRequestURI();
-     return (requestUri.contains("/auth")) ||
-              (requestUri.contains("/refresh")) ||
-              (requestUri.contains("/oauth")) ||
-              (requestUri.contains("/login"));
+   private boolean isAuthDoor(HttpServletRequest request) {
+      final String uri = request.getRequestURI();
+      final boolean collaterals = uri.startsWith("/favicon.ico") || uri.startsWith("/error");
+      final boolean oauth = (uri.startsWith("/oauth2") || uri.startsWith("/login/oauth2"));
+      return uri.startsWith("/auth") || oauth || collaterals;
    }
 
-   private Optional<Map<String, String>> getCookies(HttpServletRequest request) {
-      final Map<String, String> cookies = Arrays.stream(request.getCookies())
+   private Map<String, String> getCookies(HttpServletRequest request) throws ServletException {
+      final Cookie[] cookies = Optional.ofNullable(request.getCookies())
+              .orElseThrow(() -> new ServletException("No cookies present."));
+      return Arrays.stream(cookies)
               .collect(Collectors.toMap(Cookie::getName, Cookie::getValue));
-      return Optional.of(cookies);
    }
 
    private void authorizationHelper(final String subject) {
       final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
       if (auth == null) {
          final UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
-         UsernamePasswordAuthenticationToken authenticationToken =
-                 new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities());
+         final UsernamePasswordAuthenticationToken authenticationToken =
+                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
          SecurityContextHolder.getContext().setAuthentication(authenticationToken);
       }
    }

@@ -11,10 +11,12 @@ import com.jame.dev.gymApp.service.common.CRUDServiceServicePut;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin/users")
+@PreAuthorize("hasRole('ADMIN')")
 public class UserController extends BaseControllerPutable<UserEntity, UserDtoInput, UserDtoOutput> {
    public UserController(final BaseCrudService<UserEntity, UserDtoInput, Long> service,
                          final AppCacheService<UserDtoOutput> cache,

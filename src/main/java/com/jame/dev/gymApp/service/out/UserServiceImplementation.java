@@ -11,6 +11,7 @@ import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.RoleRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.UserService;
+import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,22 +40,6 @@ public class UserServiceImplementation implements UserService {
       return repo.findAllByActiveTrue(pageable);
    }
 
-
-   @Transactional
-   @Override
-   public UserEntity save(@NonNull UserDtoInput dto) {
-      final boolean userExists = repo.existsByEmail(dto.email());
-      if(userExists){
-         throw new AlreadyExistsException("User already exists.");
-      }
-      final Set<RoleEntity> roles = dto.roles().stream()
-              .map(r -> roleMapper.toEntity(r, roleRepository))
-              .collect(Collectors.toSet());
-      final UserEntity userEntity = userMapper.toEntity(dto, roles);
-      userEntity.setPassword(passwordEncoder.encode(dto.password()));
-      return repo.save(userEntity);
-   }
-
    @Override
    public Optional<UserEntity> getUserByEmail(String email) {
       return repo.findByEmail(email);
@@ -67,11 +52,13 @@ public class UserServiceImplementation implements UserService {
 
    @Transactional
    @Override
-   public void softDelete(@NonNull Long id) {
-      customerRepo.findUserAssociatedByIdUser(id)
-              .ifPresentOrElse(
-                      u -> repo.softDelete(id),
-                      () -> repo.deleteById(id));
+   public UserEntity save(@NonNull UserDtoInput dto) {
+      final boolean userExists = repo.existsByEmail(dto.email());
+      if(userExists){
+         throw new AlreadyExistsException("User already exists.");
+      }
+      final UserEntity userEntity = buildUserEntity(dto);
+      return repo.save(userEntity);
    }
 
    @Transactional
@@ -83,5 +70,22 @@ public class UserServiceImplementation implements UserService {
       userEntity.setEmail(dto.email());
       userEntity.setPassword(passwordEncoder.encode(dto.password()));
       return repo.save(userEntity);
+   }
+
+   @Transactional
+   @Override
+   public void softDelete(@NonNull Long id) {
+      customerRepo.findUserAssociatedByIdUser(id)
+              .ifPresentOrElse(u -> repo.softDelete(id), () -> repo.deleteById(id));
+   }
+
+   private @NonNull UserEntity buildUserEntity(@NonNull UserDtoInput dto) {
+      final Set<RoleEntity> roles = dto.roles().stream()
+              .map(r -> roleMapper.toEntity(r, roleRepository))
+              .collect(Collectors.toSet());
+      final UserEntity userEntity = userMapper.toEntity(dto, roles);
+      if(userEntity.getProvider() == AuthProvider.LOCAL)
+         userEntity.setPassword(passwordEncoder.encode(dto.password()));
+      return userEntity;
    }
 }

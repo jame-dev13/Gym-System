@@ -19,7 +19,7 @@ services:
       - '${REDIS_PORT_BIND}'
     restart: always
     command:
-      ["redis-server", "--requirepass", "${REDIS_PWD}"]
+      ["redis-server", "--requirepass", "${REDIS_PWD_DEV}"]
     volumes:
       - redis-data:/data
 volumes:

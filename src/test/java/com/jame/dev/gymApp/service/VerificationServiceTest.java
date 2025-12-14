@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.service;
 
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
+import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
 import com.jame.dev.gymApp.repository.VerificationRepository;
 import com.jame.dev.gymApp.service.in.TokenGeneratorService;
 import com.jame.dev.gymApp.service.out.VerificationServiceImplementation;
@@ -65,20 +66,20 @@ public class VerificationServiceTest {
    @Test
    @DisplayName("Success verification")
    void verification(){
-      final String token = verificationEntity.getId();
-      when(verificationRepository.findById(token))
+      when(verificationRepository.findByUser_Email(anyString()))
               .thenReturn(Optional.of(verificationEntity));
-      when(verificationRepository.save(verificationEntity))
+      when(verificationRepository.save(any(VerificationEntity.class)))
               .thenReturn(verificationEntity);
 
-      boolean verified = service.verify(token);
+      final VerificationDto verified = service.verify("some@mail.com", "ABC123");
       verificationEntity.setVerified(true);
 
-      assertTrue(verified, "Should have success.");
       assertTrue(verificationEntity.isVerified(), "Should be verified.");
+      assertNotNull(verified, "Verified object should not be null.");
 
-      verify(verificationRepository).findById(token);
-      verify(verificationRepository).save(verificationEntity);
+      verify(verificationRepository).findByUser_Email(anyString());
+      verify(verificationRepository).save(any(VerificationEntity.class));
+      verifyNoMoreInteractions(verificationRepository);
    }
 
    @Test

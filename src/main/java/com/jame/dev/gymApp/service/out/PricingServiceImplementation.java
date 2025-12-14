@@ -35,7 +35,7 @@ public class PricingServiceImplementation implements PricingService {
 
    @Override
    public Optional<PricingEntity> getByMembership(Membership membership) {
-      return repo.findByMembershipEntity_Membership(membership);
+      return repo.findByMemberShipEntity_Membership(membership);
    }
 
 }

@@ -11,10 +11,12 @@ import com.jame.dev.gymApp.service.common.CRUDServiceServicePatch;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin/subscriptions")
+@PreAuthorize("hasRole('ADMIN')")
 public class SubscriptionController extends BaseControllerPatchable<SubscriptionEntity, SubscriptionDtoInput, SubscriptionDtoOutput> {
 
    protected SubscriptionController(

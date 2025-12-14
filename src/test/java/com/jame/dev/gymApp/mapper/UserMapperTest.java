@@ -5,6 +5,7 @@ import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.repository.RoleRepository;
+import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import com.jame.dev.gymApp.shared.enums.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,7 @@ public class UserMapperTest {
               .email("userEntity@mail.com")
               .password("1223432")
               .roles(Set.of(userRoleEntity))
+              .provider(AuthProvider.LOCAL)
               .active(true)
               .build();
       UserDtoOutput dto = userMapper.toDto(user);
@@ -49,22 +51,27 @@ public class UserMapperTest {
    @Test
    @DisplayName("Should map To Entity")
    void toEntity(){
-      UserDtoInput dto = UserDtoInput.builder()
+      final UserDtoInput dto = UserDtoInput.builder()
               .name("dtoname")
               .email("dto@mail")
               .password("324524")
               .roles(Set.of(Role.USER))
+              .authProvider(AuthProvider.LOCAL)
               .build();
       when(roleRepository.findByRole(any(Role.class))).thenReturn(Optional.of(userRoleEntity));
-      Set<RoleEntity> entitySet = dto.roles()
+
+      final Set<RoleEntity> entitySet = dto.roles()
               .stream()
               .map(r -> roleMapper.toEntity(r, roleRepository))
               .collect(Collectors.toSet());
+      final UserEntity userEntity = userMapper.toEntity(dto, entitySet);
 
       verify(roleRepository, atLeastOnce()).findByRole(any(Role.class));
+      verifyNoMoreInteractions(roleRepository);
 
       assertNotNull(entitySet, "Should not be null.");
       assertFalse(entitySet.isEmpty(), "Should not be empty.");
+      assertNotNull(userEntity, "UserEntity should not be null.");
    }
 }
 

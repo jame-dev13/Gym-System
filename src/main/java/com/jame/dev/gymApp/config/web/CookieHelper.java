@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.config.web;
 
 import com.jame.dev.gymApp.shared.enums.CookieNames;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
@@ -23,13 +24,14 @@ public class CookieHelper {
       return buildCookie(CookieNames.COOKIE_JWT_REFRESH.getValue(), value, expirationRefresh);
    }
 
-   public ResponseCookie clearCookie(final String name){
-      return ResponseCookie.from(name, "")
+   public void clearCookie(final HttpServletResponse response, final String name){
+      final ResponseCookie cookie = ResponseCookie.from(name, "")
               .httpOnly(true)
-              .secure(false)
+              .secure(true)
               .path("/")
               .maxAge(0)
               .build();
+      response.addHeader("Set-Cookie", cookie.toString());
    }
 
    private ResponseCookie buildCookie(final String name, final String value, final long exp){
@@ -37,7 +39,7 @@ public class CookieHelper {
               .httpOnly(true)
               .secure(true)
               .path("/")
-              .maxAge(Duration.ofMinutes(exp))
+              .maxAge(Duration.ofMillis(exp))
               .build();
    }
 }

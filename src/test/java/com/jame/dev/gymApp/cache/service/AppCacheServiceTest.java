@@ -67,15 +67,18 @@ class AppCacheServiceTest {
    void getCache() throws JsonProcessingException {
       final List<String> lines = List.of(mapToJson(dto));
       final String metadata = mapToJson(metaData);
+
       when(cacheAppPool.lrange(key, 0, -1))
               .thenReturn(lines);
-      when(cacheAppPool.get(key.concat(":meta"))).thenReturn(metadata);
+      when(cacheAppPool.get(anyString())).thenReturn(metadata);
 
       Optional<Page<UserDtoOutput>> optionalPage = service.getCache(key);
 
       verify(cacheAppPool).lrange(key, 0, -1);
-      verify(cacheAppPool).get(key.concat(":meta"));
+      verify(cacheAppPool).get(anyString());
       verifyNoMoreInteractions(cacheAppPool);
+
+      assertTrue(optionalPage.isPresent(), "Optional page should be present.");
    }
 
    @Test

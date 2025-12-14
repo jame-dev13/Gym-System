@@ -10,6 +10,7 @@ import com.jame.dev.gymApp.mapper.UserMapper;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.service.in.UserService;
+import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import com.jame.dev.gymApp.shared.enums.Role;
 import lombok.NonNull;
 import org.junit.jupiter.api.DisplayName;
@@ -79,6 +80,7 @@ class UserControllerTest {
            .email("in@mail.com")
            .password("d39f02n4")
            .roles(Set.of(Role.ADMIN))
+           .authProvider(AuthProvider.LOCAL)
            .build();
    final UserEntity userEntity = UserEntity.builder()
            .id(1L)
@@ -86,6 +88,7 @@ class UserControllerTest {
            .email(input.email())
            .password(input.password())
            .roles(Set.of(new RoleEntity(null, Role.ADMIN)))
+           .provider(AuthProvider.LOCAL)
            .active(true)
            .build();
    final UserDtoOutput dto = UserDtoOutput.builder()
@@ -232,6 +235,7 @@ class UserControllerTest {
               .email("in1@mail.com")
               .password("d39f02n4")
               .roles(Set.of(Role.ADMIN))
+              .authProvider(AuthProvider.LOCAL)
               .build();
       final UserEntity userEntity = UserEntity.builder()
               .id(1L)
@@ -239,6 +243,7 @@ class UserControllerTest {
               .email(input.email())
               .password(input.password())
               .roles(Set.of(new RoleEntity(null, Role.ADMIN)))
+              .provider(AuthProvider.LOCAL)
               .active(true)
               .build();
 

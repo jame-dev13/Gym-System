@@ -19,7 +19,7 @@ public class AppConfig {
    @Value("${redis.port}")
    private int port;
 
-   @Value("${redis.password}")
+   @Value("${redis.password.dev}")
    private String passwordRedis;
 
    @Bean(name = "tokensPool")

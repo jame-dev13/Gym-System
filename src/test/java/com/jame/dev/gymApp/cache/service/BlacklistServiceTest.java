@@ -14,10 +14,8 @@ import redis.clients.jedis.JedisPooled;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class BlacklistServiceTest {
@@ -36,14 +34,17 @@ class BlacklistServiceTest {
    @Test
    @DisplayName("Token Blacklisted")
    void blacklistToken() {
-      when(tokensPool.exists(TOKEN)).thenReturn(false);
-      when(jwtService.extractExpiration(TOKEN))
-              .thenReturn(Optional.of(new Date(anyLong())));
+      when(tokensPool.exists(anyString())).thenReturn(false);
+      when(jwtService.extractExpiration(anyString()))
+              .thenReturn(Optional.of(new Date(System.currentTimeMillis() + 60_000L)));
+      when(tokensPool.setex(anyString(), anyLong(), eq("blacklisted"))).thenReturn("OK");
 
       service.blacklistToken(TOKEN);
 
-      verify(tokensPool).exists(TOKEN);
-      verify(tokensPool).setex(eq(TOKEN), anyLong(), eq("blacklisted"));
+      verify(tokensPool).exists(anyString());
+      verify(jwtService).extractExpiration(anyString());
+      verify(tokensPool).setex(anyString(), anyLong(), eq("blacklisted"));
+      verifyNoMoreInteractions(tokensPool, jwtService);
    }
 
    @Test

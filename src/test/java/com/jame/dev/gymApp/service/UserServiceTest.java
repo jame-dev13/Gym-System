@@ -9,6 +9,7 @@ import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.RoleService;
 import com.jame.dev.gymApp.service.out.UserServiceImplementation;
+import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import com.jame.dev.gymApp.shared.enums.Role;
 import lombok.NonNull;
 import org.junit.jupiter.api.DisplayName;
@@ -108,6 +109,7 @@ public class UserServiceTest {
               .email("userAdded@mail.com")
               .password("1234456")
               .roles(Set.of(Role.USER, Role.ADMIN))
+              .authProvider(AuthProvider.LOCAL)
               .build();
 
       when(repo.existsByEmail(userDtoInput.email())).thenReturn(false);
@@ -165,6 +167,7 @@ public class UserServiceTest {
               .email("emailChanged@mail.com")
               .password("passwordChangedToo")
               .roles(Set.of(Role.USER))
+              .authProvider(AuthProvider.LOCAL)
               .build();
 
       final String oldName = this.testUser.getName();

@@ -2,8 +2,8 @@ package com.jame.dev.gymApp.entity;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -27,9 +27,8 @@ public class CustomerEntity {
    @NonNull
    private UserEntity user;
 
-   @NotBlank
-   @NonNull
-   @Column(name = "contact",length = 15, nullable = false)
+   @Nullable
+   @Column(name = "contact", length = 15)
    private String phoneContact;
 
    @Column(name = "active", nullable = false)

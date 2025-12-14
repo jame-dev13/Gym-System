@@ -2,21 +2,25 @@ package com.jame.dev.gymApp.auth.service;
 
 import com.jame.dev.gymApp.cache.service.BlacklistService;
 import com.jame.dev.gymApp.config.web.CookieHelper;
+import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
 import com.jame.dev.gymApp.jwt.service.JwtService;
 import com.jame.dev.gymApp.messages.service.EmailService;
 import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInDto;
+import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.messages.EmailDetails;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.service.in.VerificationService;
+import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import com.jame.dev.gymApp.shared.enums.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -26,6 +30,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -46,19 +53,45 @@ public class AuthServiceImplementationTest {
    @Mock
    private CookieHelper cookieHelper;
    @Mock
+   private VerificationService verificationService;
+   @Mock
    private AuthenticationManager authenticationManager;
    @Mock
    private BlacklistService blacklistService;
-   @Mock
-   private VerificationService verificationService;
    @Mock
    private EmailService emailService;
 
    @InjectMocks
    private AuthServiceImplementation service;
 
-   private final UserEntity user = new UserEntity();
-   private final VerificationEntity verification = new VerificationEntity();
+   private final UserEntity user = UserEntity.builder()
+           .id(1L)
+           .name("userTest")
+           .email("userTest@mail.com")
+           .password("user123")
+           .provider(AuthProvider.LOCAL)
+           .roles(Set.of(new RoleEntity(1, Role.USER)))
+           .active(true)
+           .build();
+   private final VerificationEntity verification = VerificationEntity.builder()
+           .id("123ABC")
+           .user(user)
+           .expiration(Instant.now().plus(10, ChronoUnit.MINUTES))
+           .verified(false)
+           .build();
+   @Captor
+   private ArgumentCaptor<UserDtoInput> dtoCaptor;
+   @Captor
+   private ArgumentCaptor<UserEntity> entityCaptor;
+   @Captor
+   private ArgumentCaptor<String> emailCaptor;
+   @Captor
+   private ArgumentCaptor<String> codeCaptor;
+   @Captor
+   ArgumentCaptor<String> cookieAccessCaptor;
+   @Captor
+   ArgumentCaptor<String> cookieRefreshCaptor;
+
 
    @Test
    @DisplayName("Sign-Up: Successful signUp and email send.")
@@ -68,25 +101,31 @@ public class AuthServiceImplementationTest {
               .email("dto@mail.com")
               .password("133453")
               .roles(Set.of(Role.USER))
+              .authProvider(AuthProvider.LOCAL)
               .build();
-      when(userService.save(dto)).thenReturn(user);
-      when(verificationService.save(user)).thenReturn(verification);
+      final String html = "<p>Hola</p>";
+      when(userService.save(any(UserDtoInput.class))).thenReturn(user);
+      when(verificationService.save(any(UserEntity.class))).thenReturn(verification);
+      when(emailService.html(anyString(), anyString()))
+              .thenReturn(html);
       when(emailService.sendSimpleEmail(any(EmailDetails.class)))
               .thenReturn(CompletableFuture.completedFuture(true));
 
-      assertDoesNotThrow(() -> service.signUp(dto), "Should not throw Exceptions.");
+      assertDoesNotThrow(() -> service.signUp(dto), "Should not throw any Exception.");
 
-      verify(userService).save(dto);
-      verify(verificationService).save(user);
-      verify(emailService).sendSimpleEmail(any(EmailDetails.class));
+      verify(userService, times(1)).save(dtoCaptor.capture());
+      verify(verificationService, times(1)).save(entityCaptor.capture());
+      verify(emailService, atLeastOnce()).html(emailCaptor.capture(), codeCaptor.capture());
+      verify(emailService, atLeastOnce()).sendSimpleEmail(any(EmailDetails.class));
+      verifyNoMoreInteractions(userService, verificationService, emailService);
    }
 
    @Test
    @DisplayName("Sign-In: Successful authentication and cookies with token generation.")
    void signIn() {
       final SignInDto dto = SignInDto.builder()
-              .email("email@mail.com")
-              .password("1294725")
+              .email(this.user.getEmail())
+              .password(this.user.getPassword())
               .build();
       final User userAuthMock = new User(
               dto.email(),
@@ -95,6 +134,8 @@ public class AuthServiceImplementationTest {
       );
 
       final Authentication authMock = mock(Authentication.class);
+      when(userService.getUserByEmail(anyString())).thenReturn(Optional.of(this.user));
+      when(verificationService.isVerified(anyString())).thenReturn(true);
       when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authMock);
       when(authMock.getPrincipal()).thenReturn(userAuthMock);
 
@@ -109,14 +150,14 @@ public class AuthServiceImplementationTest {
 
       final CookieResponseDto response = service.signIn(dto);
 
-      ArgumentCaptor<String> cookieAccessCaptor = ArgumentCaptor.forClass(String.class);
-      ArgumentCaptor<String> cookieRefreshCaptor = ArgumentCaptor.forClass(String.class);
-
-      verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-      verify(jwtService).generateAccessToken(dto.email());
-      verify(jwtService).generateRefreshToken(dto.email());
-      verify(cookieHelper).createAccessTokenCookie(cookieAccessCaptor.capture());
-      verify(cookieHelper).createRefreshTokenCookie(cookieRefreshCaptor.capture());
+      verify(userService, atLeastOnce()).getUserByEmail(anyString());
+      verify(authenticationManager, atLeastOnce()).authenticate(any(UsernamePasswordAuthenticationToken.class));
+      verify(authMock, atLeastOnce()).getPrincipal();
+      verify(jwtService, atLeastOnce()).generateAccessToken(dto.email());
+      verify(jwtService, atLeastOnce()).generateRefreshToken(dto.email());
+      verify(cookieHelper, atLeastOnce()).createAccessTokenCookie(cookieAccessCaptor.capture());
+      verify(cookieHelper, atLeastOnce()).createRefreshTokenCookie(cookieRefreshCaptor.capture());
+      verifyNoMoreInteractions(userService, authenticationManager, jwtService, cookieHelper);
 
       assertNotNull(response, "Should not be null.");
       assertEquals(response.access(), accessCookieMock, "Should be the same object.");
@@ -127,7 +168,7 @@ public class AuthServiceImplementationTest {
 
    @Test
    @DisplayName("Refresh token: refresh tokens and blacklist the given refresh token.")
-   void refresh(){
+   void refresh() {
       final String subject = "subject";
       final ResponseCookie accessCookieMock = mock(ResponseCookie.class);
       final ResponseCookie refreshCookieMock = mock(ResponseCookie.class);
@@ -142,9 +183,6 @@ public class AuthServiceImplementationTest {
 
       when(cookieHelper.createAccessTokenCookie(any(String.class))).thenReturn(accessCookieMock);
       when(cookieHelper.createRefreshTokenCookie(any(String.class))).thenReturn(refreshCookieMock);
-
-      ArgumentCaptor<String> cookieAccessCaptor = ArgumentCaptor.forClass(String.class);
-      ArgumentCaptor<String> cookieRefreshCaptor = ArgumentCaptor.forClass(String.class);
 
       final CookieResponseDto response = service.refresh(refreshValue);
 
@@ -165,5 +203,25 @@ public class AuthServiceImplementationTest {
               "Should be the defined mock.");
       assertSame(refreshCookieMock, response.refresh(),
               "Should be the defined mock.");
+   }
+
+   @Test
+   @DisplayName("Should verify the account.")
+   void verification() {
+      final VerificationDto dto = VerificationDto.builder()
+              .timestamp(OffsetDateTime.now())
+              .email("mail@mail.com")
+              .verified(true)
+              .msg("Verification succeed")
+              .build();
+      when(verificationService.verify(anyString(), anyString()))
+              .thenReturn(dto);
+      final Optional<VerificationDto> optVerification = service.verify(dto.email(), "ABD123");
+
+      verify(verificationService).verify(emailCaptor.capture(), anyString());
+      verifyNoMoreInteractions(verificationService);
+
+
+      assertTrue(optVerification.isPresent(), "Optional value should be present.");
    }
 }

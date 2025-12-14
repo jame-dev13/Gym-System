@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.JedisPooled;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 
 @Service
@@ -21,9 +23,10 @@ public class TokenServiceImplementation implements BlacklistService {
       if(tokensPool.exists(key)){
          throw new TokenAlreadyBlacklistedException("Token already blacklisted.");
       }
-      Date expiration = jwtService.extractExpiration(key)
+      final Date expiration = jwtService.extractExpiration(key)
               .orElseThrow(() -> new ExtractClaimException("Can't extract claims."));
-      long ttl = (expiration.getTime() - System.currentTimeMillis()) / 1000;
+      final long ttl = Duration.between(Instant.now(), expiration.toInstant()).getSeconds();
+      if(ttl <= 0) return;
       tokensPool.setex(key, ttl, "blacklisted");
    }
 

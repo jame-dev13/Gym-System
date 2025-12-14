@@ -1,15 +1,10 @@
 package com.jame.dev.gymApp.config.app;
 
-import com.jame.dev.gymApp.entity.CustomerEntity;
-import com.jame.dev.gymApp.entity.MemberShipEntity;
-import com.jame.dev.gymApp.entity.PricingEntity;
-import com.jame.dev.gymApp.entity.UserEntity;
+import com.jame.dev.gymApp.entity.*;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
-import com.jame.dev.gymApp.service.in.CustomerService;
-import com.jame.dev.gymApp.service.in.MembershipService;
-import com.jame.dev.gymApp.service.in.PricingService;
-import com.jame.dev.gymApp.service.in.UserService;
+import com.jame.dev.gymApp.service.in.*;
+import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import com.jame.dev.gymApp.shared.enums.Membership;
 import com.jame.dev.gymApp.shared.enums.Role;
 import lombok.RequiredArgsConstructor;
@@ -44,22 +39,31 @@ public class InitConfig {
 
 
    @Bean
-   public CommandLineRunner runnerInitUsersAndCustomers(final UserService userService, final CustomerService customerService) {
+   public CommandLineRunner runnerInitUsersAndCustomers(final UserService userService,
+                                                        final CustomerService customerService,
+                                                        final VerificationService verificationService) {
       return args -> {
          final UserDtoInput admin = UserDtoInput.builder()
                  .name("admin")
                  .email(emailAdmin)
                  .password(passwordAdmin)
                  .roles(Set.of(Role.ADMIN, Role.USER))
+                 .authProvider(AuthProvider.LOCAL)
                  .build();
          final UserDtoInput user = UserDtoInput.builder()
                  .name("user")
                  .email(emailUser)
                  .password(passwordUser)
                  .roles(Set.of(Role.USER))
+                 .authProvider(AuthProvider.LOCAL)
                  .build();
-         userService.save(admin);
+         final UserEntity adminEntity = userService.save(admin);
+         final VerificationEntity verificationAdmin = verificationService.save(adminEntity);
+         verificationService.verify(adminEntity.getEmail(), verificationAdmin.getId());
          final UserEntity userEntity = userService.save(user);
+         final VerificationEntity verificationUser = verificationService.save(userEntity);
+         verificationService.verify(userEntity.getEmail(), verificationUser.getId());
+
          final CustomerDtoInput customerDtoInput = new CustomerDtoInput(userEntity.getId(), "1112223334");
          final CustomerEntity customer = customerService.save(customerDtoInput);
          log.info("User created. -> {}\n", userEntity);
@@ -71,36 +75,31 @@ public class InitConfig {
    public CommandLineRunner runnerMembershipsAndPrices(final MembershipService membershipService, final PricingService pricingService) {
       return args -> {
          final List<String> ORDER = List.of("biweekly", "monthly", "quarterly", "annual");
-
          final Map<String, BigDecimal> prices = Map.ofEntries(
                  Map.entry("biweekly", BigDecimal.valueOf(150.00d)),
                  Map.entry("monthly", BigDecimal.valueOf(300.00d)),
                  Map.entry("quarterly", BigDecimal.valueOf(900.00d)),
                  Map.entry("annual", BigDecimal.valueOf(3600.00d))
          );
-
          log.info("Prices set -> {}", prices);
 
          final Map<String, MemberShipEntity> memberships = new LinkedHashMap<>();
-
          ORDER.forEach(name -> {
-            Membership type = Membership.valueOf(name.toUpperCase());
-            MemberShipEntity entity = membershipService.save(new MemberShipEntity(null, type));
+            final Membership type = Membership.valueOf(name.toUpperCase());
+            final MemberShipEntity entity = membershipService.save(new MemberShipEntity(null, type));
             memberships.put(name, entity);
          });
 
          log.info("Memberships created -> {}", memberships);
 
          ORDER.forEach(name -> {
-            MemberShipEntity membership = memberships.get(name);
-            BigDecimal price = prices.get(name);
+            final MemberShipEntity membership = memberships.get(name);
+            final BigDecimal price = prices.get(name);
 
-            PricingEntity pricingEntity =
+            final PricingEntity pricingEntity =
                     pricingService.save(new PricingEntity(null, membership, price));
-
             log.info("Membership Prices -> {}: {}", name, pricingEntity);
          });
-
       };
    }
 }
