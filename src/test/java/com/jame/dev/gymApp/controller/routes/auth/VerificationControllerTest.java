@@ -5,8 +5,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jame.dev.gymApp.auth.filters.CustomAuthorizationFilter;
 import com.jame.dev.gymApp.auth.service.AuthService;
 import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
+import com.jame.dev.gymApp.model.dto.auth.ExpirationWindowDto;
 import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
-import com.jame.dev.gymApp.model.dto.auth.VerificationRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +18,16 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = VerificationController.class,
@@ -60,16 +64,6 @@ class VerificationControllerTest {
               .build();
       when(authService.verify(anyString(), anyString())).thenReturn(Optional.of(verificationDto));
 
-      final String requestBody = mapper.writeValueAsString(new VerificationRequest(token));
-      final String jsonExpected = mapper.writeValueAsString(
-              VerificationDto.builder()
-                      .timestamp(OffsetDateTime.now())
-                      .email(email)
-                      .verified(true)
-                      .msg("verified")
-                      .build()
-      );
-
       mockMvc.perform(patch("/auth/verify/{email}", "any@mail.com")
                       .contentType(MediaType.APPLICATION_JSON)
                       .accept(MediaType.APPLICATION_JSON)
@@ -86,6 +80,66 @@ class VerificationControllerTest {
               .andExpect(jsonPath("$.timestamp").exists());
 
       verify(authService, times(1)).verify(anyString(), anyString());
+      verifyNoMoreInteractions(authService);
+   }
+
+   @Test
+   @DisplayName("[POST]: Should Response to get more to time")
+   void getMoreTime() throws Exception {
+      boolean updated = true;
+      final ExpirationWindowDto expirationWindowDto = ExpirationWindowDto.builder()
+              .requestAt(Instant.now().atOffset(ZoneOffset.UTC))
+              .email("any@mail.com")
+              .updated(true)
+              .state((updated) ? "Time Updated" : "No changed")
+              .expiresAt(Instant.now().plus(10, ChronoUnit.MINUTES).atOffset(ZoneOffset.UTC))
+              .msg("Verification window time updated.")
+              .build();
+      when(authService.setNewExpiration(anyString()))
+              .thenReturn(expirationWindowDto);
+
+      mockMvc.perform(post("/auth/verify/get-more-exp-time")
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .accept(MediaType.APPLICATION_JSON)
+                      .content("""
+                              {
+                                 "email": "any@mail.com"
+                              }
+                              """))
+              .andExpect(status().isOk())
+              .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+              .andExpect(jsonPath("$.updated").value(true));
+      verify(authService).setNewExpiration(anyString());
+      verifyNoMoreInteractions(authService);
+   }
+
+   @Test
+   @DisplayName("[POST]: Should Response to get more to time with updated in false.")
+   void shouldNotGetMoreTime() throws Exception {
+      boolean updated = false;
+      final ExpirationWindowDto expirationWindowDto = ExpirationWindowDto.builder()
+              .requestAt(Instant.now().atOffset(ZoneOffset.UTC))
+              .email("any@mail.com")
+              .updated(false)
+              .state((updated) ? "Time Updated" : "No changed")
+              .expiresAt(Instant.now().minus(10, ChronoUnit.MINUTES).atOffset(ZoneOffset.UTC))
+              .msg("No changed.")
+              .build();
+      when(authService.setNewExpiration(anyString()))
+              .thenReturn(expirationWindowDto);
+
+      mockMvc.perform(post("/auth/verify/get-more-exp-time")
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .accept(MediaType.APPLICATION_JSON)
+                      .content("""
+                              {
+                                 "email": "any@mail.com"
+                              }
+                              """))
+              .andExpect(status().isOk())
+              .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+              .andExpect(jsonPath("$.updated").value(false));
+      verify(authService).setNewExpiration(anyString());
       verifyNoMoreInteractions(authService);
    }
 }

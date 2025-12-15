@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.service;
 
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
+import com.jame.dev.gymApp.model.dto.auth.ExpirationWindowDto;
 import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
 import com.jame.dev.gymApp.repository.VerificationRepository;
 import com.jame.dev.gymApp.service.in.TokenGeneratorService;
@@ -40,32 +41,32 @@ public class VerificationServiceTest {
                    .verified(false)
                    .build();
 
-  @Test
-  @DisplayName("Save VerificationEntity")
-  void save(){
-     when(tokenGeneratorService.generateToken()).thenReturn(verificationEntity.getId());
-     when(verificationRepository.save(any(VerificationEntity.class)))
-             .thenAnswer(invocation -> invocation.getArgument(0));
-     VerificationEntity verificationAdded = service.save(new UserEntity());
+   @Test
+   @DisplayName("Save VerificationEntity")
+   void save() {
+      when(tokenGeneratorService.generateToken()).thenReturn(verificationEntity.getId());
+      when(verificationRepository.save(any(VerificationEntity.class)))
+              .thenAnswer(invocation -> invocation.getArgument(0));
+      VerificationEntity verificationAdded = service.save(new UserEntity());
 
-     ArgumentCaptor<VerificationEntity> captor = ArgumentCaptor.forClass(VerificationEntity.class);
-     verify(tokenGeneratorService).generateToken();
-     verify(verificationRepository).save(captor.capture());
+      ArgumentCaptor<VerificationEntity> captor = ArgumentCaptor.forClass(VerificationEntity.class);
+      verify(tokenGeneratorService).generateToken();
+      verify(verificationRepository).save(captor.capture());
 
-     VerificationEntity verificationSaved = captor.getValue();
+      VerificationEntity verificationSaved = captor.getValue();
 
-     assertAll("Not null, objects should be equals and not verified.",
-             () -> assertNotNull(verificationSaved, "Should not be null."),
-             () -> assertSame(verificationAdded, verificationSaved, "Should be the same object."),
-             () -> assertEquals(verificationAdded, verificationSaved, "Objects should be equals."),
-             () -> assertFalse(verificationSaved.isVerified(), "Object recently saved should not be verified.")
-     );
-  }
+      assertAll("Not null, objects should be equals and not verified.",
+              () -> assertNotNull(verificationSaved, "Should not be null."),
+              () -> assertSame(verificationAdded, verificationSaved, "Should be the same object."),
+              () -> assertEquals(verificationAdded, verificationSaved, "Objects should be equals."),
+              () -> assertFalse(verificationSaved.isVerified(), "Object recently saved should not be verified.")
+      );
+   }
 
 
    @Test
    @DisplayName("Success verification")
-   void verification(){
+   void verification() {
       when(verificationRepository.findByUser_Email(anyString()))
               .thenReturn(Optional.of(verificationEntity));
       when(verificationRepository.save(any(VerificationEntity.class)))
@@ -84,7 +85,7 @@ public class VerificationServiceTest {
 
    @Test
    @DisplayName("Remove only unverified records")
-   void removeUnverified(){
+   void removeUnverified() {
       final String token = verificationEntity.getId();
       when(verificationRepository.findById(token))
               .thenReturn(Optional.of(verificationEntity));
@@ -99,7 +100,7 @@ public class VerificationServiceTest {
 
    @Test
    @DisplayName("Not remove verified records")
-   void notRemoveVerified(){
+   void notRemoveVerified() {
       final String token = verificationEntity.getId();
       verificationEntity.setVerified(true);
 
@@ -113,4 +114,35 @@ public class VerificationServiceTest {
       verify(verificationRepository, never()).deleteById(token);
    }
 
+   @Test
+   @DisplayName("Should update the expiration time")
+   void getMoreExpTime() {
+      final VerificationEntity entity = new VerificationEntity();
+      entity.setExpiration(Instant.now().minus(10, ChronoUnit.MINUTES));
+
+      when(verificationRepository.findByUser_Email(anyString()))
+              .thenReturn(Optional.of(entity));
+
+      final ExpirationWindowDto dto = service.getMoreExpTime("any@email.com");
+
+      assertNotNull(dto, "ExpirationWindowDto shouldn't be null.");
+      assertTrue(dto.updated(), "The updated property should be true.");
+
+      verify(verificationRepository).findByUser_Email(anyString());
+      verifyNoMoreInteractions(verificationRepository);
+   }
+
+   @Test
+   @DisplayName("Should not update expiration time")
+   void notGetMoreExpTime() {
+      final VerificationEntity entity = new VerificationEntity();
+      entity.setExpiration(Instant.now().plus(10, ChronoUnit.MINUTES));
+      when(verificationRepository.findByUser_Email(anyString()))
+              .thenReturn(Optional.of(entity));
+
+      final ExpirationWindowDto dto = service.getMoreExpTime("any@mail.com");
+
+      assertNotNull(dto, "ExpirationWindowDto shouldn't be null.");
+      assertFalse(dto.updated(), "The updated property should be false.");
+   }
 }

@@ -8,6 +8,7 @@ import com.jame.dev.gymApp.exception.*;
 import com.jame.dev.gymApp.jwt.service.JwtService;
 import com.jame.dev.gymApp.messages.service.EmailService;
 import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
+import com.jame.dev.gymApp.model.dto.auth.ExpirationWindowDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInDto;
 import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
@@ -15,6 +16,7 @@ import com.jame.dev.gymApp.model.messages.EmailDetails;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.service.in.VerificationService;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
@@ -43,7 +45,7 @@ public class AuthServiceImplementation implements AuthService {
 
    @Override
    public void signUp(UserDtoInput dto) throws ExecutionException, InterruptedException {
-      if(dto.authProvider() != AuthProvider.LOCAL){
+      if (dto.authProvider() != AuthProvider.LOCAL) {
          throw new AuthProviderNotAllowedException("Non LOCAL provider present: " + dto.authProvider());
       }
       final UserEntity user = userService.save(dto);
@@ -66,11 +68,11 @@ public class AuthServiceImplementation implements AuthService {
 
    @Override
    public CookieResponseDto signIn(SignInDto dto) {
-      if(!isLocalProvider(dto)){
+      if (!isLocalProvider(dto)) {
          throw new NonLocalAuthenticationAllowedException("This should not be authenticated by the local provider.");
       }
 
-      if(!verificationService.isVerified(dto.email())){
+      if (!verificationService.isVerified(dto.email())) {
          throw new UserNotVerifiedException("%s hadn't verified his account yet.".formatted(dto.email()));
       }
 
@@ -99,7 +101,12 @@ public class AuthServiceImplementation implements AuthService {
 
    @Override
    public Optional<VerificationDto> verify(final String email, final String code) {
-      return Optional.of(verificationService.verify(email ,code));
+      return Optional.of(verificationService.verify(email, code));
+   }
+
+   @Override
+   public ExpirationWindowDto setNewExpiration(@NonNull String email) {
+      return verificationService.getMoreExpTime(email);
    }
 
    private boolean isLocalProvider(SignInDto dto) {

@@ -2,6 +2,8 @@ package com.jame.dev.gymApp.controller.routes.auth;
 
 import com.jame.dev.gymApp.auth.service.AuthService;
 import com.jame.dev.gymApp.exception.VerificationTokenNotFoundException;
+import com.jame.dev.gymApp.model.dto.auth.ExpirationWindowDto;
+import com.jame.dev.gymApp.model.dto.auth.ExtendExpirationRequest;
 import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
 import com.jame.dev.gymApp.model.dto.auth.VerificationRequest;
 import lombok.RequiredArgsConstructor;
@@ -27,5 +29,11 @@ public class VerificationController {
       return ResponseEntity.ok()
               .contentType(MediaType.APPLICATION_JSON)
               .body(verified);
+   }
+
+   @PostMapping("/get-more-exp-time")
+   public ResponseEntity<ExpirationWindowDto> getMoreTime(@RequestBody final ExtendExpirationRequest request) {
+      final ExpirationWindowDto expirationWindowDto = authService.setNewExpiration(request.email());
+      return ResponseEntity.ok(expirationWindowDto);
    }
 }
