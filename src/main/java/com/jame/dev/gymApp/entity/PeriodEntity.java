@@ -46,7 +46,6 @@ public class PeriodEntity {
          case MONTHLY -> startPeriod.plusMonths(1);
          case QUARTERLY -> startPeriod.plusMonths(3);
          case ANNUAL -> startPeriod.plusYears(1);
-         default -> throw new RuntimeException("Unknow value for " + period);
       };
    }
 }

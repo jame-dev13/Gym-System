@@ -17,10 +17,8 @@ public interface CustomJpaRepository<T, ID> extends JpaRepository<@NonNull T, @N
 
    @Modifying
    @Transactional
-   @Query("UPDATE #{#entityName} e SET e.active = false WHERE e.id = :id")
+   @Query(value = "UPDATE #{#entityName} e SET e.active = false WHERE e.id = :id")
    void softDelete(@Param("id") ID id);
-
-   List<T> findAllByActiveTrue();
 
    Page<@NonNull T> findAllByActiveTrue(@NonNull final Pageable pageable);
 }
