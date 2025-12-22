@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.auth.service;
 
 import com.jame.dev.gymApp.cache.service.BlacklistService;
 import com.jame.dev.gymApp.config.web.CookieHelper;
+import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
@@ -9,9 +10,11 @@ import com.jame.dev.gymApp.jwt.service.JwtService;
 import com.jame.dev.gymApp.messages.service.EmailService;
 import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInDto;
+import com.jame.dev.gymApp.model.dto.auth.SignInOkDto;
 import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.messages.EmailDetails;
+import com.jame.dev.gymApp.service.in.CustomerService;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.service.in.VerificationService;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
@@ -37,7 +40,6 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -48,6 +50,8 @@ public class AuthServiceImplementationTest {
 
    @Mock
    private UserService userService;
+   @Mock
+   private CustomerService customerService;
    @Mock
    private JwtService jwtService;
    @Mock
@@ -95,7 +99,7 @@ public class AuthServiceImplementationTest {
 
    @Test
    @DisplayName("Sign-Up: Successful signUp and email send.")
-   void signUp() throws ExecutionException, InterruptedException {
+   void signUp() {
       final UserDtoInput dto = UserDtoInput.builder()
               .name("dto")
               .email("dto@mail.com")
@@ -139,6 +143,8 @@ public class AuthServiceImplementationTest {
       when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authMock);
       when(authMock.getPrincipal()).thenReturn(userAuthMock);
 
+      when(customerService.getUserByEmail(anyString())).thenReturn(Optional.of(new CustomerEntity()));
+
       when(jwtService.generateAccessToken(dto.email())).thenAnswer(inv -> inv.getArgument(0));
       when(jwtService.generateRefreshToken(dto.email())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -148,11 +154,12 @@ public class AuthServiceImplementationTest {
       when(cookieHelper.createAccessTokenCookie(any(String.class))).thenReturn(accessCookieMock);
       when(cookieHelper.createRefreshTokenCookie(any(String.class))).thenReturn(refreshCookieMock);
 
-      final CookieResponseDto response = service.signIn(dto);
+      final SignInOkDto response = service.signIn(dto);
 
       verify(userService, atLeastOnce()).getUserByEmail(anyString());
       verify(authenticationManager, atLeastOnce()).authenticate(any(UsernamePasswordAuthenticationToken.class));
       verify(authMock, atLeastOnce()).getPrincipal();
+      verify(customerService, atLeastOnce()).getUserByEmail(anyString());
       verify(jwtService, atLeastOnce()).generateAccessToken(dto.email());
       verify(jwtService, atLeastOnce()).generateRefreshToken(dto.email());
       verify(cookieHelper, atLeastOnce()).createAccessTokenCookie(cookieAccessCaptor.capture());
@@ -160,10 +167,6 @@ public class AuthServiceImplementationTest {
       verifyNoMoreInteractions(userService, authenticationManager, jwtService, cookieHelper);
 
       assertNotNull(response, "Should not be null.");
-      assertEquals(response.access(), accessCookieMock, "Should be the same object.");
-      assertSame(response.access().getValue(), accessCookieMock.getValue(), "Should have the save value.");
-      assertEquals(response.refresh(), refreshCookieMock, "Should be the same object.");
-      assertSame(response.refresh().getValue(), refreshCookieMock.getValue(), "Should have the save value.");
    }
 
    @Test
@@ -199,10 +202,6 @@ public class AuthServiceImplementationTest {
       assertEquals(subject, cookieRefreshCaptor.getValue(),
               "Should be the same subject.");
       assertNotNull(response, "Should not be null.");
-      assertSame(accessCookieMock, response.access(),
-              "Should be the defined mock.");
-      assertSame(refreshCookieMock, response.refresh(),
-              "Should be the defined mock.");
    }
 
    @Test
@@ -220,7 +219,6 @@ public class AuthServiceImplementationTest {
 
       verify(verificationService).verify(emailCaptor.capture(), anyString());
       verifyNoMoreInteractions(verificationService);
-
 
       assertTrue(optVerification.isPresent(), "Optional value should be present.");
    }

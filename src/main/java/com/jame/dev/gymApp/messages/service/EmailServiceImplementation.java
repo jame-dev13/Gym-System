@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -33,19 +32,20 @@ public class EmailServiceImplementation implements EmailService {
    @Override
    @Async
    public CompletableFuture<Boolean> sendSimpleEmail(@NonNull EmailDetails emailDetails) {
+      final MimeMessage message = javaMailSender.createMimeMessage();
+      MimeMessageHelper mime;
       try {
-         SimpleMailMessage mailMessage = new SimpleMailMessage();
-         mailMessage.setFrom(sender);
-         mailMessage.setTo(emailDetails.recipient());
-         mailMessage.setText(emailDetails.msgBody());
-         mailMessage.setSubject(emailDetails.subject());
-
-         javaMailSender.send(mailMessage);
+         mime = new MimeMessageHelper(message, true, "UTF-8");
+         message.setFrom(sender);
+         mime.setTo(emailDetails.recipient());
+         mime.setSubject(emailDetails.subject());
+         mime.setText(emailDetails.msgBody(), true);
+         javaMailSender.send(message);
          log.info("Mail message sent with success.");
          return CompletableFuture.completedFuture(true);
-      } catch (MailException e) {
+      } catch (MessagingException e) {
          log.error("Cannot sent mail message: ", e);
-         return CompletableFuture.completedFuture(false);
+         return CompletableFuture.failedFuture(e);
       }
    }
 

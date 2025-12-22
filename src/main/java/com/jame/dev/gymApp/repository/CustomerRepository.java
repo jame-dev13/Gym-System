@@ -10,8 +10,11 @@ import java.util.Optional;
 
 public interface CustomerRepository extends CustomJpaRepository<CustomerEntity, Long> {
    @Query("""
-           SELECT c.user FROM CustomerEntity c WHERE c.user.id = :id
+           SELECT c
+           FROM CustomerEntity c
+           WHERE c.user.email = :email
            """)
-   Optional<UserEntity> findUserAssociatedByIdUser(@Param("id") final long id);
-   boolean existsByUser_IdAndActiveTrue(final long userId);
+   Optional<CustomerEntity> findByUser_EmailAndActiveTrue(@Param("email") final String email);
+   Optional<UserEntity> findByUser_IdAndActiveTrue(final long id);
+   boolean existsByUser_EmailAndActiveTrue(final String email);
 }

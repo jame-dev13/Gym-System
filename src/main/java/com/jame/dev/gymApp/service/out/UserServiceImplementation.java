@@ -1,8 +1,10 @@
 package com.jame.dev.gymApp.service.out;
 
+import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
+import com.jame.dev.gymApp.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.exception.UserNotFoundException;
 import com.jame.dev.gymApp.mapper.RoleMapper;
 import com.jame.dev.gymApp.mapper.UserMapper;
@@ -75,8 +77,10 @@ public class UserServiceImplementation implements UserService {
    @Transactional
    @Override
    public void softDelete(@NonNull Long id) {
-      customerRepo.findUserAssociatedByIdUser(id)
-              .ifPresentOrElse(u -> repo.softDelete(id), () -> repo.deleteById(id));
+      final CustomerEntity customer = customerRepo.findById(id)
+              .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
+      customerRepo.softDelete(customer.getId());
+      repo.softDelete(id);
    }
 
    private @NonNull UserEntity buildUserEntity(@NonNull UserDtoInput dto) {

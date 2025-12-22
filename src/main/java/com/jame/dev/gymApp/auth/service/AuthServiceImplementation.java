@@ -2,17 +2,16 @@ package com.jame.dev.gymApp.auth.service;
 
 import com.jame.dev.gymApp.cache.service.BlacklistService;
 import com.jame.dev.gymApp.config.web.CookieHelper;
+import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
 import com.jame.dev.gymApp.exception.*;
 import com.jame.dev.gymApp.jwt.service.JwtService;
 import com.jame.dev.gymApp.messages.service.EmailService;
-import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
-import com.jame.dev.gymApp.model.dto.auth.ExpirationWindowDto;
-import com.jame.dev.gymApp.model.dto.auth.SignInDto;
-import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
+import com.jame.dev.gymApp.model.dto.auth.*;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.messages.EmailDetails;
+import com.jame.dev.gymApp.service.in.CustomerService;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.service.in.VerificationService;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
@@ -27,8 +26,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +33,7 @@ import java.util.concurrent.ExecutionException;
 public class AuthServiceImplementation implements AuthService {
 
    private final UserService userService;
+   private final CustomerService customerService;
    private final JwtService jwtService;
    private final CookieHelper cookieHelper;
    private final AuthenticationManager authenticationManager;
@@ -44,7 +42,7 @@ public class AuthServiceImplementation implements AuthService {
    private final EmailService emailService;
 
    @Override
-   public void signUp(UserDtoInput dto) throws ExecutionException, InterruptedException {
+   public void signUp(UserDtoInput dto) {
       if (dto.authProvider() != AuthProvider.LOCAL) {
          throw new AuthProviderNotAllowedException("Non LOCAL provider present: " + dto.authProvider());
       }
@@ -62,12 +60,17 @@ public class AuthServiceImplementation implements AuthService {
               .subject("Verification code")
               .msgBody(emailService.html(recipient, verification.getId()))
               .build();
-      final CompletableFuture<Boolean> emailSent = emailService.sendSimpleEmail(emailDetails);
-      log.warn((emailSent.get()) ? "email successfully sent." : "cant sent the email.");
+
+      emailService.sendSimpleEmail(emailDetails)
+              .thenAccept(sent -> {
+                 if (sent) {
+                    log.warn("Mail message sent.");
+                 } else log.warn("Error try to send the mail.");
+              });
    }
 
    @Override
-   public CookieResponseDto signIn(SignInDto dto) {
+   public SignInOkDto signIn(SignInDto dto) {
       if (!isLocalProvider(dto)) {
          throw new NonLocalAuthenticationAllowedException("This should not be authenticated by the local provider.");
       }
@@ -80,11 +83,22 @@ public class AuthServiceImplementation implements AuthService {
               new UsernamePasswordAuthenticationToken(dto.email(), dto.password());
       final Authentication authentication = authenticationManager.authenticate(token);
       log.info("[Auth-Service]: Auth done.");
+
       final User userAuthenticated = Optional.ofNullable((User) authentication.getPrincipal())
               .orElseThrow(() -> new AuthenticationAttemptFailureException("Can't authenticate User."));
+
       final String username = userAuthenticated.getUsername();
 
-      return handleCookieResponse(username);
+      final Optional<CustomerEntity> optionalUser = customerService.getUserByEmail(username);
+      final boolean isCustomer = optionalUser.isPresent();
+      final CookieResponseDto cookies = handleCookieResponse(username);
+      return SignInOkDto.builder()
+              .isCustomer(isCustomer)
+              .msg("Authentication successfully")
+              .email(username)
+              .access(cookies.access())
+              .refresh(cookies.refresh())
+              .build();
    }
 
    @Override
@@ -122,6 +136,6 @@ public class AuthServiceImplementation implements AuthService {
 
       final ResponseCookie access = cookieHelper.createAccessTokenCookie(accessToken);
       final ResponseCookie refresh = cookieHelper.createRefreshTokenCookie(refreshToken);
-      return new CookieResponseDto(access, refresh);
+      return new CookieResponseDto(access.getValue(), refresh.getValue());
    }
 }

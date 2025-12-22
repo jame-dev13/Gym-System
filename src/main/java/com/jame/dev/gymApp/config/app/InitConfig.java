@@ -64,7 +64,7 @@ public class InitConfig {
          final VerificationEntity verificationUser = verificationService.save(userEntity);
          verificationService.verify(userEntity.getEmail(), verificationUser.getId());
 
-         final CustomerDtoInput customerDtoInput = new CustomerDtoInput(userEntity.getId(), "1112223334");
+         final CustomerDtoInput customerDtoInput = new CustomerDtoInput(userEntity.getEmail(), "1112223334");
          final CustomerEntity customer = customerService.save(customerDtoInput);
          log.info("User created. -> {}\n", userEntity);
          log.info("Customer created. -> {}\n", customer);

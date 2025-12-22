@@ -10,6 +10,7 @@ import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.CustomerService;
+import jakarta.validation.constraints.NotBlank;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,17 +40,18 @@ public class CustomerServiceImplementation implements CustomerService {
    @Override
    @Transactional
    public CustomerEntity save(@NonNull CustomerDtoInput dto) {
-      final boolean userExists = repo.existsByUser_IdAndActiveTrue(dto.userId());
+      final boolean userExists = repo.existsByUser_EmailAndActiveTrue(dto.email());
       if (userExists) {
          throw new AlreadyExistsException("User id already exists.");
       }
-      final UserEntity user = userRepo.findById(dto.userId())
+      final UserEntity user = userRepo.findByEmail(dto.email())
               .orElseThrow(() -> new UserNotFoundException("User Not Found."));
       final CustomerEntity customerEntity = customerMapper.toEntity(dto, user);
       return repo.save(customerEntity);
    }
 
    @Override
+   @Transactional
    public CustomerEntity update(@NonNull Long id, @NonNull CustomerDtoInput customerDtoInput) {
       return updateContact(id, customerDtoInput);
    }
@@ -63,10 +65,16 @@ public class CustomerServiceImplementation implements CustomerService {
       repo.softDelete(id);
    }
 
+   @Transactional
    private CustomerEntity updateContact(@NonNull Long id, @NonNull CustomerDtoInput dto) {
       final CustomerEntity customer = repo.findById(id)
               .orElseThrow(() -> new CustomerNotFoundException("Customer not found, id: " + id));
       customer.setPhoneContact(dto.contact());
       return repo.save(customer);
+   }
+
+   @Override
+   public Optional<CustomerEntity> getUserByEmail(@NotBlank final String email) {
+      return repo.findByUser_EmailAndActiveTrue(email);
    }
 }
