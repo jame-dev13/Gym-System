@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.auth.filters;
 
 import com.jame.dev.gymApp.cache.service.BlacklistService;
+import com.jame.dev.gymApp.exception.AccessExpiredException;
 import com.jame.dev.gymApp.exception.ExtractClaimException;
 import com.jame.dev.gymApp.exception.TokenAlreadyBlacklistedException;
 import com.jame.dev.gymApp.jwt.service.JwtService;
@@ -17,11 +18,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -31,6 +35,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
    private final JwtService jwtService;
    private final UserDetailsService userDetailsService;
    private final BlacklistService blacklistService;
+   private final AuthenticationEntryPoint authenticationEntryPoint;
 
    private final String ACCESS_COOKIE = CookieNames.COOKIE_JWT_ACCESS.getValue();
    private final String REFRESH_COOKIE = CookieNames.COOKIE_JWT_REFRESH.getValue();
@@ -55,7 +60,9 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
       final Map<String, String> cookies = getCookies(request);
 
       final String access = cookies.get(ACCESS_COOKIE);
-
+      if (access == null) {
+         authenticationEntryPoint.commence(request, response, new AccessExpiredException("Access expired."));
+      }
       final String subject = jwtService.extractSubject(access)
               .orElseThrow(() -> new ExtractClaimException("Claims are null."));
 
@@ -67,7 +74,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
       final String refresh = cookies.get(REFRESH_COOKIE);
       if (blacklistService.isBlacklisted(refresh)) {
-         throw new TokenAlreadyBlacklistedException("Token is blacklisted.");
+         authenticationEntryPoint.commence(request, response, new TokenAlreadyBlacklistedException("Token already blacklisted."));
       }
 
       if (jwtService.isValid(refresh, subject)) {

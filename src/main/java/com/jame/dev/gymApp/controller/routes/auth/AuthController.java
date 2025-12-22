@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
 import com.jame.dev.gymApp.auth.service.AuthService;
+import com.jame.dev.gymApp.config.web.CookieHelper;
 import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInOkDto;
@@ -23,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 public class AuthController {
 
    private final AuthService authService;
+   private final CookieHelper cookieHelper;
 
    @PostMapping("/signUp")
    public ResponseEntity<Void> signUp(@RequestBody final UserDtoInput dto) throws ExecutionException, InterruptedException {
@@ -37,8 +39,8 @@ public class AuthController {
       log.info("{}", response);
       return ResponseEntity.ok()
               .contentType(MediaType.APPLICATION_JSON)
-              .header(HttpHeaders.SET_COOKIE, response.access())
-              .header(HttpHeaders.SET_COOKIE, response.access())
+              .header(HttpHeaders.SET_COOKIE, cookieHelper.createAccessTokenCookie(response.access()).toString())
+              .header(HttpHeaders.SET_COOKIE, cookieHelper.createRefreshTokenCookie(response.refresh()).toString())
               .body(response);
    }
 

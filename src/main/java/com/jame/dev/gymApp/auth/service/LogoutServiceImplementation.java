@@ -22,7 +22,7 @@ public class LogoutServiceImplementation implements LogoutService {
 
    @Override
    public void logout(HttpServletRequest request, HttpServletResponse response) {
-      if(request.getCookies() == null){
+      if (request.getCookies() == null) {
          throw new IllegalArgumentException("Logout already made.");
       }
       final Cookie[] cookies = request.getCookies();
