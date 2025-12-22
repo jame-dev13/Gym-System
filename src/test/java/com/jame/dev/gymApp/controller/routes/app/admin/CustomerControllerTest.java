@@ -219,7 +219,7 @@ class CustomerControllerTest {
    @DisplayName("Should post a customer")
    void postCustomer() throws Exception {
       final CustomerDtoInput customerDtoInput = CustomerDtoInput.builder()
-              .userId(1L)
+              .email("user@mail.com")
               .contact("24842543")
               .build();
       final CustomerEntity customerEntity = new CustomerEntity(1L, new UserEntity(), customerDtoInput.contact(), true);
@@ -248,7 +248,7 @@ class CustomerControllerTest {
    void patchContactCustomer() throws Exception {
       final String oldPhone = "213642424";
       final CustomerDtoInput customerDtoInput = CustomerDtoInput.builder()
-              .userId(1L)
+              .email("user@mail.com")
               .contact("24842543")
               .build();
       final CustomerEntity customerEntity = new CustomerEntity(1L, new UserEntity(), customerDtoInput.contact(), true);

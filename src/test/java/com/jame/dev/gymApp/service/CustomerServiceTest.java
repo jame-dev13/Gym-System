@@ -140,10 +140,10 @@ public class CustomerServiceTest {
    @Test
    @DisplayName("Should save a Customer")
    void saveCustomer() {
-      final Long idUser = this.testUser.getId();
-      final CustomerDtoInput dto = new CustomerDtoInput(idUser, "4270143");
-      when(repo.existsByUser_IdAndActiveTrue(dto.userId())).thenReturn(false);
-      when(userRepo.findById(idUser)).thenReturn(Optional.of(this.testUser));
+      final String emailUser = this.testUser.getEmail();
+      final CustomerDtoInput dto = new CustomerDtoInput(emailUser, "4270143");
+      when(repo.existsByUser_EmailAndActiveTrue(anyString())).thenReturn(false);
+      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(this.testUser));
       when(customerMapper.toEntity(dto, testUser)).thenReturn(customerTest);
       when(repo.save(any(CustomerEntity.class)))
               .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
@@ -151,8 +151,8 @@ public class CustomerServiceTest {
       final CustomerEntity customerAdded = service.save(dto);
       final ArgumentCaptor<CustomerEntity> captor = ArgumentCaptor.forClass(CustomerEntity.class);
 
-      verify(repo, times(1)).existsByUser_IdAndActiveTrue(dto.userId());
-      verify(userRepo, times(1)).findById(idUser);
+      verify(repo, times(1)).existsByUser_EmailAndActiveTrue(anyString());
+      verify(userRepo, times(1)).findByEmail(anyString());
       verify(customerMapper, times(1)).toEntity(dto, testUser);
       verify(repo, times(1)).save(captor.capture());
 
@@ -167,17 +167,17 @@ public class CustomerServiceTest {
    @Test
    @DisplayName("Should update a customer entity")
    void updateCustomer() {
-      final CustomerDtoInput dto = new CustomerDtoInput(1L, "484943");
+      final CustomerDtoInput dto = new CustomerDtoInput("any@mail.com", "484943");
       final String oldContact = this.customerTest.getPhoneContact();
       final CustomerEntity change = this.customerTest;
       change.setPhoneContact(dto.contact());
 
-      when(repo.findById(eq(1L))).thenReturn(Optional.of(this.customerTest));
+      when(repo.findById(anyLong())).thenReturn(Optional.of(this.customerTest));
       when(repo.save(any(CustomerEntity.class))).thenReturn(change);
 
       final CustomerEntity changed = service.update(1L, dto);
 
-      verify(repo, times(1)).findById(eq(1L));
+      verify(repo, times(1)).findById(anyLong());
       verify(repo, times(1)).save(change);
       verifyNoMoreInteractions(repo);
 

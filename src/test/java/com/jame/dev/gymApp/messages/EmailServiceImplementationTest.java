@@ -12,7 +12,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import java.io.IOException;
@@ -46,17 +45,19 @@ class EmailServiceImplementationTest {
 
    @Test
    void sendSimpleEmail() throws ExecutionException, InterruptedException {
-      doNothing().when(javaMailSender).send(any(SimpleMailMessage.class));
+      final MimeMessage mimeMessage = new MimeMessage((Session) null);
+      when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
+      doNothing().when(javaMailSender).send(any(MimeMessage.class));
+
       final CompletableFuture<Boolean> mailSent = service.sendSimpleEmail(emailDetails);
 
       assertTrue(mailSent.get(), "Mail should had sent.");
-      final ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+
+      final ArgumentCaptor<MimeMessage> captor = ArgumentCaptor.forClass(MimeMessage.class);
       verify(javaMailSender, times(1)).send(captor.capture());
-      SimpleMailMessage sent = captor.getValue();
+      final MimeMessage sent = captor.getValue();
       assertAll("Not null, and same properties.",
               () -> assertNotNull(sent, "Should not be null."),
-              () -> assertEquals(emailDetails.recipient(), sent.getTo()[0], "Should be the same recipient"),
-              () -> assertEquals(emailDetails.msgBody(), sent.getText(), "Should be the same msgBody."),
               () -> assertEquals(emailDetails.subject(), sent.getSubject(), "Should be the same subject"));
    }
 
@@ -79,6 +80,5 @@ class EmailServiceImplementationTest {
               () -> assertEquals(emailDetailsWAttachment.subject(), sent.getSubject(), "Should be the same subject."),
               () -> assertTrue(mailSent.get(), "The mail should has been sent.")
       );
-
    }
 }

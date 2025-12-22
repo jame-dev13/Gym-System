@@ -39,7 +39,7 @@ class CustomerMapperTest {
 
    @Test
    void toEntity() {
-      CustomerDtoInput dto = new CustomerDtoInput(1L, "347293");
+      CustomerDtoInput dto = new CustomerDtoInput("any@mail.com", "347293");
       CustomerEntity entity = customerMapper.toEntity(dto, testUser);
       Assertions.assertNotNull(entity, "Should not be null.");
    }
