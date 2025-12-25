@@ -3,7 +3,7 @@ package com.jame.dev.gymApp.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,7 +36,7 @@ public class SubscriptionEntity {
            joinColumns = @JoinColumn(name = "subscription_id"),
            inverseJoinColumns = @JoinColumn(name = "period_id"),
            indexes = @Index(name = "idx_subscription_period_unique", columnList = "period_id"))
-   private List<PeriodEntity> subscriptionPeriods = new ArrayList<>();
+   private List<PeriodEntity> subscriptionPeriods = new LinkedList<>();
 
    @Column(name = "active", nullable = false)
    @Setter(AccessLevel.NONE)
@@ -47,8 +47,8 @@ public class SubscriptionEntity {
 
    @PrePersist
    private void setFlags() {
-      this.active = Boolean.TRUE;
-      this.finished = Boolean.FALSE;
+      this.active = true;
+      this.finished = false;
    }
 
    @Override
@@ -56,8 +56,7 @@ public class SubscriptionEntity {
       if (this == o) return true;
       if (o == null || o.getClass() != getClass()) return false;
       SubscriptionEntity that = (SubscriptionEntity) o;
-      return Objects.nonNull(that.id) && (Objects.equals(that
-              .id, id));
+      return Objects.nonNull(that.id) && (Objects.equals(that.id, id));
    }
 
    @Override

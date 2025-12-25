@@ -22,7 +22,8 @@ public class CustomerEntity {
    @Setter(AccessLevel.NONE)
    private Long id;
 
-   @OneToOne(fetch = FetchType.LAZY, optional = false)
+   @OneToOne(fetch = FetchType.LAZY, optional = false,
+           cascade = {CascadeType.REFRESH, CascadeType.MERGE})
    @ToString.Exclude
    @NonNull
    private UserEntity user;

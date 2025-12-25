@@ -1,7 +1,6 @@
 package com.jame.dev.gymApp.controller.service;
 
 import com.jame.dev.gymApp.cache.service.AppCacheService;
-import com.jame.dev.gymApp.controller.service.common.BaseControllerCommon;
 import com.jame.dev.gymApp.mapper.BaseMapper;
 import com.jame.dev.gymApp.service.common.BaseCrudService;
 import com.jame.dev.gymApp.service.common.CRUDServiceServicePut;
@@ -10,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.function.Function;
 
-public abstract class BaseControllerPutable<E, DTO_IN, DTO_OUT> extends BaseControllerCommon<E, DTO_IN, DTO_OUT> {
+public abstract non-sealed class BaseControllerPutable<E, DTO_IN, DTO_OUT> extends BaseControllerCommon<E, DTO_IN, DTO_OUT>  {
 
    private final CRUDServiceServicePut<E, DTO_IN, Long> putService;
 

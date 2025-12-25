@@ -227,6 +227,24 @@ public class GlobalExceptionHandler {
            HttpServletRequest request) {
       final ApiErrorResponse errorResponse = responseFactory
               .buildErrorResponse(ex, request, HttpStatus.FORBIDDEN, "ACCESS_OPERATION");
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+   }
+
+   @ExceptionHandler(RenewSubscriptionException.class)
+   public ResponseEntity<ApiErrorResponse> handleRenewSubscriptionException(
+           RenewSubscriptionException ex,
+           HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.CONFLICT, "UPDATE_OPERATION");
       return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+   }
+
+   @ExceptionHandler(EntityNotFoundException.class)
+   public ResponseEntity<ApiErrorResponse> handleEntityNotFoundException(
+           EntityNotFoundException ex,
+           HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "ENTITY_NOT_FOUND_OPERATION");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
    }
 }

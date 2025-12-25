@@ -53,7 +53,7 @@ public class CustomerServiceImplementation implements CustomerService {
    @Override
    @Transactional
    public CustomerEntity update(@NonNull Long id, @NonNull CustomerDtoInput customerDtoInput) {
-      return updateContact(id, customerDtoInput);
+      return updateCustomer(id, customerDtoInput);
    }
 
    @Override
@@ -66,9 +66,12 @@ public class CustomerServiceImplementation implements CustomerService {
    }
 
    @Transactional
-   private CustomerEntity updateContact(@NonNull Long id, @NonNull CustomerDtoInput dto) {
+   private CustomerEntity updateCustomer(@NonNull Long id, @NonNull CustomerDtoInput dto) {
       final CustomerEntity customer = repo.findById(id)
               .orElseThrow(() -> new CustomerNotFoundException("Customer not found, id: " + id));
+      final UserEntity user = customer.getUser();
+      user.setEmail(dto.email());
+      customer.setUser(user);
       customer.setPhoneContact(dto.contact());
       return repo.save(customer);
    }

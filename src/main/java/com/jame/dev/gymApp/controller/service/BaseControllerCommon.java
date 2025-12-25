@@ -1,8 +1,8 @@
-package com.jame.dev.gymApp.controller.service.common;
+package com.jame.dev.gymApp.controller.service;
 
 import com.jame.dev.gymApp.cache.service.AppCacheService;
+import com.jame.dev.gymApp.cache.service.LruCache;
 import com.jame.dev.gymApp.exception.EntityNotFoundException;
-import com.jame.dev.gymApp.exception.NoCacheObjectFoundException;
 import com.jame.dev.gymApp.mapper.BaseMapper;
 import com.jame.dev.gymApp.service.common.BaseCrudService;
 import lombok.NonNull;
@@ -14,11 +14,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
 @RequiredArgsConstructor
-public abstract class BaseControllerCommon <E, DTO_IN, DTO_OUT> {
+public abstract sealed class BaseControllerCommon<E, DTO_IN, DTO_OUT> permits
+        BaseControllerPatchable, BaseControllerPutable, ControllerPatchPut {
 
    protected final BaseCrudService<E, DTO_IN, Long> service;
    protected final AppCacheService<DTO_OUT> cache;
@@ -26,11 +29,15 @@ public abstract class BaseControllerCommon <E, DTO_IN, DTO_OUT> {
    private final String key;
    private final Function<E, Long> idExtractor;
    private String currentPageKey;
+   private final int CACHE_SIZE = 5;
+   private final Map<String, DTO_OUT> cacheOnes = Collections
+           .synchronizedMap(new LruCache<>(CACHE_SIZE));
 
-   protected ResponseEntity<@NonNull Page<@NonNull DTO_OUT>> getPage(int page, int size){
+
+   protected ResponseEntity<@NonNull Page<@NonNull DTO_OUT>> getPage(int page, int size) {
       this.currentPageKey = "%s:%d:%d".formatted(key, page, size);
-      Optional<Page<@NonNull DTO_OUT>> cachePage = cache.getCache(this.currentPageKey);
-      if(cachePage.isPresent()){
+      final Optional<Page<@NonNull DTO_OUT>> cachePage = cache.getCache(this.currentPageKey);
+      if (cachePage.isPresent()) {
          return ResponseEntity.ok()
                  .body(cachePage.get());
       }
@@ -44,43 +51,45 @@ public abstract class BaseControllerCommon <E, DTO_IN, DTO_OUT> {
    }
 
    protected ResponseEntity<@NonNull DTO_OUT> getOne(long id) {
-      final String key = this.currentPageKey;
-      if (cache.keyExists(key)) {
-         final DTO_OUT dto = cache.get(key, id)
-                 .orElseThrow(() -> new NoCacheObjectFoundException("Cache item not found."));
-         return ResponseEntity.ok().body(dto);
+      final String key = "%s:id:%d".formatted(this.key, id);
+      if(cacheOnes.containsKey(key)){
+         final DTO_OUT dto = cacheOnes.get(key);
+         return ResponseEntity.ok(dto);
       }
       final E entity = service.getById(id)
               .orElseThrow(() -> new EntityNotFoundException(id + ": Not found."));
       final DTO_OUT dto = mapper.toDto(entity);
-      return ResponseEntity.ok()
-              .body(dto);
+      cacheOnes.put(key, dto);
+      return ResponseEntity.ok(dto);
    }
 
-   protected ResponseEntity<@NonNull DTO_OUT> create(@NonNull final DTO_IN dto, String location) {
-      E entity = service.save(dto);
-      DTO_OUT dtoOut = mapper.toDto(entity);
 
+   protected ResponseEntity<@NonNull DTO_OUT> create(@NonNull final DTO_IN dto, String location) {
+      final E entity = service.save(dto);
+      final DTO_OUT dtoOut = mapper.toDto(entity);
       final long id = extractId(entity);
       final URI created = URI.create(location + "/" + id);
+      cacheOnes.put("%s:id:%d".formatted(key, id), dtoOut);
       return ResponseEntity.created(created)
               .body(dtoOut);
    }
 
-   @SuppressWarnings("NullableProblems")
+
    protected ResponseEntity<Void> delete(long id) {
       service.softDelete(id);
       invalidateIfExists();
       return ResponseEntity.noContent().build();
    }
 
-   private long extractId(E entity){
+   private long extractId(E entity) {
       return this.idExtractor.apply(entity);
    }
 
-   protected void invalidateIfExists(){
-      if(!cache.keyExists(this.currentPageKey)) return;
-      cache.invalidatePage(this.currentPageKey);
-      this.currentPageKey = "";
+   protected void invalidateIfExists() {
+      if (this.currentPageKey != null && cache.keyExists(this.currentPageKey)) {
+         cache.invalidatePage(this.currentPageKey);
+         this.currentPageKey = "";
+      }
+      cacheOnes.clear();
    }
 }

@@ -4,5 +4,5 @@ import com.jame.dev.gymApp.entity.SubscriptionEntity;
 import com.jame.dev.gymApp.repository.common.CustomJpaRepository;
 
 public interface SubscriptionRepository extends CustomJpaRepository<SubscriptionEntity, Long> {
-   boolean existsByCustomer_IdAndActiveTrue(final long id);
+   boolean existsByCustomer_IdAndFinishedFalse(final long id);
 }

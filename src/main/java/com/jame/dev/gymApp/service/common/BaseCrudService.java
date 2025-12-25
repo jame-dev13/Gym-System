@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
-public interface BaseCrudService<E, DTO_IN, ID> {
+public interface  BaseCrudService<E, DTO_IN, ID> {
    Page<@NonNull E> getPage(@NonNull final Pageable pageable);
 
    E save(@NonNull final DTO_IN dtoIn);

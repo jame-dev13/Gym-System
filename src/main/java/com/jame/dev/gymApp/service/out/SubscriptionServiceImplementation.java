@@ -20,7 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -31,7 +33,6 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    private final PricingRepository pricingRepo;
    private final SubscriptionMapper subscriptionMapper;
 
-
    @Override
    public Page<@NonNull SubscriptionEntity> getPage(@NonNull Pageable pageable) {
       return repo.findAllByActiveTrue(pageable);
@@ -40,7 +41,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Transactional
    @Override
    public SubscriptionEntity save(@NonNull SubscriptionDtoInput dto) {
-      final boolean existsCustomer = repo.existsByCustomer_IdAndActiveTrue(dto.customerId());
+      final boolean existsCustomer = repo.existsByCustomer_IdAndFinishedFalse(dto.customerId());
       if (existsCustomer) {
          throw new AlreadyExistsException("Customer has an active subscription.");
       }
@@ -48,8 +49,8 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
               .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
       final PricingEntity pricing = pricingRepo.findById(dto.pricingId())
               .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
-      final Period period = this.extractPeriod(pricing);
-      final List<PeriodEntity> periods = List.of(new PeriodEntity(period, LocalDate.now()));
+      final PeriodEntity period = buildPeriods(pricing, LocalDate.now());
+      final List<PeriodEntity> periods = List.of(period);
       final SubscriptionEntity subscription = subscriptionMapper.toEntity(dto, customer, pricing, periods);
       return repo.save(subscription);
    }
@@ -63,6 +64,13 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Override
    public SubscriptionEntity patch(Long id) {
       return this.finalizeSubscription(id);
+   }
+
+
+   @Transactional
+   @Override
+   public SubscriptionEntity update(@NonNull Long id, @NonNull SubscriptionDtoInput input) {
+      return renew(id, input);
    }
 
    @Transactional
@@ -79,9 +87,57 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
       return repo.save(subscription);
    }
 
+   @Transactional
+   private SubscriptionEntity renew(long id, SubscriptionDtoInput input) {
+      final SubscriptionEntity subscriptionEntity = repo.findById(id)
+              .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
+      if (!Objects.equals(subscriptionEntity.getCustomer().getId(), input.customerId())) {
+         throw new RenewSubscriptionException("Customer doesn't match.");
+      }
+      final PeriodEntity currentPeriod = subscriptionEntity.getSubscriptionPeriods().getLast();
+      if (!canRenew(currentPeriod, subscriptionEntity)) {
+         throw new RenewSubscriptionException("Can't renew the subscription yet.");
+      }
+      final PricingEntity pricing = pricingRepo.findById(input.pricingId())
+              .orElseThrow(() -> new PricingNotFoundException("Pricing not found."));
+
+      final long days = extractDays(currentPeriod.getEndPeriod());
+      final LocalDate startDate = (days <= 0) ? LocalDate.now() : LocalDate.now().plusDays(days);
+
+      final PeriodEntity period = buildPeriods(pricing, startDate);
+
+      final List<PeriodEntity> periods = subscriptionEntity.getSubscriptionPeriods();
+      periods.add(period);
+
+      subscriptionEntity.setPricing(pricing);
+      subscriptionEntity.setSubscriptionPeriods(periods);
+      subscriptionEntity.setFinished(false);
+
+      return repo.save(subscriptionEntity);
+   }
+
    private Period extractPeriod(PricingEntity pricing) {
       final String valueName = pricing.getMemberShipEntity().getMembership().name();
       final Optional<Period> periodOptional = Optional.of(Period.valueOf(valueName));
       return periodOptional.orElseThrow(() -> new IllegalArgumentException("No period value present for: " + valueName));
+   }
+
+   private PeriodEntity buildPeriods(final PricingEntity pricing, final LocalDate startDate) {
+      final Period period = extractPeriod(pricing);
+      return new PeriodEntity(period, startDate);
+   }
+
+   private boolean canRenew(final PeriodEntity period, final SubscriptionEntity subscriptionEntity) {
+      if(subscriptionEntity.isFinished()) return true;
+      final int WINDOW = 4;
+      final LocalDate now = LocalDate.now();
+      final LocalDate finishPeriodDate = period.getEndPeriod();
+      if(now.isAfter(finishPeriodDate)) return true;
+      final long windowAccept = ChronoUnit.DAYS.between(now, finishPeriodDate);
+      return windowAccept < WINDOW;
+   }
+
+   private long extractDays(final LocalDate finishDate) {
+      return ChronoUnit.DAYS.between(finishDate, LocalDate.now());
    }
 }

@@ -94,6 +94,7 @@ public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
       }
    }
 
+   //remove
    @Override
    public Optional<T> get(final String key, final long id) {
       if (!cacheAppPool.exists(key)) {
