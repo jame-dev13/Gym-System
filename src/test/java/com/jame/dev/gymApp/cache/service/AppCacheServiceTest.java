@@ -101,22 +101,6 @@ class AppCacheServiceTest {
    }
 
    @Test
-   @DisplayName("Should get object with any id given")
-   void getUser() throws JsonProcessingException {
-      final String json = mapToJson(dto);
-      when(cacheAppPool.exists(eq("users:0:1"))).thenReturn(true);
-      when(cacheAppPool.lrange("users:0:1", 0, -1))
-              .thenReturn(List.of(json));
-      Optional<UserDtoOutput> optionalDto = service.get(key, 1L);
-
-      verify(cacheAppPool).exists(key);
-      verify(cacheAppPool).lrange(key, 0, -1);
-      verifyNoMoreInteractions(cacheAppPool);
-      assertNotSame(Optional.empty(), optionalDto, "Should not be empty");
-      assertNotNull(optionalDto.orElse(null), "Should not be null.");
-   }
-
-   @Test
    @DisplayName("Should invalidates the given page key")
    void invalidates(){
       when(cacheAppPool.exists(key))

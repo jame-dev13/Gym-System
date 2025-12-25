@@ -10,8 +10,6 @@ public interface AppCacheService<T> {
 
    void saveCache(final String key, Page<@NonNull T> t);
 
-   Optional<T> get(final String key, long id);
-
    void invalidatePage(final String key);
 
    boolean keyExists(final String key);

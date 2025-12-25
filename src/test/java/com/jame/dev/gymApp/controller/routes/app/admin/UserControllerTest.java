@@ -27,7 +27,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -100,7 +99,7 @@ class UserControllerTest {
 
 
    @Test
-   @DisplayName("Should get page of Users")
+   @DisplayName("[GET]: Should get page of Users")
    void getPage() throws Exception {
       final Pageable pageable = PageRequest.of(0, 1);
 
@@ -128,7 +127,7 @@ class UserControllerTest {
    }
 
    @Test
-   @DisplayName("Should Get page from cache")
+   @DisplayName("[GET]: Should Get page from cache")
    void getFromCache() throws Exception {
       final String key = "users:0:1";
       Pageable pageable = PageRequest.of(0, 1);
@@ -146,12 +145,10 @@ class UserControllerTest {
    }
 
    @Test
-   @DisplayName("Should get the user specified by id")
+   @DisplayName("[GET]: Should get the user specified by id")
    void getOneUser() throws Exception {
-      final String key = "users:0:1";
       final long id = 1L;
       final String URI = URI_TEMPLATE + '/' + id;
-      when(cache.keyExists(anyString())).thenReturn(false);
       when(service.getById(anyLong())).thenReturn(Optional.of(userEntity));
       when(mapper.toDto(userEntity)).thenReturn(dto);
 
@@ -161,38 +158,14 @@ class UserControllerTest {
                       .accept(org.springframework.http.MediaType.APPLICATION_JSON))
               .andExpectAll(status().isOk(), content().json(jsonExpected));
 
-      ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
       ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
-      verify(cache).keyExists(keyCaptor.capture());
       verify(service).getById(idCaptor.capture());
       verify(mapper).toDto(userEntity);
       verifyNoMoreInteractions(cache, service, mapper);
    }
 
    @Test
-   @DisplayName("Should get one user from cache")
-   void getOneUserFromCache() throws Exception {
-      final String key = "users:0:1";
-      final long id = 1L;
-      final String URI = URI_TEMPLATE + '/' + id;
-
-      ReflectionTestUtils.setField(controller, "currentPageKey", key);
-      when(cache.keyExists(key)).thenReturn(true);
-      when(cache.get(key, id)).thenReturn(Optional.of(dto));
-
-      final String jsonExpected = objectMapper.writeValueAsString(dto);
-      mockMvc.perform(get(URI)
-                      .param("id", "1")
-                      .accept(org.springframework.http.MediaType.APPLICATION_JSON))
-              .andExpectAll(status().isOk(), content().json(jsonExpected));
-
-      verify(cache).keyExists(key);
-      verify(cache).get(key, id);
-      verifyNoMoreInteractions(cache);
-   }
-
-   @Test
-   @DisplayName("Should do post to an user")
+   @DisplayName("[POST]: Should do post to an user")
    void postUser() throws Exception {
 
       when(service.save(any(UserDtoInput.class))).thenReturn(userEntity);
@@ -227,7 +200,7 @@ class UserControllerTest {
    }
 
    @Test
-   @DisplayName("Should do put to an user object.")
+   @DisplayName("[PUT]: Should do put to an user object.")
    void putUser() throws Exception {
       final long id = 1L;
       final UserDtoInput input = UserDtoInput.builder()
@@ -291,7 +264,7 @@ class UserControllerTest {
    }
 
    @Test
-   @DisplayName("Should do delete to the user resource.")
+   @DisplayName("[DELETE]: Should do delete to the user resource.")
    void deleteUser() throws Exception {
       final long id = 1L;
       mockMvc.perform(delete(URI_TEMPLATE + "/" + id)

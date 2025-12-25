@@ -1,11 +1,8 @@
 package com.jame.dev.gymApp.cache.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.jame.dev.gymApp.exception.CacheKeyNotExistsException;
-import com.jame.dev.gymApp.exception.EmptyCacheObjectException;
 import com.jame.dev.gymApp.model.dto.out.PageMetaData;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -39,16 +36,6 @@ public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
          throw new RuntimeException("Error parsing JSON: " + s, e);
       }
    };
-
-   private boolean matchId(final String line, final long id) {
-      try {
-         JsonNode json = mapper.readTree(line);
-         return json.path("id").asLong() == id;
-      } catch (JsonProcessingException ignored) {
-         return false;
-      }
-   }
-
 
    @Override
    public Optional<Page<@NonNull T>> getCache(String key) {
@@ -94,29 +81,6 @@ public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
       }
    }
 
-   //remove
-   @Override
-   public Optional<T> get(final String key, final long id) {
-      if (!cacheAppPool.exists(key)) {
-         throw new CacheKeyNotExistsException("Key: " + key + " doesn't exists.");
-      }
-
-      final List<String> cacheJson = cacheAppPool.lrange(key, 0, -1);
-      if (cacheJson.isEmpty()) {
-         throw new EmptyCacheObjectException("No cache associated with key: " + key);
-      }
-      return getItem(cacheJson, id);
-   }
-
-   private Optional<T> getItem(List<String> jsonList, long id){
-      for (String json : jsonList) {
-         T item = mapperHelper.apply(json);
-         if(matchId(json, id))
-            return Optional.of(item);
-      }
-      return Optional.empty();
-   }
-
    @Override
    public void invalidatePage(final String key) {
       if (cacheAppPool.exists(key))
@@ -130,8 +94,8 @@ public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
 
 
    private PageMetaData getPageMetaDataHelper(final Page<@NonNull T> page) {
-      Sort sort = page.getSort();
-      var order = sort.stream().findFirst().orElse(null);
+      final Sort sort = page.getSort();
+      final Sort.Order order = sort.stream().findFirst().orElse(null);
       final String sortProperty = (order != null) ? order.getProperty() : "id";
       final String sortDirection = (order != null) ? order.getDirection().name(): "ASC";
 

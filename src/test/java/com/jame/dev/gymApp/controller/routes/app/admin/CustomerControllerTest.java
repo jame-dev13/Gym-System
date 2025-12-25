@@ -27,7 +27,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -164,7 +163,6 @@ class CustomerControllerTest {
                               Set.of(Role.USER)),
                       "82048223");
       final CustomerEntity customer = new CustomerEntity(id, new UserEntity(), "1393141", true);
-      when(cache.keyExists(anyString())).thenReturn(false);
       when(customerService.getById(id)).thenReturn(Optional.of(customer));
       when(mapper.toDto(any(CustomerEntity.class))).thenReturn(customerDto);
 
@@ -175,10 +173,8 @@ class CustomerControllerTest {
                       .accept(MediaType.APPLICATION_JSON))
               .andExpectAll(status().isOk(), content().json(jsonExpected));
 
-      final ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
       final ArgumentCaptor<CustomerEntity> customerCaptor = ArgumentCaptor.forClass(CustomerEntity.class);
 
-      verify(cache).keyExists(keyCaptor.capture());
       verify(customerService).getById(id);
       verify(mapper).toDto(customerCaptor.capture());
 
@@ -186,34 +182,6 @@ class CustomerControllerTest {
       assertNotNull(entity, "Customer Entity should not be null");
       assertEquals(1L, entity.getId(), "Id should be '1'");
    }
-
-   @Test
-   @DisplayName("Should get the customer from cache")
-   void getCustomerFormCache() throws Exception {
-      final long id = 1L;
-      final String URI = URI_TEMPLATE + '/' + id;
-      final CustomerDtoOutput customerDto = new CustomerDtoOutput(id,
-                      new UserDtoOutput(1L, "userdto", "user@mail.com",
-                              Set.of(Role.USER)),
-                      "82048223");
-      ReflectionTestUtils.setField(controller, "currentPageKey", "customer:0:1");
-      when(cache.keyExists(anyString())).thenReturn(true);
-      when(cache.get(anyString(), eq(id))).thenReturn(Optional.of(customerDto));
-
-      final String jsonExpected = objectMapper.writeValueAsString(customerDto);
-
-      mockMvc.perform(get(URI)
-                      .param("id", String.valueOf(id))
-                      .accept(MediaType.APPLICATION_JSON))
-              .andExpectAll(status().isOk(), content().json(jsonExpected));
-
-      final ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
-      final ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
-
-      verify(cache).keyExists(keyCaptor.capture());
-      verify(cache).get(keyCaptor.capture(), idCaptor.capture());
-      verifyNoMoreInteractions(cache);
-    }
 
    @Test
    @DisplayName("Should post a customer")
