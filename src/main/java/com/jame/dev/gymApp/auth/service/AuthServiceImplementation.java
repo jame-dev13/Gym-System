@@ -25,6 +25,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -87,13 +88,18 @@ public class AuthServiceImplementation implements AuthService {
       final User userAuthenticated = Optional.ofNullable((User) authentication.getPrincipal())
               .orElseThrow(() -> new AuthenticationAttemptFailureException("Can't authenticate User."));
 
-      final String username = userAuthenticated.getUsername();
+      final boolean isUser = userAuthenticated.getAuthorities()
+              .stream()
+              .noneMatch(ga -> Objects.equals(ga.getAuthority(), "ROLE_ADMIN"));
 
+      final String username = userAuthenticated.getUsername();
       final Optional<CustomerEntity> optionalUser = customerService.getUserByEmail(username);
       final boolean isCustomer = optionalUser.isPresent();
       final CookieResponseDto cookies = handleCookieResponse(username);
+
       return SignInOkDto.builder()
               .isCustomer(isCustomer)
+              .isUser(isUser)
               .msg("Authentication successfully")
               .email(username)
               .access(cookies.access())

@@ -27,6 +27,7 @@ public class CookieHelper {
    public void clearCookie(final HttpServletResponse response, final String name){
       final ResponseCookie cookie = ResponseCookie.from(name, "")
               .httpOnly(true)
+              .sameSite("none")
               .secure(true)
               .path("/")
               .maxAge(0)
@@ -37,6 +38,7 @@ public class CookieHelper {
    private ResponseCookie buildCookie(final String name, final String value, final long exp){
       return ResponseCookie.from(name, value)
               .httpOnly(true)
+              .sameSite("none")
               .secure(true)
               .path("/")
               .maxAge(Duration.ofMillis(exp))

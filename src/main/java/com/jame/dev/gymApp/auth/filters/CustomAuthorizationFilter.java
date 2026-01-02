@@ -53,9 +53,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
          return;
       }
 
-      if (request.getCookies() == null) {
-         return;
-      }
+      if (request.getCookies() == null) return;
 
       final Map<String, String> cookies = getCookies(request);
 

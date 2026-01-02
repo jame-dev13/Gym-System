@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/auth/verify")
+@RequestMapping("/api/v1/auth/verify")
 @RequiredArgsConstructor
 public class VerificationController {
 

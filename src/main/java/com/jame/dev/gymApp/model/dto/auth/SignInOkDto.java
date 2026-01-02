@@ -7,6 +7,7 @@ import lombok.Builder;
 @Builder
 public record SignInOkDto(
         @JsonProperty("isCustomer") boolean isCustomer,
+        @JsonProperty("isUser") boolean isUser,
         @JsonProperty("msg") String msg,
         @JsonProperty("email") String email,
         @JsonIgnore String access,

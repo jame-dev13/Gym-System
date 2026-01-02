@@ -10,11 +10,12 @@ import java.util.List;
 @Component
 public class CorsConfig {
 
-   private final List<String> ALLOWED_ORIGINS = List.of("http://locahost:5173");
+   private final List<String> ALLOWED_ORIGINS = List.of("http://localhost:5173");
    private final List<String> ALLOWED_METHODS = List.of(
            "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
    private final List<String> ALLOWED_HEADERS = List.of(
-           "Content-Type", "Authorization", "Access-Control-Allow-Headers");
+           "Content-Type", "Authorization", "Access-Control-Allow-Headers",
+           "Access-Control-Allow-Origin");
 
    public CorsConfigurationSource configurationSource() {
       CorsConfiguration cors = new CorsConfiguration();

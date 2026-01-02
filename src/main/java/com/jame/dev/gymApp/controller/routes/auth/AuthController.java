@@ -6,6 +6,7 @@ import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInOkDto;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -27,7 +28,7 @@ public class AuthController {
    private final CookieHelper cookieHelper;
 
    @PostMapping("/signUp")
-   public ResponseEntity<Void> signUp(@RequestBody final UserDtoInput dto) throws ExecutionException, InterruptedException {
+   public ResponseEntity<Void> signUp(@Valid @RequestBody final UserDtoInput dto) throws ExecutionException, InterruptedException {
       authService.signUp(dto);
       return ResponseEntity.status(HttpStatus.CREATED).build();
    }
