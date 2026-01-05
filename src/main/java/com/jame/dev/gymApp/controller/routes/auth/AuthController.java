@@ -46,7 +46,7 @@ public class AuthController {
    }
 
    @PostMapping("/refresh")
-   public ResponseEntity<Void> refresh(@CookieValue(name = "_HOST-JWT_REFRESH") final String value) {
+   public ResponseEntity<Void> refresh(@CookieValue(name = "refresh") final String value) {
       if (Objects.isNull(value)) {
          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
       }

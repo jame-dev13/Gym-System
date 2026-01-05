@@ -7,6 +7,7 @@ import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
 import com.jame.dev.gymApp.exception.*;
 import com.jame.dev.gymApp.jwt.service.JwtService;
+import com.jame.dev.gymApp.mapper.RoleMapper;
 import com.jame.dev.gymApp.messages.service.EmailService;
 import com.jame.dev.gymApp.model.dto.auth.*;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
@@ -15,6 +16,7 @@ import com.jame.dev.gymApp.service.in.CustomerService;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.service.in.VerificationService;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
+import com.jame.dev.gymApp.shared.enums.Role;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +44,7 @@ public class AuthServiceImplementation implements AuthService {
    private final BlacklistService blacklistService;
    private final VerificationService verificationService;
    private final EmailService emailService;
+   private final RoleMapper roleMapper;
 
    @Override
    public void signUp(UserDtoInput dto) {
@@ -127,6 +131,18 @@ public class AuthServiceImplementation implements AuthService {
    @Override
    public ExpirationWindowDto setNewExpiration(@NonNull String email) {
       return verificationService.getMoreExpTime(email);
+   }
+
+   @Override
+   public AuthMe setUser(@NonNull String value, @NonNull final Authentication authentication) {
+      if (Objects.isNull(value))
+         throw new AuthenticationNullException("Not valid access authentication.");
+      final String username = jwtService.extractSubject(value)
+              .orElseThrow(() -> new UserNotFoundException("Subject not found."));
+      if (!username.equals(authentication.getName()))
+         throw new IllegalSubjectAuthenticatedException("Subjects doesn't match.");
+      final Set<Role> roles = roleMapper.authoritiesToRoles(authentication.getAuthorities());
+      return new AuthMe(username, roles);
    }
 
    private boolean isLocalProvider(SignInDto dto) {

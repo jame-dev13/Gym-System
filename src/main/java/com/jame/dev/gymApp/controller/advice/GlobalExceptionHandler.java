@@ -247,4 +247,13 @@ public class GlobalExceptionHandler {
               .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "ENTITY_NOT_FOUND_OPERATION");
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
    }
+
+   @ExceptionHandler(IllegalSubjectAuthenticatedException.class)
+   public ResponseEntity<ApiErrorResponse> handleIllegalSubjectAuthenticatedException(
+           IllegalSubjectAuthenticatedException ex,
+           HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.FORBIDDEN, "AUTHORIZE_OPERATION");
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+   }
 }
