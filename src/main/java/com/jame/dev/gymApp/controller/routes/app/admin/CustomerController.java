@@ -15,7 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/admin/customers")
+@RequestMapping("/app/v1/administration/customers")
 @PreAuthorize("hasRole('ADMIN')")
 public class CustomerController extends BaseControllerPutable<CustomerEntity, CustomerDtoInput, CustomerDtoOutput> {
 

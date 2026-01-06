@@ -15,7 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/admin/subscriptions")
+@RequestMapping("/app/v1/administration/subscriptions")
 @PreAuthorize("hasRole('ADMIN')")
 public class SubscriptionController extends BaseControllerPatchable<SubscriptionEntity, SubscriptionDtoInput, SubscriptionDtoOutput> {
 

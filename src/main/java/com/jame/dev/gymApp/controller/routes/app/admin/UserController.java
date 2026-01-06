@@ -15,7 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/admin/users")
+@RequestMapping("/app/v1/administration/users")
 @PreAuthorize("hasRole('ADMIN')")
 public class UserController extends BaseControllerPutable<UserEntity, UserDtoInput, UserDtoOutput> {
    public UserController(final BaseCrudService<UserEntity, UserDtoInput, Long> service,

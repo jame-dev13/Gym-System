@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin/metrics/subs")
+@RequestMapping("/app/v1/administration/metrics/subs")
 @RequiredArgsConstructor
 public class SubscriptionMetricsController {
 

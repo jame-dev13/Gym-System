@@ -14,7 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/gym-app/v1/subscriptions")
+@RequestMapping("/app/v1/subscriptions")
 @PreAuthorize("hasRole('USER')")
 public class SubscriptionUsersController extends ControllerPatchPut<SubscriptionEntity, SubscriptionDtoInput, SubscriptionDtoOutput> {
    public SubscriptionUsersController(BaseCrudService<SubscriptionEntity, SubscriptionDtoInput, Long> service,

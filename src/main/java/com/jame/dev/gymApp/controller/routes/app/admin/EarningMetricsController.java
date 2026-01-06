@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin/metrics/earnings")
+@RequestMapping("/app/v1/administration/metrics/earnings")
 @RequiredArgsConstructor
 public class EarningMetricsController {
    private final EarningMetricsService service;

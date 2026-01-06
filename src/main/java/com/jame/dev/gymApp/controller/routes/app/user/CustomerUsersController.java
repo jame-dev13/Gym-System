@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/gym-app/v1/customers")
+@RequestMapping("/app/v1/customers")
 @PreAuthorize("hasRole('USER')")
 public class CustomerUsersController extends BaseControllerPutable<CustomerEntity, CustomerDtoInput, CustomerDtoOutput> {
 
