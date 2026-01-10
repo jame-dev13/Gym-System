@@ -1,18 +1,17 @@
 package com.jame.dev.gymApp.cache.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.jame.dev.gymApp.model.dto.out.PageDto;
 import com.jame.dev.gymApp.model.dto.out.PageMetaData;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import redis.clients.jedis.JedisPooled;
 
-import java.util.Collections;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -39,43 +38,45 @@ public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
 
    @Override
    public Optional<Page<@NonNull T>> getCache(String key) {
-      List<String> list = cacheAppPool.lrange(key, 0, -1);
-      if (list == null || list.isEmpty()) return Optional.empty();
-
-      Collections.reverse(list);
-      final List<T> pageContent = list.stream()
-              .map(mapperHelper)
-              .toList();
-
-      final String jsonMetaData = cacheAppPool.get(key.concat(":meta"));
-      final Optional<PageMetaData> optionalMetadata = deserializeMetaDataJson(jsonMetaData);
-
-      if (optionalMetadata.isEmpty()) return Optional.empty();
-
-      final PageMetaData metadata = optionalMetadata.get();
-      final Sort sort = metadata.sortProperty() == null
-              ? Sort.unsorted()
-              : Sort.by(Sort.Direction.fromString(metadata.sortDirection()), metadata.sortProperty());
-
-      final Page<@NonNull T> page = new PageImpl<>(pageContent,
-              PageRequest.of(metadata.number(), metadata.size(), sort),
-              metadata.totalElements());
-
-      return Optional.of(page);
+      final String json = cacheAppPool.get(key);
+      if (json == null || json.isBlank()) {
+         return Optional.empty();
+      }
+      try {
+         final JsonNode root = mapper.readTree(json);
+         final JsonNode contentNode = root.get("content");
+         final List<T> content = mapper.readerForListOf(type).readValue(contentNode);
+         final String sortProperty = root.get("sortProperty").asText(Sort.by("id").toString());
+         final String sortDirection = root.get("sortDirection").asText(Sort.Direction.ASC.name());
+         final Pageable pageable = PageRequest.of(
+                 root.get("page").asInt(),
+                 root.get("size").asInt(),
+                 Sort.by(sortProperty, sortDirection));
+         final Page<T> page = new PageImpl<>(
+                 content,
+                 pageable,
+                 root.get("totalElements").asLong()
+         );
+         return Optional.of(page);
+      } catch (IOException e) {
+         log.error("Cannot process the object: {}", e.getMessage());
+         return Optional.empty();
+      }
    }
 
    @Override
    public void saveCache(final String key, final Page<@NonNull T> page) {
-      final long exp = 420;
+      final long EXP = 300;
       try {
-         cacheAppPool.del(key);
-         for (T type : page.getContent()) {
-            cacheAppPool.rpush(key, mapper.writeValueAsString(type));
-         }
          final PageMetaData metaData = getPageMetaDataHelper(page);
-         final String metaSerialized = mapper.writeValueAsString(metaData);
-         cacheAppPool.expire(key, exp);
-         cacheAppPool.setex(key.concat(":meta"), exp, metaSerialized);
+         final PageDto<T> pageDto = new PageDto<>(
+                 page.getContent(),
+                 metaData.number(), metaData.size(),
+                 metaData.totalElements(),
+                 metaData.sortProperty(), metaData.sortDirection()
+         );
+         final String pageSerialized = mapper.writeValueAsString(pageDto);
+         cacheAppPool.setex(key, EXP, pageSerialized);
       } catch (JsonProcessingException e) {
          log.error("Error processing Json: ", e);
       }
@@ -92,26 +93,16 @@ public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
       return cacheAppPool.exists(key);
    }
 
-
    private PageMetaData getPageMetaDataHelper(final Page<@NonNull T> page) {
       final Sort sort = page.getSort();
       final Sort.Order order = sort.stream().findFirst().orElse(null);
       final String sortProperty = (order != null) ? order.getProperty() : "id";
-      final String sortDirection = (order != null) ? order.getDirection().name(): "ASC";
+      final String sortDirection = (order != null) ? order.getDirection().name() : "ASC";
 
       return new PageMetaData(
               page.getNumber(), page.getSize(),
               page.getTotalElements(), page.getTotalPages(),
               sortProperty, sortDirection
       );
-   }
-
-   private Optional<PageMetaData> deserializeMetaDataJson(final String json) {
-      try {
-         return Optional.of(mapper.readValue(json, PageMetaData.class));
-      } catch (JsonProcessingException e) {
-         log.error("Error deserializing json object.", e);
-         return Optional.empty();
-      }
    }
 }
