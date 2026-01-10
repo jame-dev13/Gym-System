@@ -1,7 +1,6 @@
 package com.jame.dev.gymApp.model.dto.in;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.jame.dev.gymApp.controller.annotations.NoAdminValue;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import com.jame.dev.gymApp.shared.enums.Role;
 import jakarta.validation.constraints.Email;
@@ -19,6 +18,6 @@ public record UserDtoInput(
         @JsonProperty("email") @NotBlank @Email String email,
         @JsonProperty("password") @Nullable String password,
         @JsonProperty("authProvider") @NonNull AuthProvider authProvider,
-        @JsonProperty("roles") @NotNull @NoAdminValue Set<Role> roles
+        @JsonProperty("roles") @NotNull Set<Role> roles
 ) {
 }

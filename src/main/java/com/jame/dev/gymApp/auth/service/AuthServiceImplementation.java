@@ -47,11 +47,14 @@ public class AuthServiceImplementation implements AuthService {
    private final RoleMapper roleMapper;
 
    @Override
-   public void signUp(UserDtoInput dto) {
+   public void signUp(final UserDtoInput dto) {
       if (dto.authProvider() != AuthProvider.LOCAL) {
          throw new AuthProviderNotAllowedException("Non LOCAL provider present: " + dto.authProvider());
       }
-      final UserEntity user = userService.save(dto);
+      final UserEntity user = userService.save(new UserDtoInput(
+              dto.name(), dto.email(), dto.password(),
+              AuthProvider.LOCAL, Set.of(Role.USER))
+      );
       if (user == null) {
          throw new CantSaveUserException("Operation failed.");
       }
@@ -65,13 +68,9 @@ public class AuthServiceImplementation implements AuthService {
               .subject("Verification code")
               .msgBody(emailService.html(recipient, verification.getId()))
               .build();
-
       emailService.sendSimpleEmail(emailDetails)
-              .thenAccept(sent -> {
-                 if (sent) {
-                    log.warn("Mail message sent.");
-                 } else log.warn("Error try to send the mail.");
-              });
+              .thenAccept(sent ->
+                 log.warn("{}", (sent) ? "Mail message sent": "Error try to send the mail."));
    }
 
    @Override
