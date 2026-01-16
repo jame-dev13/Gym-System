@@ -22,16 +22,16 @@ public non-sealed abstract class ControllerPatchPut<E, DTO_IN, DTO_OUT> extends
    }
 
    protected ResponseEntity<@NonNull DTO_OUT> patch(final long id) {
+      super.invalidateIfExists();
       final E entity = this.patchService.patch(id);
       final DTO_OUT dto = super.mapper.toDto(entity);
-      super.invalidateIfExists();
       return ResponseEntity.ok(dto);
    }
 
    protected ResponseEntity<@NonNull DTO_OUT> put(long id, @NonNull final DTO_IN dto) {
+      super.invalidateIfExists();
       final E entity = putService.update(id, dto);
       final DTO_OUT dtoResponse = super.mapper.toDto(entity);
-      super.invalidateIfExists();
       return ResponseEntity.ok(dtoResponse);
    }
 

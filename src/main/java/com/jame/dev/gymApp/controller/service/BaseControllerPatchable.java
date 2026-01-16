@@ -24,9 +24,9 @@ public abstract non-sealed class BaseControllerPatchable<E, DTO_IN, DTO_OUT> ext
    }
 
    protected ResponseEntity<@NonNull DTO_OUT> patch(final long id){
+      super.invalidateIfExists();
       final E entity = this.patchService.patch(id);
       final DTO_OUT dto = super.mapper.toDto(entity);
-      super.invalidateIfExists();
       return ResponseEntity.ok(dto);
    }
 }

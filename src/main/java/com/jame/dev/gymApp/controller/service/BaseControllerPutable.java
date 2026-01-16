@@ -19,9 +19,9 @@ public abstract non-sealed class BaseControllerPutable<E, DTO_IN, DTO_OUT> exten
    }
 
    protected ResponseEntity<@NonNull DTO_OUT> put(long id, @NonNull final DTO_IN dto) {
+      super.invalidateIfExists();
       final E entity = putService.update(id, dto);
       final DTO_OUT dtoResponse = super.mapper.toDto(entity);
-      super.invalidateIfExists();
       return ResponseEntity.ok(dtoResponse);
    }
 

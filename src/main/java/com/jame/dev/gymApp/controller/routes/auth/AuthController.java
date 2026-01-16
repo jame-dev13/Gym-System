@@ -56,8 +56,8 @@ public class AuthController {
 
    private ResponseEntity<Void> buildResponse(String access, String refresh) {
       return ResponseEntity.ok()
-              .header(HttpHeaders.SET_COOKIE, access)
-              .header(HttpHeaders.SET_COOKIE, refresh)
+              .header(HttpHeaders.SET_COOKIE, cookieHelper.createAccessTokenCookie(access).toString())
+              .header(HttpHeaders.SET_COOKIE, cookieHelper.createRefreshTokenCookie(refresh).toString())
               .build();
    }
 }

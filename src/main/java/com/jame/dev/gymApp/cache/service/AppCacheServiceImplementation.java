@@ -14,7 +14,6 @@ import redis.clients.jedis.JedisPooled;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 @Slf4j
 public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
@@ -27,14 +26,6 @@ public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
       this.type = type;
       this.cacheAppPool = cacheAppPool;
    }
-
-   private final Function<String, T> mapperHelper = s -> {
-      try {
-         return mapper.readValue(s, type);
-      } catch (Exception e) {
-         throw new RuntimeException("Error parsing JSON: " + s, e);
-      }
-   };
 
    @Override
    public Optional<Page<@NonNull T>> getCache(String key) {
@@ -84,8 +75,7 @@ public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
 
    @Override
    public void invalidatePage(final String key) {
-      if (cacheAppPool.exists(key))
-         cacheAppPool.del(key);
+      cacheAppPool.del(key);
    }
 
    @Override

@@ -65,6 +65,7 @@ public abstract sealed class BaseControllerCommon<E, DTO_IN, DTO_OUT> permits
 
 
    protected ResponseEntity<@NonNull DTO_OUT> create(@NonNull final DTO_IN dto, String location) {
+      this.invalidateIfExists();
       final E entity = service.save(dto);
       final DTO_OUT dtoOut = mapper.toDto(entity);
       final long id = extractId(entity);
@@ -76,8 +77,8 @@ public abstract sealed class BaseControllerCommon<E, DTO_IN, DTO_OUT> permits
 
 
    protected ResponseEntity<Void> delete(long id) {
-      service.softDelete(id);
       invalidateIfExists();
+      service.softDelete(id);
       return ResponseEntity.noContent().build();
    }
 
