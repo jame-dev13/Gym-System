@@ -41,13 +41,12 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Transactional
    @Override
    public SubscriptionEntity save(@NonNull SubscriptionDtoInput dto) {
-      final boolean existsCustomer = repo.existsByCustomer_IdAndFinishedFalse(dto.customerId());
-      if (existsCustomer) {
-         throw new AlreadyExistsException("Customer has an active subscription.");
-      }
-      final CustomerEntity customer = customerRepo.findById(dto.customerId())
+      final CustomerEntity customer = customerRepo.findByUser_EmailAndActiveTrue(dto.customerEmail())
               .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
-      final PricingEntity pricing = pricingRepo.findById(dto.pricingId())
+      if(!customer.isActive()) {
+         throw new NoActiveException("Customer not active.");
+      }
+      final PricingEntity pricing = pricingRepo.findByMemberShipEntity_Membership(dto.membership())
               .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
       final PeriodEntity period = buildPeriods(pricing, LocalDate.now());
       final List<PeriodEntity> periods = List.of(period);
@@ -79,7 +78,6 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
       repo.softDelete(id);
    }
 
-   @Transactional
    private SubscriptionEntity finalizeSubscription(@NonNull Long id) {
       final SubscriptionEntity subscription = repo.findById(id)
               .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
@@ -87,18 +85,17 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
       return repo.save(subscription);
    }
 
-   @Transactional
    private SubscriptionEntity renew(long id, SubscriptionDtoInput input) {
       final SubscriptionEntity subscriptionEntity = repo.findById(id)
               .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
-      if (!Objects.equals(subscriptionEntity.getCustomer().getId(), input.customerId())) {
+      if (!Objects.equals(subscriptionEntity.getCustomer().getUser().getEmail(), input.customerEmail())) {
          throw new RenewSubscriptionException("Customer doesn't match.");
       }
       final PeriodEntity currentPeriod = subscriptionEntity.getSubscriptionPeriods().getLast();
       if (!canRenew(currentPeriod, subscriptionEntity)) {
          throw new RenewSubscriptionException("Can't renew the subscription yet.");
       }
-      final PricingEntity pricing = pricingRepo.findById(input.pricingId())
+      final PricingEntity pricing = pricingRepo.findByMemberShipEntity_Membership(input.membership())
               .orElseThrow(() -> new PricingNotFoundException("Pricing not found."));
 
       final long days = extractDays(currentPeriod.getEndPeriod());

@@ -8,5 +8,4 @@ import com.jame.dev.gymApp.service.common.CRUDServiceServicePut;
 public interface SubscriptionService extends
         CRUDServiceServicePatch<SubscriptionEntity, SubscriptionDtoInput, Long>,
         CRUDServiceServicePut<SubscriptionEntity, SubscriptionDtoInput, Long> {
-
 }

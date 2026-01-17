@@ -1,12 +1,17 @@
 package com.jame.dev.gymApp.model.dto.in;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jame.dev.gymApp.shared.enums.Membership;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
 
-@Builder
 public record SubscriptionDtoInput(
-        @JsonProperty("customerId") @NotNull Long customerId,
-        @JsonProperty("pricingId") @NotNull Integer pricingId
+        @JsonProperty("customerEmail")
+        @NotNull
+        @NotBlank
+        @Email String customerEmail,
+        @JsonProperty("membership")
+        @NotNull Membership membership
 ) {
 }

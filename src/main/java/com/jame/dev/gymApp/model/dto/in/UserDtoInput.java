@@ -14,8 +14,8 @@ import java.util.Set;
 
 @Builder
 public record UserDtoInput(
-        @JsonProperty("name") @NotBlank String name,
-        @JsonProperty("email") @NotBlank @Email String email,
+        @JsonProperty("name") @NotNull @NotBlank String name,
+        @JsonProperty("email") @NotNull @NotBlank @Email String email,
         @JsonProperty("password") @Nullable String password,
         @JsonProperty("authProvider") @NonNull AuthProvider authProvider,
         @JsonProperty("roles") @NotNull Set<Role> roles

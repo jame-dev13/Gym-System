@@ -62,8 +62,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
               .roles(Set.of(Role.USER))
               .build();
       final UserEntity userSaved = userService.save(userDtoInput);
-      final CustomerDtoInput customerDtoInput = CustomerDtoInput.builder()
-              .email(userSaved.getEmail()).build();
+      final CustomerDtoInput customerDtoInput = new CustomerDtoInput(
+              userDtoInput.email(), ""
+      );
       customerService.save(customerDtoInput);
       return userSaved;
    }

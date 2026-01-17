@@ -9,11 +9,13 @@ import com.jame.dev.gymApp.model.dto.out.SubscriptionDtoOutput;
 import com.jame.dev.gymApp.service.common.BaseCrudService;
 import com.jame.dev.gymApp.service.common.CRUDServiceServicePatch;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/app/v1/administration/subscriptions")
 @PreAuthorize("hasRole('ADMIN')")
@@ -41,6 +43,7 @@ public class SubscriptionController extends BaseControllerPatchable<Subscription
    @PostMapping
    public ResponseEntity<@NonNull SubscriptionDtoOutput> postSubscription(@RequestBody final SubscriptionDtoInput subscriptionDtoInput){
       final String location = "/admin/subscriptions";
+      log.info("{}", subscriptionDtoInput);
       return super.create(subscriptionDtoInput, location);
    }
 
