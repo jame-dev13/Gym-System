@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.controller.routes.app.admin;
 
 import com.jame.dev.gymApp.cache.service.AppCacheService;
+import com.jame.dev.gymApp.controller.components.VerifyAdmin;
 import com.jame.dev.gymApp.controller.service.BaseControllerPutable;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.mapper.BaseMapper;
@@ -9,20 +10,24 @@ import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.service.common.BaseCrudService;
 import com.jame.dev.gymApp.service.common.CRUDServiceServicePut;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/app/v1/administration/users")
 @PreAuthorize("hasRole('ADMIN')")
 public class UserController extends BaseControllerPutable<UserEntity, UserDtoInput, UserDtoOutput> {
+   private final VerifyAdmin verifyAdmin;
    public UserController(final BaseCrudService<UserEntity, UserDtoInput, Long> service,
                          final AppCacheService<UserDtoOutput> cache,
                          final BaseMapper<UserEntity, UserDtoOutput> mapper,
-                         final CRUDServiceServicePut<UserEntity, UserDtoInput, Long> putService) {
+                         final CRUDServiceServicePut<UserEntity, UserDtoInput, Long> putService, VerifyAdmin verifyAdmin) {
       super(service, cache, mapper, "users", UserEntity::getId, putService);
+      this.verifyAdmin = verifyAdmin;
    }
 
    @GetMapping
@@ -39,7 +44,9 @@ public class UserController extends BaseControllerPutable<UserEntity, UserDtoInp
 
    @PostMapping
    public ResponseEntity<@NonNull UserDtoOutput> postUser(@RequestBody final UserDtoInput userDtoInput) {
-      return super.create(userDtoInput, "/admin/users");
+      var response = super.create(userDtoInput, "/app/v1/administration/users");
+      verifyAdmin.verifyAndApproveAdmin(userDtoInput);
+      return response;
    }
 
    @PutMapping("/{id}")

@@ -8,6 +8,7 @@ import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
 import com.jame.dev.gymApp.model.dto.auth.VerificationRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +24,17 @@ public class VerificationController {
    @PatchMapping("/{email}")
    public ResponseEntity<VerificationDto> verifyAccount(@PathVariable("email") final String email,
                                                         @RequestBody final VerificationRequest request) {
-      final VerificationDto verified = authService.verify(email, request.token())
+      final VerificationDto verificationDto = authService.verify(email, request.token())
               .orElseThrow(() -> new VerificationTokenNotFoundException("Can't retrieve Verification."));
-      log.info(verified.toString());
+      if(!verificationDto.verified()) {
+         return ResponseEntity
+                 .status(HttpStatus.UNAUTHORIZED)
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .body(verificationDto);
+      }
       return ResponseEntity.ok()
               .contentType(MediaType.APPLICATION_JSON)
-              .body(verified);
+              .body(verificationDto);
    }
 
    @PostMapping("/get-more-exp-time")

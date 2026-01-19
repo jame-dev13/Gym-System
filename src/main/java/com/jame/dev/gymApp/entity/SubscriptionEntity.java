@@ -21,11 +21,13 @@ public class SubscriptionEntity {
    @Setter(AccessLevel.NONE)
    private Long id;
 
-   @OneToOne(fetch = FetchType.LAZY, optional = false)
+   @ManyToOne(fetch = FetchType.LAZY, optional = false)
+   @JoinColumn(name = "customer_id")
    @NonNull
    private CustomerEntity customer;
 
-   @OneToOne(fetch = FetchType.LAZY, optional = false)
+   @ManyToOne(fetch = FetchType.LAZY, optional = false)
+   @JoinColumn(name = "pricing_id")
    @NonNull
    private PricingEntity pricing;
 

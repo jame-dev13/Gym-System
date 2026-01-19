@@ -44,11 +44,8 @@ public class VerificationServiceImplementation implements VerificationService {
          return buildVerification(email, true, "Already Verified.");
       }
       final String extractToken = verification.getId();
-      log.info("Extract Token: {}", extractToken);
-      log.info("Entry token: {}", token);
 
       final boolean isSameToken = extractToken.equals(token);
-      log.info("Is same token: {}", isSameToken);
       final boolean isValid = Instant.now().isBefore(verification.getExpiration());
 
       if (isSameToken && isValid) {
@@ -58,8 +55,8 @@ public class VerificationServiceImplementation implements VerificationService {
       }
       final String msgExpired = """
               Time expired. You can get more
-              on: /auth/verify/get-more-exp-time
-              """;
+              on: /auth/verify/get-more-exp-time/%s
+              """.formatted(email);
       final String msg = (isSameToken) ? msgExpired : "Token is not the same.";
       return buildVerification(email, false, msg);
    }

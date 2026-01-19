@@ -36,7 +36,6 @@ public class UserServiceImplementation implements UserService {
    private final UserMapper userMapper;
    private final RoleMapper roleMapper;
 
-
    @Override
    public Page<@NonNull UserEntity> getPage(@NonNull Pageable pageable) {
       return repo.findAllByActiveTrue(pageable);
@@ -68,9 +67,15 @@ public class UserServiceImplementation implements UserService {
    public UserEntity update(@NonNull Long id, @NonNull UserDtoInput dto) {
       final UserEntity userEntity = repo.findById(id)
               .orElseThrow(() -> new UserNotFoundException("User Not Found."));
+      final boolean pwdCondition = dto.password() == null || dto.password().isBlank();
+      final String oldPassword = userEntity.getPassword();
+      final String passwordFinal = (pwdCondition) ? oldPassword: passwordEncoder.encode(dto.password());
+
       userEntity.setName(dto.name());
       userEntity.setEmail(dto.email());
-      userEntity.setPassword(passwordEncoder.encode(dto.password()));
+      userEntity.setPassword(passwordFinal);
+      userEntity.setProvider(AuthProvider.LOCAL != dto.authProvider() ? AuthProvider.LOCAL: dto.authProvider());
+      userEntity.setRoles(dto.roles().stream().map(r -> roleMapper.toEntity(r, roleRepository)).collect(Collectors.toSet()));
       return repo.save(userEntity);
    }
 

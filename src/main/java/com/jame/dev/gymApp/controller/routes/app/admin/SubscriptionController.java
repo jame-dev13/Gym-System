@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/app/v1/administration/subscriptions")
+@RequestMapping("/app/v1/administration/subs")
 @PreAuthorize("hasRole('ADMIN')")
 public class SubscriptionController extends BaseControllerPatchable<SubscriptionEntity, SubscriptionDtoInput, SubscriptionDtoOutput> {
 
@@ -42,7 +42,7 @@ public class SubscriptionController extends BaseControllerPatchable<Subscription
 
    @PostMapping
    public ResponseEntity<@NonNull SubscriptionDtoOutput> postSubscription(@RequestBody final SubscriptionDtoInput subscriptionDtoInput){
-      final String location = "/admin/subscriptions";
+      final String location = "/admin/subs";
       log.info("{}", subscriptionDtoInput);
       return super.create(subscriptionDtoInput, location);
    }
