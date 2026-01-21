@@ -8,6 +8,7 @@ import com.jame.dev.gymApp.factories.AuthResponsesFactory;
 import com.jame.dev.gymApp.factories.EmailDetailsFactory;
 import com.jame.dev.gymApp.jwt.service.JwtService;
 import com.jame.dev.gymApp.messages.service.EmailService;
+import com.jame.dev.gymApp.messages.service.HtmlTemplates;
 import com.jame.dev.gymApp.model.dto.auth.*;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.messages.EmailDetails;
@@ -62,7 +63,9 @@ public class AuthServiceImplementation implements AuthService {
       final EmailDetails emailDetails = EmailDetailsFactory.createDetailsFrom(
               user.getEmail(),
               "Verification Code",
-              emailService.html(user.getEmail(), verification.getId()));
+              HtmlTemplates.verificationTemplate()
+                      .replace("{{recipient}}", user.getEmail())
+                      .replace("{{token}}", verification.getId()));
       emailService.sendSimpleEmail(emailDetails)
               .thenAccept(sent ->
                  log.warn("{}", (sent) ? "Mail message sent": "Error try to send the mail."));
