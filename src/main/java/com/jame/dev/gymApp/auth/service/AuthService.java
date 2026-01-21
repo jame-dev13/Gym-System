@@ -14,5 +14,5 @@ public interface AuthService {
    CookieResponseDto refresh(final String token);
    Optional<VerificationDto> verify(final String email, final String code);
    ExpirationWindowDto setNewExpiration(@NonNull final String email);
-   AuthMe setUser(@NonNull final String value, @NonNull final Authentication authentication);
+   IdentityDto setUser(@NonNull final String access, @NonNull final Authentication authentication);
 }

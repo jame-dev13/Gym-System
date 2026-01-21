@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
 import com.jame.dev.gymApp.auth.service.AuthService;
-import com.jame.dev.gymApp.model.dto.auth.AuthMe;
+import com.jame.dev.gymApp.model.dto.auth.IdentityDto;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +19,10 @@ public class SessionController {
    private final AuthService authService;
 
    @GetMapping
-   public ResponseEntity<AuthMe> getMe(
+   public ResponseEntity<IdentityDto> getMe(
            @CookieValue(name = "access") @NonNull final String access,
            @NonNull Authentication authentication) {
-      final AuthMe authMe = authService.setUser(access, authentication);
+      final IdentityDto authMe = authService.setUser(access, authentication);
       return ResponseEntity.ok(authMe);
    }
 }

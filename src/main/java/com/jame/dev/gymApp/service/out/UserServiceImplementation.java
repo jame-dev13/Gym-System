@@ -1,19 +1,18 @@
 package com.jame.dev.gymApp.service.out;
 
 import com.jame.dev.gymApp.entity.CustomerEntity;
-import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
-import com.jame.dev.gymApp.exception.CustomerNotFoundException;
+import com.jame.dev.gymApp.exception.UserEntityNotFoundException;
 import com.jame.dev.gymApp.exception.UserNotFoundException;
+import com.jame.dev.gymApp.factories.UserFactory;
 import com.jame.dev.gymApp.mapper.RoleMapper;
-import com.jame.dev.gymApp.mapper.UserMapper;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.RoleRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.UserService;
-import com.jame.dev.gymApp.shared.enums.AuthProvider;
+import com.jame.dev.gymApp.updaters.UserUpdater;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,8 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +30,8 @@ public class UserServiceImplementation implements UserService {
    private final RoleRepository roleRepository;
    private final CustomerRepository customerRepo;
    private final PasswordEncoder passwordEncoder;
-   private final UserMapper userMapper;
+   private final UserFactory userFactory;
+   private final UserUpdater userUpdater;
    private final RoleMapper roleMapper;
 
    @Override
@@ -55,10 +53,10 @@ public class UserServiceImplementation implements UserService {
    @Override
    public UserEntity save(@NonNull UserDtoInput dto) {
       final boolean userExists = repo.existsByEmail(dto.email());
-      if(userExists){
+      if (userExists) {
          throw new AlreadyExistsException("User already exists.");
       }
-      final UserEntity userEntity = buildUserEntity(dto);
+      final UserEntity userEntity = userFactory.createFrom(dto);
       return repo.save(userEntity);
    }
 
@@ -67,34 +65,18 @@ public class UserServiceImplementation implements UserService {
    public UserEntity update(@NonNull Long id, @NonNull UserDtoInput dto) {
       final UserEntity userEntity = repo.findById(id)
               .orElseThrow(() -> new UserNotFoundException("User Not Found."));
-      final boolean pwdCondition = dto.password() == null || dto.password().isBlank();
-      final String oldPassword = userEntity.getPassword();
-      final String passwordFinal = (pwdCondition) ? oldPassword: passwordEncoder.encode(dto.password());
-
-      userEntity.setName(dto.name());
-      userEntity.setEmail(dto.email());
-      userEntity.setPassword(passwordFinal);
-      userEntity.setProvider(AuthProvider.LOCAL != dto.authProvider() ? AuthProvider.LOCAL: dto.authProvider());
-      userEntity.setRoles(dto.roles().stream().map(r -> roleMapper.toEntity(r, roleRepository)).collect(Collectors.toSet()));
-      return repo.save(userEntity);
+      final UserEntity userUpdated = userUpdater.apply(userEntity, dto);
+      return repo.save(userUpdated);
    }
 
    @Transactional
    @Override
    public void softDelete(@NonNull Long id) {
-      final CustomerEntity customer = customerRepo.findById(id)
-              .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
-      customerRepo.softDelete(customer.getId());
+      final UserEntity userEntity = repo.findById(id)
+              .orElseThrow(() -> new UserEntityNotFoundException("User not found."));
+      customerRepo.findByUser_EmailAndActiveTrue(userEntity.getEmail())
+              .map(CustomerEntity::getId)
+              .ifPresent(customerRepo::softDelete);
       repo.softDelete(id);
-   }
-
-   private @NonNull UserEntity buildUserEntity(@NonNull UserDtoInput dto) {
-      final Set<RoleEntity> roles = dto.roles().stream()
-              .map(r -> roleMapper.toEntity(r, roleRepository))
-              .collect(Collectors.toSet());
-      final UserEntity userEntity = userMapper.toEntity(dto, roles);
-      if(userEntity.getProvider() == AuthProvider.LOCAL)
-         userEntity.setPassword(passwordEncoder.encode(dto.password()));
-      return userEntity;
    }
 }

@@ -61,7 +61,9 @@ public class CustomerServiceImplementation implements CustomerService {
    public void softDelete(@NonNull Long id) {
       final CustomerEntity customer = repo.findById(id)
               .orElseThrow(() -> new CustomerNotFoundException("Customer Not found."));
-      userRepo.softDelete(customer.getUser().getId());
+      Optional.of(customer.getUser())
+              .map(UserEntity::getId)
+              .ifPresent(userRepo::softDelete);
       repo.softDelete(id);
    }
 
