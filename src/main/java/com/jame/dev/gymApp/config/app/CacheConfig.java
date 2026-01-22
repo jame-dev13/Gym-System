@@ -16,6 +16,7 @@ import redis.clients.jedis.JedisPooled;
 public class CacheConfig {
 
    private final JedisPooled cacheAppPool;
+
    @Bean
    public AppCacheService<UserDtoOutput> cacheUsers(){
       return new AppCacheServiceImplementation<>(UserDtoOutput.class, cacheAppPool);

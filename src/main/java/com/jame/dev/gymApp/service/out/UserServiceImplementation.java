@@ -6,18 +6,17 @@ import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.UserEntityNotFoundException;
 import com.jame.dev.gymApp.exception.UserNotFoundException;
 import com.jame.dev.gymApp.factories.UserFactory;
-import com.jame.dev.gymApp.mapper.RoleMapper;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
+import com.jame.dev.gymApp.model.dto.out.CacheMutated;
 import com.jame.dev.gymApp.repository.CustomerRepository;
-import com.jame.dev.gymApp.repository.RoleRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.updaters.UserUpdater;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,12 +26,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserServiceImplementation implements UserService {
    private final UserRepository repo;
-   private final RoleRepository roleRepository;
    private final CustomerRepository customerRepo;
-   private final PasswordEncoder passwordEncoder;
    private final UserFactory userFactory;
    private final UserUpdater userUpdater;
-   private final RoleMapper roleMapper;
+   private final ApplicationEventPublisher eventPublisher;
 
    @Override
    public Page<@NonNull UserEntity> getPage(@NonNull Pageable pageable) {
@@ -56,8 +53,9 @@ public class UserServiceImplementation implements UserService {
       if (userExists) {
          throw new AlreadyExistsException("User already exists.");
       }
-      final UserEntity userEntity = userFactory.createFrom(dto);
-      return repo.save(userEntity);
+      final UserEntity userEntity = repo.save(userFactory.createFrom(dto));
+      eventPublisher.publishEvent(new CacheMutated("users"));
+      return userEntity;
    }
 
    @Transactional
@@ -65,8 +63,9 @@ public class UserServiceImplementation implements UserService {
    public UserEntity update(@NonNull Long id, @NonNull UserDtoInput dto) {
       final UserEntity userEntity = repo.findById(id)
               .orElseThrow(() -> new UserNotFoundException("User Not Found."));
-      final UserEntity userUpdated = userUpdater.apply(userEntity, dto);
-      return repo.save(userUpdated);
+      final UserEntity userUpdated = repo.save(userUpdater.apply(userEntity, dto));
+      eventPublisher.publishEvent(new CacheMutated("users"));
+      return userUpdated;
    }
 
    @Transactional
@@ -78,5 +77,6 @@ public class UserServiceImplementation implements UserService {
               .map(CustomerEntity::getId)
               .ifPresent(customerRepo::softDelete);
       repo.softDelete(id);
+      eventPublisher.publishEvent(new CacheMutated("users"));
    }
 }
