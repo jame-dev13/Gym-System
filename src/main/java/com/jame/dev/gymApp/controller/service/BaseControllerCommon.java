@@ -21,7 +21,7 @@ import java.util.function.Function;
 
 @RequiredArgsConstructor
 public abstract sealed class BaseControllerCommon<E, DTO_IN, DTO_OUT> permits
-        BaseControllerPatchable, BaseControllerPutable, ControllerPatchPut {
+        BaseControllerPatchable, BaseControllerPutable, BaseControllerPatchAndPut {
 
    protected final BaseCrudService<E, DTO_IN, Long> service;
    protected final AppCacheService<DTO_OUT> cache;

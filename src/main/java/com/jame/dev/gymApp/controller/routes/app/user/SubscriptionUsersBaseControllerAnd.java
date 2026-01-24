@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.controller.routes.app.user;
 
 import com.jame.dev.gymApp.cache.service.AppCacheService;
-import com.jame.dev.gymApp.controller.service.ControllerPatchPut;
+import com.jame.dev.gymApp.controller.service.BaseControllerPatchAndPut;
 import com.jame.dev.gymApp.entity.SubscriptionEntity;
 import com.jame.dev.gymApp.mapper.BaseMapper;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/app/v1/subscriptions")
 @PreAuthorize("hasRole('USER')")
-public class SubscriptionUsersController extends ControllerPatchPut<SubscriptionEntity, SubscriptionDtoInput, SubscriptionDtoOutput> {
-   public SubscriptionUsersController(BaseCrudService<SubscriptionEntity, SubscriptionDtoInput, Long> service,
-                                      AppCacheService<SubscriptionDtoOutput> cache, BaseMapper<SubscriptionEntity, SubscriptionDtoOutput> mapper,
-                                      CRUDServiceServicePatch<SubscriptionEntity, SubscriptionDtoInput, Long> patchService, CRUDServiceServicePut<SubscriptionEntity, SubscriptionDtoInput, Long> putService) {
+public class SubscriptionUsersBaseControllerAnd extends BaseControllerPatchAndPut<SubscriptionEntity, SubscriptionDtoInput, SubscriptionDtoOutput> {
+   public SubscriptionUsersBaseControllerAnd(BaseCrudService<SubscriptionEntity, SubscriptionDtoInput, Long> service,
+                                             AppCacheService<SubscriptionDtoOutput> cache, BaseMapper<SubscriptionEntity, SubscriptionDtoOutput> mapper,
+                                             CRUDServiceServicePatch<SubscriptionEntity, SubscriptionDtoInput, Long> patchService, CRUDServiceServicePut<SubscriptionEntity, SubscriptionDtoInput, Long> putService) {
       super(service, cache, mapper, "subscriptions", SubscriptionEntity::getId, patchService, putService);
    }
 

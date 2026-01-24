@@ -10,12 +10,12 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.function.Function;
 
-public non-sealed abstract class ControllerPatchPut<E, DTO_IN, DTO_OUT> extends
+public non-sealed abstract class BaseControllerPatchAndPut<E, DTO_IN, DTO_OUT> extends
         BaseControllerCommon<E, DTO_IN, DTO_OUT> {
    private final CRUDServiceServicePatch<E, DTO_IN, Long> patchService;
    private final CRUDServiceServicePut<E, DTO_IN, Long> putService;
 
-   public ControllerPatchPut(BaseCrudService<E, DTO_IN, Long> service, AppCacheService<DTO_OUT> cache, BaseMapper<E, DTO_OUT> mapper, String key, Function<E, Long> idExtractor, CRUDServiceServicePatch<E, DTO_IN, Long> patchService, CRUDServiceServicePut<E, DTO_IN, Long> putService) {
+   public BaseControllerPatchAndPut(BaseCrudService<E, DTO_IN, Long> service, AppCacheService<DTO_OUT> cache, BaseMapper<E, DTO_OUT> mapper, String key, Function<E, Long> idExtractor, CRUDServiceServicePatch<E, DTO_IN, Long> patchService, CRUDServiceServicePut<E, DTO_IN, Long> putService) {
       super(service, cache, mapper, key, idExtractor);
       this.patchService = patchService;
       this.putService = putService;
