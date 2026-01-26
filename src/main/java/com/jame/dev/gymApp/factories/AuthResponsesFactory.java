@@ -50,16 +50,24 @@ public class AuthResponsesFactory {
       return new CookieResponseDto(access.getValue(), refresh.getValue());
    }
 
-   public SignInOkDto createSignInOkDtoFrom(final @NonNull User userAuthenticated) {
-      final boolean isUser = userAuthenticated.getAuthorities()
+   public SignInOkDto createSignInOkDtoFrom(final @NonNull User authenticatedUser) {
+      final boolean isUser = authenticatedUser.getAuthorities()
               .stream()
               .map(GrantedAuthority::getAuthority)
               .noneMatch(ga -> Objects.equals(ga, "ROLE_ADMIN"));
-      final String username = userAuthenticated.getUsername();
+      final String username = authenticatedUser.getUsername();
+      return buildSignInOkDto(isUser, username);
+   }
+   public IdentityDto createIdentityDtoFrom(String username, Collection<? extends GrantedAuthority> authorities) {
+      final Set<Role> roles = roleMapper.authoritiesToRoles(authorities);
+      return new IdentityDto(username, roles);
+   }
+
+   private SignInOkDto buildSignInOkDto(
+           final boolean isUser, final String username) {
       final Optional<CustomerEntity> optionalUser = customerService.getUserByEmail(username);
       final boolean isCustomer = optionalUser.isPresent();
       final CookieResponseDto cookies = generateCookieResponseFrom(username);
-
       return SignInOkDto.builder()
               .isCustomer(isCustomer)
               .isUser(isUser)
@@ -68,10 +76,5 @@ public class AuthResponsesFactory {
               .access(cookies.access())
               .refresh(cookies.refresh())
               .build();
-   }
-
-   public IdentityDto createIdentityDtoFrom(String username, Collection<? extends GrantedAuthority> authorities){
-      final Set<Role> roles = roleMapper.authoritiesToRoles(authorities);
-      return new IdentityDto(username, roles);
    }
 }

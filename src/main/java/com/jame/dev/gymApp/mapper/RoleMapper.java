@@ -10,7 +10,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,12 +17,11 @@ import java.util.stream.Collectors;
 public interface RoleMapper {
 
    default Set<Role> authoritiesToRoles(@NonNull final Collection<? extends GrantedAuthority> authorities) {
-      return Optional.of(authorities)
-              .orElseThrow()
-              .stream()
+      return authorities.stream()
               .map(GrantedAuthority::getAuthority)
-              .filter(Objects::nonNull)
-              .map(ga -> ga.substring(5))
+              .filter(auth -> auth != null && auth.startsWith("ROLE_"))
+              .map(auth -> auth.replaceFirst("ROLE_", ""))
+              .filter("USER"::equals)
               .map(Role::valueOf)
               .collect(Collectors.toSet());
    }

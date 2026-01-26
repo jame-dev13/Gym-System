@@ -8,6 +8,7 @@ import com.jame.dev.gymApp.oauth2.model.CustomOAuth2User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -27,12 +28,12 @@ public class CustomOAuth2AuthenticationHandler implements AuthenticationSuccessH
 
    private final JwtService jwt;
    private final CookieHelper cookieHelper;
+   private static final String REDIRECT_URL = "http://localhost:5173/home";
 
    @Override
-   public void onAuthenticationSuccess(HttpServletRequest request,
-                                       HttpServletResponse response,
-                                       Authentication authentication) throws IOException, ServletException {
-
+   public void onAuthenticationSuccess(final @NonNull HttpServletRequest request,
+                                       final @NonNull HttpServletResponse response,
+                                       final Authentication authentication) throws IOException, ServletException {
       log.info("[Oauth2 - AuthHandler]: HIT authentication handler.");
       if(Objects.isNull(authentication.getPrincipal())){
          throw new AuthenticationNullException("No user authenticated.");
@@ -51,9 +52,10 @@ public class CustomOAuth2AuthenticationHandler implements AuthenticationSuccessH
       final ResponseCookie accessCookie = cookieHelper.createAccessTokenCookie(access);
       final ResponseCookie refreshCookie = cookieHelper.createRefreshTokenCookie(refreshToken);
 
+      response.setStatus(HttpStatus.TEMPORARY_REDIRECT.value());
       response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
       response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-      response.setStatus(HttpStatus.OK.value());
       request.getSession(false);
+      response.sendRedirect(REDIRECT_URL);
    }
 }
