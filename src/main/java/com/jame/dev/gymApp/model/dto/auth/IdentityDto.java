@@ -9,6 +9,8 @@ public record IdentityDto(
         @JsonProperty("email")
         String email,
         @JsonProperty("roles")
-        Set<Role> roles
+        Set<Role> roles,
+        @JsonProperty("isCustomer")
+        boolean isCustomer
 ) {
 }
