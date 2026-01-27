@@ -12,6 +12,7 @@ import com.jame.dev.gymApp.messages.service.HtmlTemplates;
 import com.jame.dev.gymApp.model.dto.auth.*;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.messages.EmailDetails;
+import com.jame.dev.gymApp.oauth2.model.CustomOAuth2User;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.service.in.VerificationService;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
@@ -113,11 +114,23 @@ public class AuthServiceImplementation implements AuthService {
    public IdentityDto setUser(@NonNull String access, @NonNull final Authentication authentication) {
       if (Objects.isNull(access))
          throw new AuthenticationNullException("Not valid access authentication.");
-      final String username = jwtService.extractSubject(access)
+      final String tokenSubject = jwtService.extractSubject(access)
               .orElseThrow(() -> new UserNotFoundException("Subject not found."));
-      if (!username.equals(authentication.getName()))
+
+      final String subjectExpected = getIdentifierFromPrincipal(authentication);
+
+      log.info("Token subject: [{}] with subject Identifier: [{}]", tokenSubject, subjectExpected);
+
+      if (!tokenSubject.equals(subjectExpected))
          throw new IllegalSubjectAuthenticatedException("Subjects doesn't match.");
-      return authFactory.createIdentityDtoFrom(username, authentication.getAuthorities());
+      return authFactory.createIdentityDtoFrom(tokenSubject, authentication.getAuthorities());
+   }
+
+   private String getIdentifierFromPrincipal(Authentication authentication) {
+      if(authentication.getPrincipal() instanceof CustomOAuth2User user) {
+         return user.getUser().email();
+      }
+      return authentication.getName();
    }
 
    private boolean isLocalProvider(SignInDto dto) {

@@ -48,7 +48,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       return AuthenticatedUser.builder()
               .id(user.getId())
               .name(user.getName())
-              .email(user.getName())
+              .email(user.getEmail())
               .roles(Set.of(Role.USER))
               .build();
    }

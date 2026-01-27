@@ -3,7 +3,6 @@ package com.jame.dev.gymApp.oauth2.handlers;
 import com.jame.dev.gymApp.config.web.CookieHelper;
 import com.jame.dev.gymApp.exception.AuthenticationNullException;
 import com.jame.dev.gymApp.jwt.service.JwtService;
-import com.jame.dev.gymApp.oauth2.model.AuthenticatedUser;
 import com.jame.dev.gymApp.oauth2.model.CustomOAuth2User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,16 +37,20 @@ public class CustomOAuth2AuthenticationHandler implements AuthenticationSuccessH
       if(Objects.isNull(authentication.getPrincipal())){
          throw new AuthenticationNullException("No user authenticated.");
       }
-      AuthenticatedUser authenticatedUser = null;
+
+      String email = null;
       if(authentication.getPrincipal() instanceof CustomOAuth2User user){
-         authenticatedUser = user.getUser();
-         System.out.println(authenticatedUser.roles());
-         System.out.println(user.getAuthorities());
+         log.info("User: {}", user.getUser().email());
+         log.info("Name: {}", user.getName());
+         email = user.getUser().email();
       }
-      final String name = (authenticatedUser != null) ?
-              authenticatedUser.email() :  authentication.getName();
-      final String access = jwt.generateAccessToken(name);
-      final String refreshToken = jwt.generateRefreshToken(name);
+
+      if(Objects.isNull(email) || email.isBlank()){
+         throw new AuthenticationNullException("No Authentication founded.");
+      }
+
+      final String access = jwt.generateAccessToken(email);
+      final String refreshToken = jwt.generateRefreshToken(email);
 
       final ResponseCookie accessCookie = cookieHelper.createAccessTokenCookie(access);
       final ResponseCookie refreshCookie = cookieHelper.createRefreshTokenCookie(refreshToken);
