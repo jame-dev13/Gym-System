@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.controller.routes.app.user;
 
 import com.jame.dev.gymApp.cache.service.AppCacheService;
-import com.jame.dev.gymApp.controller.service.BaseControllerPatchAndPut;
+import com.jame.dev.gymApp.controller.service.ControllerPutPatchIdentifiable;
 import com.jame.dev.gymApp.entity.SubscriptionEntity;
 import com.jame.dev.gymApp.mapper.BaseMapper;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
@@ -9,6 +9,7 @@ import com.jame.dev.gymApp.model.dto.out.SubscriptionDtoOutput;
 import com.jame.dev.gymApp.service.common.BaseCrudService;
 import com.jame.dev.gymApp.service.common.CRUDServiceServicePatch;
 import com.jame.dev.gymApp.service.common.CRUDServiceServicePut;
+import com.jame.dev.gymApp.service.common.EmailIdentifiable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -16,19 +17,30 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/app/v1/subscriptions")
 @PreAuthorize("hasRole('USER')")
-public class SubscriptionUsersBaseControllerAnd extends BaseControllerPatchAndPut<
+public class SubscriptionUsersBaseController extends ControllerPutPatchIdentifiable<
         SubscriptionEntity, SubscriptionDtoInput, SubscriptionDtoOutput> {
-   public SubscriptionUsersBaseControllerAnd(final BaseCrudService<SubscriptionEntity, SubscriptionDtoInput, Long> service,
-                                             final AppCacheService<SubscriptionDtoOutput> cache, BaseMapper<SubscriptionEntity, SubscriptionDtoOutput> mapper,
-                                             final CRUDServiceServicePatch<SubscriptionEntity, SubscriptionDtoInput, Long> patchService,
-                                             final CRUDServiceServicePut<SubscriptionEntity, SubscriptionDtoInput, Long> putService) {
-      super(service, cache, mapper, "subscriptions", SubscriptionEntity::getId, patchService, putService);
+
+
+   public SubscriptionUsersBaseController(
+           final BaseCrudService<SubscriptionEntity, SubscriptionDtoInput, Long> service,
+           final AppCacheService<SubscriptionDtoOutput> cache,
+           final BaseMapper<SubscriptionEntity, SubscriptionDtoOutput> mapper,
+           final CRUDServiceServicePatch<SubscriptionEntity, SubscriptionDtoInput, Long> patchService,
+           final CRUDServiceServicePut<SubscriptionEntity, SubscriptionDtoInput, Long> putService,
+           final EmailIdentifiable<SubscriptionEntity> identifiable) {
+      super(service, cache, mapper, "subscriptions", SubscriptionEntity::getId, patchService, putService, identifiable);
    }
 
    @PreAuthorize("@ownerSecurity.isOwner(#id, authentication)")
    @GetMapping("/{id}")
    public ResponseEntity<SubscriptionDtoOutput> getSub(@PathVariable("id") final Long id) {
       return super.getOne(id);
+   }
+
+   @PreAuthorize("@ownerSecurity.isOwner(#id, authentication)")
+   @GetMapping("/{email}")
+   public ResponseEntity<SubscriptionDtoOutput> getSub(@PathVariable("email") final String email) {
+      return super.getByEmail(email);
    }
 
    @PostMapping

@@ -111,4 +111,9 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
       final long windowAccept = ChronoUnit.DAYS.between(now, finishPeriodDate);
       return windowAccept < WINDOW;
    }
+
+   @Override
+   public Optional<SubscriptionEntity> getByEmail(String email) {
+      return repo.findActiveSubscriptionByEmail(email);
+   }
 }
