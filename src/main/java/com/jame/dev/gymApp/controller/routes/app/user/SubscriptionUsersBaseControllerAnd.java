@@ -16,10 +16,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/app/v1/subscriptions")
 @PreAuthorize("hasRole('USER')")
-public class SubscriptionUsersBaseControllerAnd extends BaseControllerPatchAndPut<SubscriptionEntity, SubscriptionDtoInput, SubscriptionDtoOutput> {
-   public SubscriptionUsersBaseControllerAnd(BaseCrudService<SubscriptionEntity, SubscriptionDtoInput, Long> service,
-                                             AppCacheService<SubscriptionDtoOutput> cache, BaseMapper<SubscriptionEntity, SubscriptionDtoOutput> mapper,
-                                             CRUDServiceServicePatch<SubscriptionEntity, SubscriptionDtoInput, Long> patchService, CRUDServiceServicePut<SubscriptionEntity, SubscriptionDtoInput, Long> putService) {
+public class SubscriptionUsersBaseControllerAnd extends BaseControllerPatchAndPut<
+        SubscriptionEntity, SubscriptionDtoInput, SubscriptionDtoOutput> {
+   public SubscriptionUsersBaseControllerAnd(final BaseCrudService<SubscriptionEntity, SubscriptionDtoInput, Long> service,
+                                             final AppCacheService<SubscriptionDtoOutput> cache, BaseMapper<SubscriptionEntity, SubscriptionDtoOutput> mapper,
+                                             final CRUDServiceServicePatch<SubscriptionEntity, SubscriptionDtoInput, Long> patchService,
+                                             final CRUDServiceServicePut<SubscriptionEntity, SubscriptionDtoInput, Long> putService) {
       super(service, cache, mapper, "subscriptions", SubscriptionEntity::getId, patchService, putService);
    }
 
@@ -31,7 +33,7 @@ public class SubscriptionUsersBaseControllerAnd extends BaseControllerPatchAndPu
 
    @PostMapping
    public ResponseEntity<SubscriptionDtoOutput> subscribe(@RequestBody final SubscriptionDtoInput input) {
-      return super.create(input, "/gym-app/v1/subcriptions");
+      return super.create(input, "/app/v1/subcriptions");
    }
 
    @PreAuthorize("@ownerSecurity.isOwner(#id, authentication) and @authorize.checkIdentity(#input)")

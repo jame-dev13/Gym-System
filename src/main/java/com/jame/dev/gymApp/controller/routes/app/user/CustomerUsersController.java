@@ -19,16 +19,16 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerUsersController extends BaseControllerPutable<CustomerEntity, CustomerDtoInput, CustomerDtoOutput> {
 
    public CustomerUsersController(
-           BaseCrudService<CustomerEntity, CustomerDtoInput, Long> service,
-           AppCacheService<CustomerDtoOutput> cache,
-           BaseMapper<CustomerEntity, CustomerDtoOutput> mapper,
-           CRUDServiceServicePut<CustomerEntity, CustomerDtoInput, Long> putService) {
+           final BaseCrudService<CustomerEntity, CustomerDtoInput, Long> service,
+           final AppCacheService<CustomerDtoOutput> cache,
+           final BaseMapper<CustomerEntity, CustomerDtoOutput> mapper,
+           final CRUDServiceServicePut<CustomerEntity, CustomerDtoInput, Long> putService) {
       super(service, cache, mapper, "customers", CustomerEntity::getId, putService);
    }
 
    @PostMapping
    public ResponseEntity<CustomerDtoOutput> register(@RequestBody final CustomerDtoInput input){
-      return super.create(input, "/gym-app/v1/customers");
+      return super.create(input, "/app/v1/customers");
    }
 
    @PreAuthorize("@ownerSecurity.isOwner(#id, authentication)")
