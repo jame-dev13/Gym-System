@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.controller.routes.app.admin;
 
 import com.jame.dev.gymApp.cache.service.AppCacheService;
-import com.jame.dev.gymApp.controller.components.VerifyAdmin;
+import com.jame.dev.gymApp.controller.security.VerifyAdmin;
 import com.jame.dev.gymApp.controller.service.BaseControllerPutable;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.mapper.BaseMapper;

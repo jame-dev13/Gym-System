@@ -21,7 +21,6 @@ public interface RoleMapper {
               .map(GrantedAuthority::getAuthority)
               .filter(auth -> auth != null && auth.startsWith("ROLE_"))
               .map(auth -> auth.replaceFirst("ROLE_", ""))
-              .filter("USER"::equals)
               .map(Role::valueOf)
               .collect(Collectors.toSet());
    }

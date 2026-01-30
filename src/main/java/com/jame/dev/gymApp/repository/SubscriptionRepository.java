@@ -14,8 +14,10 @@ public interface SubscriptionRepository extends CustomJpaRepository<Subscription
    @Query("""
            SELECT s FROM SubscriptionEntity s
            JOIN FETCH s.customer c
-           JOIN FETCH s.user u
+           JOIN FETCH c.user u
            WHERE u.email = :email AND s.active = true
            """)
    Optional<SubscriptionEntity> findActiveSubscriptionByEmail(@Param("email") @NonNull final String email);
+   boolean existsByIdAndCustomer_User_EmailAndActiveTrue(long id, String email);
+   boolean existsByCustomer_User_EmailAndActiveTrue(String email);
 }

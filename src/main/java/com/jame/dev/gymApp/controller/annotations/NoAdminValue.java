@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.controller.annotations;
 
-import com.jame.dev.gymApp.controller.components.RoleAdminValidator;
+import com.jame.dev.gymApp.controller.security.RoleAdminValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 

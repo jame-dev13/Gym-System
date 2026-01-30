@@ -52,7 +52,7 @@ public class InitConfig {
                  .name("admin")
                  .email(emailAdmin)
                  .password(passwordAdmin)
-                 .roles(Set.of(Role.ADMIN, Role.USER))
+                 .roles(Set.of(Role.ADMIN))
                  .authProvider(AuthProvider.LOCAL)
                  .build();
          final UserDtoInput user = UserDtoInput.builder()

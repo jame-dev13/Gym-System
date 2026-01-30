@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.controller.components;
+package com.jame.dev.gymApp.controller.security;
 
 import com.jame.dev.gymApp.controller.annotations.NoAdminValue;
 import com.jame.dev.gymApp.shared.enums.Role;

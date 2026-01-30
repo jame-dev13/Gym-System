@@ -60,6 +60,7 @@ public class AuthResponsesFactory {
    }
    public IdentityDto createIdentityDtoFrom(String username, Collection<? extends GrantedAuthority> authorities) {
       final Set<Role> roles = roleMapper.authoritiesToRoles(authorities);
+      System.out.println(roles);
       final Optional<CustomerEntity> optionalUser = customerService.getUserByEmail(username);
       return new IdentityDto(username, roles, optionalUser.isPresent());
    }

@@ -119,8 +119,6 @@ public class AuthServiceImplementation implements AuthService {
 
       final String subjectExpected = getIdentifierFromPrincipal(authentication);
 
-      log.info("Token subject: [{}] with subject Identifier: [{}]", tokenSubject, subjectExpected);
-
       if (!tokenSubject.equals(subjectExpected))
          throw new IllegalSubjectAuthenticatedException("Subjects doesn't match.");
       return authFactory.createIdentityDtoFrom(tokenSubject, authentication.getAuthorities());

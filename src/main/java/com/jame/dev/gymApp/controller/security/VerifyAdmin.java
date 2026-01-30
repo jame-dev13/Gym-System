@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.controller.components;
+package com.jame.dev.gymApp.controller.security;
 
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.UserEntityNotFoundException;

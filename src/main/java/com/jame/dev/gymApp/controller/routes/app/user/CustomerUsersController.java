@@ -31,13 +31,13 @@ public class CustomerUsersController extends BaseControllerPutable<CustomerEntit
       return super.create(input, "/app/v1/customers");
    }
 
-   @PreAuthorize("@ownerSecurity.isOwner(#id, authentication)")
+   @PreAuthorize("@customerSecurity.isOwner(#id, authentication)")
    @GetMapping("/{id}")
    public ResponseEntity<CustomerDtoOutput> getCurrent(@PathVariable("id") final Long id){
       return super.getOne(id);
    }
 
-   @PreAuthorize("@ownerSecurity.isOwner(#id, authentication) and @authorize.checkIdentity(#input)")
+   @PreAuthorize("@customerSecurity.isOwner(#id, authentication) and @authorize.checkIdentity(#input)")
    @PutMapping("/{id}")
    public ResponseEntity<CustomerDtoOutput> updateInfoContact(
            @PathVariable("id") final Long id, @RequestBody final CustomerDtoInput input){

@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface CustomerService extends CRUDServiceServicePut<CustomerEntity, CustomerDtoInput, Long> {
    Optional<CustomerEntity> getUserByEmail(String email);
+   boolean exitsByIdAndCustomerEmail(long id, String email);
 }

@@ -82,4 +82,10 @@ public class CustomerServiceImplementation implements CustomerService {
    public Optional<CustomerEntity> getUserByEmail(@NotBlank final String email) {
       return repo.findByUser_EmailAndActiveTrue(email);
    }
+
+   @Override
+   public boolean exitsByIdAndCustomerEmail(long id, String email) {
+      return repo.existsByIdAndUser_EmailAndActiveTrue(id, email);
+   }
+
 }

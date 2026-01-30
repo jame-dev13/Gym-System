@@ -31,15 +31,15 @@ public class SubscriptionUsersBaseController extends ControllerPutPatchIdentifia
       super(service, cache, mapper, "subscriptions", SubscriptionEntity::getId, patchService, putService, identifiable);
    }
 
-   @PreAuthorize("@ownerSecurity.isOwner(#id, authentication)")
+   @PreAuthorize("@subscriptionSecurity.isOwner(#id, authentication)")
    @GetMapping("/{id}")
    public ResponseEntity<SubscriptionDtoOutput> getSub(@PathVariable("id") final Long id) {
       return super.getOne(id);
    }
 
-   @PreAuthorize("@ownerSecurity.isOwner(#id, authentication)")
-   @GetMapping("/{email}")
-   public ResponseEntity<SubscriptionDtoOutput> getSub(@PathVariable("email") final String email) {
+   @PreAuthorize("@subscriptionSecurity.isOwner(#email, authentication)")
+   @GetMapping("/customer/{email}")
+   public ResponseEntity<SubscriptionDtoOutput> getSubByEmail(@PathVariable("email") final String email) {
       return super.getByEmail(email);
    }
 
@@ -48,7 +48,7 @@ public class SubscriptionUsersBaseController extends ControllerPutPatchIdentifia
       return super.create(input, "/app/v1/subcriptions");
    }
 
-   @PreAuthorize("@ownerSecurity.isOwner(#id, authentication) and @authorize.checkIdentity(#input)")
+   @PreAuthorize("@subscriptionSecurity.isOwner(#id, authentication) and @authorize.checkIdentity(#input)")
    @PutMapping("/{id}")
    public ResponseEntity<SubscriptionDtoOutput> renew(
            @PathVariable("id") final Long id, @RequestBody final SubscriptionDtoInput input
@@ -56,7 +56,7 @@ public class SubscriptionUsersBaseController extends ControllerPutPatchIdentifia
       return super.put(id, input);
    }
 
-   @PreAuthorize("@ownerSecurity.isOwner(#id, authentication)")
+   @PreAuthorize("@subscriptionSecurity.isOwner(#id, authentication)")
    @PatchMapping("/{id}")
    public ResponseEntity<SubscriptionDtoOutput> finalizeSubscription(@PathVariable("id") final Long id) {
       return super.patch(id);

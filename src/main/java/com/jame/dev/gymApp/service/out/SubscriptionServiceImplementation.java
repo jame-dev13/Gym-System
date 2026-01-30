@@ -116,4 +116,14 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    public Optional<SubscriptionEntity> getByEmail(String email) {
       return repo.findActiveSubscriptionByEmail(email);
    }
+
+   @Override
+   public boolean exitsByIdAndCustomerEmail(long id, String email) {
+      return repo.existsByIdAndCustomer_User_EmailAndActiveTrue(id, email);
+   }
+
+   @Override
+   public boolean existsByCustomerEmail(String email) {
+      return repo.existsByCustomer_User_EmailAndActiveTrue(email);
+   }
 }

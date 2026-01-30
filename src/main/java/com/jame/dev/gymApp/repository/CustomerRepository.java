@@ -1,7 +1,6 @@
 package com.jame.dev.gymApp.repository;
 
 import com.jame.dev.gymApp.entity.CustomerEntity;
-import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.repository.common.CustomJpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +14,6 @@ public interface CustomerRepository extends CustomJpaRepository<CustomerEntity, 
            WHERE c.user.email = :email
            """)
    Optional<CustomerEntity> findByUser_EmailAndActiveTrue(@Param("email") final String email);
-   Optional<UserEntity> findByUser_IdAndActiveTrue(final long id);
    boolean existsByUser_EmailAndActiveTrue(final String email);
+   boolean existsByIdAndUser_EmailAndActiveTrue(long id, String email);
 }

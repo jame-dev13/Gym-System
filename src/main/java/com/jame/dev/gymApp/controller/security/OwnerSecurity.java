@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.controller.components;
+package com.jame.dev.gymApp.controller.security;
 
 import com.jame.dev.gymApp.service.common.OwnershipService;
 import lombok.NonNull;
@@ -8,14 +8,14 @@ import org.springframework.stereotype.Component;
 
 @Component("ownerSecurity")
 @RequiredArgsConstructor
-public class OwnerSecurity implements OwnershipService<Long> {
+public class OwnerSecurity implements OwnershipService {
 
    private final CustomerSecurity customerSecurity;
    private final SubscriptionSecurity subscriptionSecurity;
 
    @Override
-   public boolean isOwner(Long id, @NonNull Authentication authentication) {
+   public boolean isOwner(long id, @NonNull Authentication authentication) {
       return customerSecurity.isOwner(id, authentication) ||
-              subscriptionSecurity.isOwner(id,  authentication);
+              subscriptionSecurity.isOwner(id, authentication);
    }
 }
