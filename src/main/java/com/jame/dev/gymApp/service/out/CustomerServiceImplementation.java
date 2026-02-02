@@ -67,7 +67,6 @@ public class CustomerServiceImplementation implements CustomerService {
       repo.softDelete(id);
    }
 
-   @Transactional
    private CustomerEntity updateCustomer(@NonNull Long id, @NonNull CustomerDtoInput dto) {
       final CustomerEntity customer = repo.findById(id)
               .orElseThrow(() -> new CustomerNotFoundException("Customer not found, id: " + id));
@@ -88,4 +87,8 @@ public class CustomerServiceImplementation implements CustomerService {
       return repo.existsByIdAndUser_EmailAndActiveTrue(id, email);
    }
 
+   @Override
+   public Optional<CustomerEntity> getByEmail(String email) {
+      return repo.findByUser_EmailAndActiveTrue(email);
+   }
 }

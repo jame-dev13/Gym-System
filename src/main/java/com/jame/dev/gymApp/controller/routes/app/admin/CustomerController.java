@@ -44,8 +44,8 @@ public class CustomerController extends BaseControllerPutable<CustomerEntity, Cu
       return super.create(dto, LOCATION);
    }
 
-   @PatchMapping("/{id}")
-   public ResponseEntity<@NonNull CustomerDtoOutput> putContactCustomer(@PathVariable("id") final Long id,
+   @PutMapping("/{id}")
+   public ResponseEntity<@NonNull CustomerDtoOutput> putCustomer(@PathVariable("id") final Long id,
                                                                           @RequestBody final CustomerDtoInput dto) {
       return super.put(id, dto);
    }

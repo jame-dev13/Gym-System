@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.controller.security;
 
-import com.jame.dev.gymApp.oauth2.model.AuthenticatedUser;
+import com.jame.dev.gymApp.oauth2.model.CustomOAuth2User;
 import com.jame.dev.gymApp.service.common.SubscriptionOwnershipService;
 import com.jame.dev.gymApp.service.in.SubscriptionService;
 import lombok.NonNull;
@@ -34,8 +34,8 @@ public class SubscriptionSecurity implements SubscriptionOwnershipService {
    }
 
    private String getAuthName(@NonNull final Authentication authentication) {
-      if (authentication.getPrincipal() instanceof AuthenticatedUser user)
-         return user.email();
+      if (authentication.getPrincipal() instanceof CustomOAuth2User user)
+         return user.getUser().email();
       return authentication.getName();
    }
 }

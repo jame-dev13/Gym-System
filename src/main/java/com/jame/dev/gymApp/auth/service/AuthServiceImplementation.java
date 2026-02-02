@@ -116,9 +116,7 @@ public class AuthServiceImplementation implements AuthService {
          throw new AuthenticationNullException("Not valid access authentication.");
       final String tokenSubject = jwtService.extractSubject(access)
               .orElseThrow(() -> new UserNotFoundException("Subject not found."));
-
       final String subjectExpected = getIdentifierFromPrincipal(authentication);
-
       if (!tokenSubject.equals(subjectExpected))
          throw new IllegalSubjectAuthenticatedException("Subjects doesn't match.");
       return authFactory.createIdentityDtoFrom(tokenSubject, authentication.getAuthorities());

@@ -38,6 +38,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       final OAuth2User oAuth2User = super.loadUser(userRequest);
       final AuthenticatedUser authenticatedUser = registerUser(oAuth2User);
       final Collection<GrantedAuthority> authorities = roleMapper.roleToGrantedAuthorities(authenticatedUser.roles());
+      var user = new CustomOAuth2User(authenticatedUser, oAuth2User.getAttributes(), authorities);
+      user.getAttributes().forEach((k, v) -> System.out.println(k + ": " + v));
       return new CustomOAuth2User(authenticatedUser, oAuth2User.getAttributes(), authorities);
    }
 
@@ -55,7 +57,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
    private @NonNull UserEntity registerUser(final OAuth2User oAuth2User, final String email) {
       final UserDtoInput userDtoInput = UserDtoInput.builder()
-              .name(oAuth2User.getName())
+              .name(oAuth2User.getAttribute("name"))
               .email(email)
               .password(UUID.randomUUID().toString())
               .authProvider(AuthProvider.GOOGLE)
