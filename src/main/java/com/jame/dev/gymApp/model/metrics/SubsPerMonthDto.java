@@ -4,6 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record SubsPerMonthDto(
         @JsonProperty("month") String month,
-        @JsonProperty("total") long total
+        @JsonProperty("total") Long total
 ) {
 }

@@ -2,7 +2,6 @@ package com.jame.dev.gymApp.metrics.service.out;
 
 import com.jame.dev.gymApp.metrics.repo.SubscriptionMetricsRepository;
 import com.jame.dev.gymApp.metrics.service.in.SubscriptionMetricsService;
-import com.jame.dev.gymApp.model.metrics.PeriodCountDto;
 import com.jame.dev.gymApp.model.metrics.SubsPerMembership;
 import com.jame.dev.gymApp.model.metrics.SubsPerMonthDto;
 import lombok.NonNull;
@@ -27,10 +26,6 @@ public class SubscriptionMetricsServiceImp implements SubscriptionMetricsService
       return repo.countByStartDateBefore(date);
    }
 
-   @Override
-   public List<PeriodCountDto> getSubscriptionsPerPeriod() {
-      return returnList(repo.countSubsByPeriod());
-   }
 
    @Override
    public List<SubsPerMonthDto> getSubscriptionsPerMonth() {

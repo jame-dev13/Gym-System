@@ -3,11 +3,9 @@ package com.jame.dev.gymApp.metrics.service;
 
 import com.jame.dev.gymApp.metrics.repo.SubscriptionMetricsRepository;
 import com.jame.dev.gymApp.metrics.service.out.SubscriptionMetricsServiceImp;
-import com.jame.dev.gymApp.model.metrics.PeriodCountDto;
 import com.jame.dev.gymApp.model.metrics.SubsPerMembership;
 import com.jame.dev.gymApp.model.metrics.SubsPerMonthDto;
 import com.jame.dev.gymApp.shared.enums.Membership;
-import com.jame.dev.gymApp.shared.enums.Period;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,24 +64,6 @@ public class SubscriptionMetricsServiceTest {
 
       assertNotNull(dateValue, "Date should not be null.");
       assertTrue(count >= 0, "Should return 0 or any long value greater then 0.");
-   }
-   @Test
-   @DisplayName("Should return a list of subs by period")
-   void subsByPeriod() {
-      final List<PeriodCountDto> periodCountList = List.of(
-                      new PeriodCountDto(Period.BIWEEKLY, 4L),
-                      new PeriodCountDto(Period.MONTHLY, 8L),
-                      new PeriodCountDto(Period.QUARTERLY, 10L),
-                      new PeriodCountDto(Period.ANNUAL, 2L));
-      when(repo.countSubsByPeriod())
-              .thenReturn(periodCountList);
-
-      final List<PeriodCountDto> periodCountDtos = service.getSubscriptionsPerPeriod();
-
-      verify(repo, times(1)).countSubsByPeriod();
-      verifyNoMoreInteractions(repo);
-
-      assertNotNull(periodCountDtos, "List should not be null.");
    }
 
    @Test
