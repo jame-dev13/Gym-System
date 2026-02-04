@@ -1,7 +1,6 @@
 package com.jame.dev.gymApp.controller.routes.app.admin;
 
 import com.jame.dev.gymApp.metrics.service.in.SubscriptionMetricsService;
-import com.jame.dev.gymApp.model.metrics.PeriodCountDto;
 import com.jame.dev.gymApp.model.metrics.SubsPerMembership;
 import com.jame.dev.gymApp.model.metrics.SubsPerMonthDto;
 import lombok.RequiredArgsConstructor;
@@ -33,11 +32,6 @@ public class SubscriptionMetricsController {
    public ResponseEntity<Map<String, Long>> getTotalBefore(@PathVariable("date") final LocalDate date){
       final long total = service.getSubscriptionsBefore(date);
       return buildResponseMap(total);
-   }
-
-   @GetMapping("/periods")
-   public ResponseEntity<List<PeriodCountDto>> getPerPeriod(){
-      return ResponseEntity.ok(service.getSubscriptionsPerPeriod());
    }
 
    @GetMapping("/memberships")
