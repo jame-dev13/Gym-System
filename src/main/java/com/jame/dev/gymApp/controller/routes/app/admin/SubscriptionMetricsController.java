@@ -22,13 +22,13 @@ public class SubscriptionMetricsController {
 
    private final SubscriptionMetricsService service;
 
-   @GetMapping("/total")
+   @GetMapping("/totals")
    public ResponseEntity<Map<String, Long>> getTotalSubscriptions(){
       final long total = service.getTotalSubscriptions();
       return buildResponseMap(total);
    }
 
-   @GetMapping("/before/{date}")
+   @GetMapping("/{date}/before")
    public ResponseEntity<Map<String, Long>> getTotalBefore(@PathVariable("date") final LocalDate date){
       final long total = service.getSubscriptionsBefore(date);
       return buildResponseMap(total);
