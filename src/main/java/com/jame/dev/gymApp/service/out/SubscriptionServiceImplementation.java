@@ -65,7 +65,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
 
    @Transactional
    @Override
-   public SubscriptionEntity update(@NonNull Long id, @NonNull SubscriptionDtoInput input) {
+   public SubscriptionEntity put(@NonNull Long id, @NonNull SubscriptionDtoInput input) {
       return renew(id, input);
    }
 
