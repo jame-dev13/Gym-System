@@ -1,8 +1,8 @@
 package com.jame.dev.gymApp.controller.routes.app.admin;
 
 import com.jame.dev.gymApp.metrics.service.in.EarningMetricsService;
+import com.jame.dev.gymApp.model.dto.out.MonthTotal;
 import com.jame.dev.gymApp.model.metrics.TotalPerMembershipTypeDto;
-import com.jame.dev.gymApp.model.metrics.TotalPerMonthDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +25,7 @@ public class EarningMetricsController {
    }
 
    @GetMapping("/months")
-   public ResponseEntity<List<TotalPerMonthDto>> getTotalPerMonth() {
+   public ResponseEntity<Map<Integer, List<MonthTotal>>> getTotalPerMonth() {
       return ResponseEntity.ok(service.getTotalPerMonth());
    }
 

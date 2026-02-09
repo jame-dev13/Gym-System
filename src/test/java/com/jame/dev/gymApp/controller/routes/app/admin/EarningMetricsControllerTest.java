@@ -4,7 +4,7 @@ import com.jame.dev.gymApp.auth.filters.CustomAuthorizationFilter;
 import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.metrics.service.in.EarningMetricsService;
 import com.jame.dev.gymApp.model.metrics.TotalPerMembershipTypeDto;
-import com.jame.dev.gymApp.model.metrics.TotalPerMonthDto;
+import com.jame.dev.gymApp.model.metrics.MonthTotal;
 import com.jame.dev.gymApp.shared.enums.Membership;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -62,7 +62,7 @@ class EarningMetricsControllerTest {
    void getTotalPerMonth() throws Exception {
       final String URI = URI_TEMPLATE + "/months";
       when(service.getTotalPerMonth()).thenReturn(List.of(
-              new TotalPerMonthDto(2025, "December", BigDecimal.valueOf(3_000d))
+              new MonthTotal(2025, "December", BigDecimal.valueOf(3_000d))
       ));
 
       this.mockMvc.perform(get(URI)

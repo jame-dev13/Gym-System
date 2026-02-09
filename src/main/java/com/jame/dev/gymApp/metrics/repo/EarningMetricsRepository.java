@@ -2,7 +2,7 @@ package com.jame.dev.gymApp.metrics.repo;
 
 import com.jame.dev.gymApp.entity.SubscriptionEntity;
 import com.jame.dev.gymApp.model.metrics.TotalPerMembershipTypeDto;
-import com.jame.dev.gymApp.model.metrics.TotalPerMonthDto;
+import com.jame.dev.gymApp.model.metrics.TotalPerMonth;
 import com.jame.dev.gymApp.repository.common.MetricsRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -19,11 +19,11 @@ public interface EarningMetricsRepository extends MetricsRepository<Subscription
    BigDecimal calculateTotalEarned();
 
    @Query("""
-           SELECT
-               YEAR(sp.startPeriod),
-               FUNCTION('to_char', sp.startPeriod, 'FMMonth'),
-               COALESCE(SUM(p.price), 0)
-           
+           SELECT new com.jame.dev.gymApp.model.metrics.TotalPerMonth(
+               CAST(YEAR(sp.startPeriod) AS integer) AS year,
+               CAST(FUNCTION('to_char', sp.startPeriod, 'FMMonth') AS string) AS month,
+               CAST(COALESCE(SUM(p.price), 0) AS big_decimal) as total
+           )
            FROM SubscriptionEntity s
            JOIN s.subscriptionPeriods sp
            JOIN s.pricing p
@@ -35,7 +35,7 @@ public interface EarningMetricsRepository extends MetricsRepository<Subscription
                YEAR(sp.startPeriod),
                MONTH(sp.startPeriod)
            """)
-   List<TotalPerMonthDto> calculateTotalPerMonth();
+   List<TotalPerMonth> calculateTotalPerMonth();
 
    @Query("""
            SELECT m.membership, COALESCE(SUM(p.price), 0)
