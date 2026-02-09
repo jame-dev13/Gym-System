@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 
 import java.util.Optional;
 
-public interface UserService extends CRUDServiceServicePut<UserEntity, UserDtoInput, Long> {
+public interface UserService extends
+        CRUDServiceServicePut<UserEntity, UserDtoInput, Long> {
    Optional<UserEntity> getUserByEmail(@NotBlank @Email final String email);
 }

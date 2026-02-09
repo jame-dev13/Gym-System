@@ -52,7 +52,7 @@ public class CustomerServiceImplementation implements CustomerService {
 
    @Override
    @Transactional
-   public CustomerEntity update(@NonNull Long id, @NonNull CustomerDtoInput customerDtoInput) {
+   public CustomerEntity put(@NonNull Long id, @NonNull CustomerDtoInput customerDtoInput) {
       return updateCustomer(id, customerDtoInput);
    }
 

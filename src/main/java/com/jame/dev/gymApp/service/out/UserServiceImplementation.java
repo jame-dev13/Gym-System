@@ -60,7 +60,7 @@ public class UserServiceImplementation implements UserService {
 
    @Transactional
    @Override
-   public UserEntity update(@NonNull Long id, @NonNull UserDtoInput dto) {
+   public UserEntity put(@NonNull Long id, @NonNull UserDtoInput dto) {
       final UserEntity userEntity = repo.findById(id)
               .orElseThrow(() -> new UserNotFoundException("User Not Found."));
       final UserEntity userUpdated = repo.save(userUpdater.apply(userEntity, dto));
