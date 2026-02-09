@@ -3,7 +3,7 @@ package com.jame.dev.gymApp.metrics.service;
 import com.jame.dev.gymApp.metrics.repo.EarningMetricsRepository;
 import com.jame.dev.gymApp.metrics.service.out.EarningMetricsServiceImp;
 import com.jame.dev.gymApp.model.metrics.TotalPerMembershipTypeDto;
-import com.jame.dev.gymApp.model.metrics.TotalPerMonthDto;
+import com.jame.dev.gymApp.model.metrics.MonthTotal;
 import com.jame.dev.gymApp.shared.enums.Membership;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,10 +47,10 @@ public class EarningMetricsServiceTest {
    @DisplayName("Should get total earned per month.")
    void getEarningsPerMonth(){
       when(repo.calculateTotalPerMonth()).thenReturn(
-              List.of(new TotalPerMonthDto(2025, "December", BigDecimal.valueOf(2000d)))
+              List.of(new MonthTotal(2025, "December", BigDecimal.valueOf(2000d)))
       );
 
-      final List<TotalPerMonthDto> totalPerMonthList = service.getTotalPerMonth();
+      final List<MonthTotal> totalPerMonthList = service.getTotalPerMonth();
 
       verify(repo, atLeastOnce()).calculateTotalPerMonth();
       verifyNoMoreInteractions(repo);
