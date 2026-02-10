@@ -11,5 +11,4 @@ public interface SubscriptionService extends
         CRUDServiceServicePut<SubscriptionEntity, SubscriptionDtoInput, Long>,
         EmailIdentifiable<SubscriptionEntity> {
    boolean exitsByIdAndCustomerEmail(long id, String email);
-   boolean existsByCustomerEmail(String email);
 }

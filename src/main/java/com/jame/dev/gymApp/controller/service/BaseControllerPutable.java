@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.function.Function;
 
-public abstract non-sealed class BaseControllerPutable<E, DTO_IN, DTO_OUT> extends BaseControllerCommon<E, DTO_IN, DTO_OUT>  {
+public abstract class BaseControllerPutable<E, DTO_IN, DTO_OUT> extends BaseControllerCommon<E, DTO_IN, DTO_OUT>  {
 
    private final CRUDServiceServicePut<E, DTO_IN, Long> putService;
 

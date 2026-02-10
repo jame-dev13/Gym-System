@@ -21,7 +21,7 @@ public class SubscriptionEntity {
    @Setter(AccessLevel.NONE)
    private Long id;
 
-   @ManyToOne(fetch = FetchType.LAZY, optional = false)
+   @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.MERGE, CascadeType.REFRESH})
    @JoinColumn(name = "customer_id")
    @NonNull
    private CustomerEntity customer;

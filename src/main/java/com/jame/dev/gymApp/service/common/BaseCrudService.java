@@ -13,5 +13,7 @@ public interface  BaseCrudService<E, DTO_IN, ID> {
 
    Optional<E> getById(@NonNull final ID id);
 
+   E update(final ID id, @NonNull final DTO_IN dtoIn);
+
    void softDelete(@NonNull final ID id);
 }

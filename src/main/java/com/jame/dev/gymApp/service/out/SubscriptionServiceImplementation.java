@@ -59,6 +59,17 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
 
    @Transactional
    @Override
+   public SubscriptionEntity update(Long id, @NonNull SubscriptionDtoInput dto) {
+      final SubscriptionEntity subscriptionEntity = repo.findById(id)
+              .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
+      final PricingEntity pricingEntity = pricingRepo.findByMemberShipEntity_Membership(dto.membership())
+              .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
+      subscriptionEntity.setPricing(pricingEntity);
+      return repo.save(subscriptionEntity);
+   }
+
+   @Transactional
+   @Override
    public SubscriptionEntity patch(Long id) {
       return this.finalizeSubscription(id);
    }
@@ -120,10 +131,5 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Override
    public boolean exitsByIdAndCustomerEmail(long id, String email) {
       return repo.existsByIdAndCustomer_User_EmailAndActiveTrue(id, email);
-   }
-
-   @Override
-   public boolean existsByCustomerEmail(String email) {
-      return repo.existsByCustomer_User_EmailAndActiveTrue(email);
    }
 }
