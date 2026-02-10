@@ -46,6 +46,15 @@ public class UserServiceImplementation implements UserService {
       return repo.findById(id);
    }
 
+   @Override
+   public UserEntity update(final Long id, @NonNull final UserDtoInput dto) {
+      final UserEntity userEntity = repo.findById(id)
+              .orElseThrow(() -> new UserNotFoundException("User Not Found."));
+      final UserEntity userUpdated = repo.save(userUpdater.apply(userEntity, dto));
+      eventPublisher.publishEvent(new CacheMutated("users"));
+      return userUpdated;
+   }
+
    @Transactional
    @Override
    public UserEntity save(@NonNull UserDtoInput dto) {
@@ -56,16 +65,6 @@ public class UserServiceImplementation implements UserService {
       final UserEntity userEntity = repo.save(userFactory.createFrom(dto));
       eventPublisher.publishEvent(new CacheMutated("users"));
       return userEntity;
-   }
-
-   @Transactional
-   @Override
-   public UserEntity put(@NonNull Long id, @NonNull UserDtoInput dto) {
-      final UserEntity userEntity = repo.findById(id)
-              .orElseThrow(() -> new UserNotFoundException("User Not Found."));
-      final UserEntity userUpdated = repo.save(userUpdater.apply(userEntity, dto));
-      eventPublisher.publishEvent(new CacheMutated("users"));
-      return userUpdated;
    }
 
    @Transactional

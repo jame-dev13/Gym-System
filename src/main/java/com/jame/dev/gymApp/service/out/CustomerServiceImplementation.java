@@ -38,6 +38,11 @@ public class CustomerServiceImplementation implements CustomerService {
    }
 
    @Override
+   public CustomerEntity update(Long id, @NonNull CustomerDtoInput dto) {
+      return updateCustomer(id, dto);
+   }
+
+   @Override
    @Transactional
    public CustomerEntity save(@NonNull CustomerDtoInput dto) {
       final boolean userExists = repo.existsByUser_EmailAndActiveTrue(dto.email());
@@ -50,11 +55,6 @@ public class CustomerServiceImplementation implements CustomerService {
       return repo.save(customerEntity);
    }
 
-   @Override
-   @Transactional
-   public CustomerEntity put(@NonNull Long id, @NonNull CustomerDtoInput customerDtoInput) {
-      return updateCustomer(id, customerDtoInput);
-   }
 
    @Override
    @Transactional

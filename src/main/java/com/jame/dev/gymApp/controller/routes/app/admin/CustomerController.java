@@ -1,13 +1,12 @@
 package com.jame.dev.gymApp.controller.routes.app.admin;
 
 import com.jame.dev.gymApp.cache.service.AppCacheService;
-import com.jame.dev.gymApp.controller.service.BaseControllerPutable;
+import com.jame.dev.gymApp.controller.service.BaseControllerCommon;
 import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.mapper.BaseMapper;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
 import com.jame.dev.gymApp.service.common.BaseCrudService;
-import com.jame.dev.gymApp.service.common.CRUDServiceServicePut;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +16,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/app/v1/administration/customers")
 @PreAuthorize("hasRole('ADMIN')")
-public class CustomerController extends BaseControllerPutable<CustomerEntity, CustomerDtoInput, CustomerDtoOutput> {
+public class CustomerController extends BaseControllerCommon<CustomerEntity, CustomerDtoInput, CustomerDtoOutput> {
 
-   public CustomerController(BaseCrudService<CustomerEntity, CustomerDtoInput, Long> service,
-                             AppCacheService<CustomerDtoOutput> cache,
-                             BaseMapper<CustomerEntity, CustomerDtoOutput> mapper,
-                             CRUDServiceServicePut<CustomerEntity, CustomerDtoInput, Long> putService) {
-      super(service, cache, mapper, "customers", CustomerEntity::getId, putService);
+
+   public CustomerController(
+           final BaseCrudService<CustomerEntity, CustomerDtoInput, Long> service,
+           final AppCacheService<CustomerDtoOutput> cache,
+           final BaseMapper<CustomerEntity, CustomerDtoOutput> mapper) {
+      super(service, cache, mapper, "customers", CustomerEntity::getId);
    }
 
    @GetMapping
@@ -45,9 +45,9 @@ public class CustomerController extends BaseControllerPutable<CustomerEntity, Cu
    }
 
    @PutMapping("/{id}")
-   public ResponseEntity<@NonNull CustomerDtoOutput> putCustomer(@PathVariable("id") final Long id,
+   public ResponseEntity<@NonNull CustomerDtoOutput> updateCustomer(@PathVariable("id") final Long id,
                                                                           @RequestBody final CustomerDtoInput dto) {
-      return super.put(id, dto);
+      return super.update(id, dto);
    }
 
    @DeleteMapping("/{id}")

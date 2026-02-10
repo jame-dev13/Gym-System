@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/app/v1/administration/subs")
 @PreAuthorize("hasRole('ADMIN')")
-public class SubscriptionController extends BaseControllerPatchAndPut<SubscriptionEntity, SubscriptionDtoInput, SubscriptionDtoOutput> {
+public class SubscriptionController extends
+        BaseControllerPatchAndPut<SubscriptionEntity, SubscriptionDtoInput, SubscriptionDtoOutput> {
 
    public SubscriptionController(
            final BaseCrudService<SubscriptionEntity, SubscriptionDtoInput, Long> service,
@@ -49,6 +50,13 @@ public class SubscriptionController extends BaseControllerPatchAndPut<Subscripti
    }
 
    @PutMapping("/{id}")
+   public ResponseEntity<@NonNull SubscriptionDtoOutput> updateSubscription(
+           @PathVariable("id") final long id, @RequestBody final SubscriptionDtoInput subscriptionDtoInput) {
+      return super.update(id, subscriptionDtoInput);
+   }
+
+
+   @PutMapping("/{id}/renew")
    public ResponseEntity<@NonNull SubscriptionDtoOutput> renewSubscription(
            @PathVariable("id") final long id, @RequestBody final SubscriptionDtoInput subscriptionDtoInput) {
       return super.put(id, subscriptionDtoInput);

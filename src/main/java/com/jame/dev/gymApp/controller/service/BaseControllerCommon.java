@@ -20,8 +20,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @RequiredArgsConstructor
-public abstract sealed class BaseControllerCommon<E, DTO_IN, DTO_OUT> permits
-        BaseControllerPatchable, BaseControllerPutable, BaseControllerPatchAndPut {
+public abstract class BaseControllerCommon<E, DTO_IN, DTO_OUT> {
 
    protected final BaseCrudService<E, DTO_IN, Long> service;
    protected final AppCacheService<DTO_OUT> cache;
@@ -52,7 +51,7 @@ public abstract sealed class BaseControllerCommon<E, DTO_IN, DTO_OUT> permits
 
    protected ResponseEntity<@NonNull DTO_OUT> getOne(long id) {
       final String key = "%s:id:%d".formatted(this.key, id);
-      if(cacheOnes.containsKey(key)){
+      if (cacheOnes.containsKey(key)) {
          final DTO_OUT dto = cacheOnes.get(key);
          return ResponseEntity.ok(dto);
       }
@@ -75,6 +74,12 @@ public abstract sealed class BaseControllerCommon<E, DTO_IN, DTO_OUT> permits
               .body(dtoOut);
    }
 
+   protected ResponseEntity<@NonNull DTO_OUT> update(final long id, @NonNull final DTO_IN dto) {
+      this.invalidateIfExists();
+      final E entity = service.update(id, dto);
+      final DTO_OUT dtoOut = mapper.toDto(entity);
+      return ResponseEntity.ok(dtoOut);
+   }
 
    protected ResponseEntity<Void> delete(long id) {
       invalidateIfExists();

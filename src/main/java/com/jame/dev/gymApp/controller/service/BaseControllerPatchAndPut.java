@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.function.Function;
 
-public non-sealed abstract class BaseControllerPatchAndPut<E, DTO_IN, DTO_OUT> extends
+public abstract class BaseControllerPatchAndPut<E, DTO_IN, DTO_OUT> extends
         BaseControllerCommon<E, DTO_IN, DTO_OUT> {
    private final CRUDServiceServicePatch<E, DTO_IN, Long> patchService;
    private final CRUDServiceServicePut<E, DTO_IN, Long> putService;

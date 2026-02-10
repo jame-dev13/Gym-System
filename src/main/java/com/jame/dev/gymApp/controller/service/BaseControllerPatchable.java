@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.function.Function;
 
-public abstract non-sealed class BaseControllerPatchable<E, DTO_IN, DTO_OUT> extends BaseControllerCommon<E, DTO_IN, DTO_OUT> {
+public abstract class BaseControllerPatchable<E, DTO_IN, DTO_OUT> extends BaseControllerCommon<E, DTO_IN, DTO_OUT> {
 
    private final CRUDServiceServicePatch<E, DTO_IN, Long> patchService;
 
