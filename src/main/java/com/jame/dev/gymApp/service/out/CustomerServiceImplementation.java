@@ -59,12 +59,7 @@ public class CustomerServiceImplementation implements CustomerService {
    @Override
    @Transactional
    public void softDelete(@NonNull Long id) {
-      final CustomerEntity customer = repo.findById(id)
-              .orElseThrow(() -> new CustomerNotFoundException("Customer Not found."));
-      Optional.of(customer.getUser())
-              .map(UserEntity::getId)
-              .ifPresent(userRepo::softDelete);
-      repo.softDelete(id);
+      repo.deleteById(id);
    }
 
    private CustomerEntity updateCustomer(@NonNull Long id, @NonNull CustomerDtoInput dto) {

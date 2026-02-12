@@ -41,7 +41,6 @@ public class SubscriptionEntity {
    private List<PeriodEntity> subscriptionPeriods = new LinkedList<>();
 
    @Column(name = "active", nullable = false)
-   @Setter(AccessLevel.NONE)
    private boolean active;
 
    @Column(name = "finished", nullable = false)
