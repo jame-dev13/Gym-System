@@ -8,6 +8,7 @@ import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
 import com.jame.dev.gymApp.service.common.BaseCrudService;
 import com.jame.dev.gymApp.service.common.EmailIdentifiable;
+import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -49,5 +50,11 @@ public class CustomerUsersController extends ControllerIdentifiable<CustomerEnti
    public ResponseEntity<CustomerDtoOutput> updateInfoContact(
            @PathVariable("id") final Long id, @RequestBody final CustomerDtoInput input){
       return super.update(id, input);
+   }
+
+   @PreAuthorize("@customerSecurity.isOwner(#id, authentication)")
+   @DeleteMapping("/{id}")
+   public ResponseEntity<Void> downRegister(@PathVariable("id") @NonNull final Long id) {
+      return super.delete(id);
    }
 }
