@@ -1,10 +1,12 @@
 package com.jame.dev.gymApp.entity;
 
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -21,12 +23,21 @@ import java.util.Set;
 @Table(name = "users", indexes = {
         @Index(name = "idx_users_email_unq", columnList = "email", unique = true)
 })
+@SQLDelete(sql = "UPDATE users SET active = false WHERE id = ?")
 public class UserEntity {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    @Column(nullable = false)
    @Setter(AccessLevel.NONE)
    private Long id;
+
+   @OneToOne(
+           mappedBy = "user",
+           cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.REMOVE},
+           orphanRemoval = true
+   )
+   @Nullable
+   private CustomerEntity customer;
 
    @NotBlank
    @Column(name = "name", length = 150, nullable = false)
@@ -54,18 +65,17 @@ public class UserEntity {
    private Set<RoleEntity> roles = new HashSet<>();
 
    @Column(name = "active", nullable = false)
-   @Setter(AccessLevel.NONE)
    private boolean active;
 
    @PrePersist
-   private void setActive(){
+   private void setActive() {
       this.active = Boolean.TRUE;
    }
 
    @Override
    public boolean equals(Object o) {
       if (this == o) return true;
-      if(o == null || getClass() != o.getClass()) return false;
+      if (o == null || getClass() != o.getClass()) return false;
       UserEntity that = (UserEntity) o;
       return Objects.nonNull(that.id) && (Objects.equals(that.id, id));
    }
