@@ -2,10 +2,13 @@ package com.jame.dev.gymApp.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @AllArgsConstructor
@@ -17,15 +20,13 @@ import java.util.Objects;
         @Index(name = "idx_subscription_customer_id", columnList = "customer_id"),
         @Index(name = "idx_subscriptions_pagination", columnList = "id, active")
 })
-public class SubscriptionEntity {
-   @Id
-   @GeneratedValue(strategy = GenerationType.IDENTITY)
-   @Column(nullable = false)
-   @Setter(AccessLevel.NONE)
-   private Long id;
+@SQLDelete(sql = "UPDATE subscriptions SET active = false, deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("active = true")
+public class SubscriptionEntity extends  BaseEntity {
 
    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.MERGE, CascadeType.REFRESH})
    @JoinColumn(name = "customer_id")
+   @NotFound(action = NotFoundAction.IGNORE)
    @NonNull
    private CustomerEntity customer;
 
@@ -43,29 +44,12 @@ public class SubscriptionEntity {
            indexes = @Index(name = "idx_subscription_period_unique", columnList = "period_id"))
    private List<PeriodEntity> subscriptionPeriods = new LinkedList<>();
 
-   @Column(name = "active", nullable = false)
-   private boolean active;
-
    @Column(name = "finished", nullable = false)
    private boolean finished;
 
-   @PrePersist
-   private void setFlags() {
-      this.active = true;
+   @PostPersist
+   private void setStatus() {
       this.finished = false;
-   }
-
-   @Override
-   public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || o.getClass() != getClass()) return false;
-      SubscriptionEntity that = (SubscriptionEntity) o;
-      return Objects.nonNull(that.id) && (Objects.equals(that.id, id));
-   }
-
-   @Override
-   public int hashCode() {
-      return getClass().hashCode();
    }
 
    @Override
@@ -78,7 +62,7 @@ public class SubscriptionEntity {
                   active=%b,
                   finished=%b
               }""".formatted(
-              id,
+              super.getId(),
               customer.getId(),
               pricing.getId(),
               active,

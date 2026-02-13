@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -30,27 +31,21 @@ public class UserServiceImplementation implements UserService {
    private final ApplicationEventPublisher eventPublisher;
 
    @Override
+   @Transactional(readOnly = true)
    public Page<@NonNull UserEntity> getPage(@NonNull Pageable pageable) {
       return repo.findAllByActiveTrue(pageable);
    }
 
    @Override
+   @Transactional(readOnly = true)
    public Optional<UserEntity> getUserByEmail(String email) {
       return repo.findByEmail(email);
    }
 
    @Override
+   @Transactional(readOnly = true)
    public Optional<UserEntity> getById(@NonNull Long id) {
       return repo.findById(id);
-   }
-
-   @Override
-   public UserEntity update(final Long id, @NonNull final UserDtoInput dto) {
-      final UserEntity userEntity = repo.findById(id)
-              .orElseThrow(() -> new UserNotFoundException("User Not Found."));
-      final UserEntity userUpdated = repo.save(userUpdater.apply(userEntity, dto));
-      eventPublisher.publishEvent(new CacheMutated("users"));
-      return userUpdated;
    }
 
    @Transactional
@@ -61,8 +56,19 @@ public class UserServiceImplementation implements UserService {
          throw new AlreadyExistsException("User already exists.");
       }
       final UserEntity userEntity = repo.save(userFactory.createFrom(dto));
+      userEntity.setUpdatedAt(Instant.now());
       eventPublisher.publishEvent(new CacheMutated("users"));
       return userEntity;
+   }
+
+   @Override
+   public UserEntity update(final Long id, @NonNull final UserDtoInput dto) {
+      final UserEntity userEntity = repo.findById(id)
+              .orElseThrow(() -> new UserNotFoundException("User Not Found."));
+      final UserEntity userUpdated = repo.save(userUpdater.apply(userEntity, dto));
+      userUpdated.setUpdatedAt(Instant.now());
+      eventPublisher.publishEvent(new CacheMutated("users"));
+      return userUpdated;
    }
 
    @Transactional

@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
@@ -34,8 +35,27 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    private final SubscriptionUpdater subscriptionUpdater;
 
    @Override
+   @Transactional(readOnly = true)
    public Page<@NonNull SubscriptionEntity> getPage(@NonNull Pageable pageable) {
       return repo.findAllByActiveTrue(pageable);
+   }
+
+   @Override
+   @Transactional(readOnly = true)
+   public Optional<SubscriptionEntity> getById(@NonNull Long id) {
+      return repo.findById(id);
+   }
+
+   @Override
+   @Transactional(readOnly = true)
+   public Optional<SubscriptionEntity> getByEmail(String email) {
+      return repo.findActiveSubscriptionByEmail(email);
+   }
+
+   @Override
+   @Transactional(readOnly = true)
+   public boolean exitsByIdAndCustomerEmail(long id, String email) {
+      return repo.existsByIdAndCustomer_User_EmailAndActiveTrue(id, email);
    }
 
    @Transactional
@@ -49,12 +69,8 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
       final PricingEntity pricing = pricingRepo.findByMemberShipEntity_Membership(dto.membership())
               .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
       final SubscriptionEntity subscription = subscriptionFactory.createFrom(dto, customer, pricing, LocalDate.now());
+      subscription.setCreatedAt(Instant.now());
       return repo.save(subscription);
-   }
-
-   @Override
-   public Optional<SubscriptionEntity> getById(@NonNull Long id) {
-      return repo.findById(id);
    }
 
    @Transactional
@@ -65,6 +81,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
       final PricingEntity pricingEntity = pricingRepo.findByMemberShipEntity_Membership(dto.membership())
               .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
       subscriptionEntity.setPricing(pricingEntity);
+      subscriptionEntity.setUpdatedAt(Instant.now());
       return repo.save(subscriptionEntity);
    }
 
@@ -83,13 +100,14 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Transactional
    @Override
    public void softDelete(@NonNull Long id) {
-      repo.softDelete(id);
+      repo.deleteById(id);
    }
 
    private SubscriptionEntity finalizeSubscription(@NonNull Long id) {
       final SubscriptionEntity subscription = repo.findById(id)
               .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
       subscription.setFinished(true);
+      subscription.setUpdatedAt(Instant.now());
       return repo.save(subscription);
    }
 
@@ -110,6 +128,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
       final SubscriptionEntity subscriptionRenew = subscriptionUpdater.apply(
               subscriptionEntity, pricing, currentPeriod.getEndPeriod()
       );
+      subscriptionRenew.setUpdatedAt(Instant.now());
       return repo.save(subscriptionRenew);
    }
 
@@ -121,15 +140,5 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
       if (now.isAfter(finishPeriodDate)) return true;
       final long windowAccept = ChronoUnit.DAYS.between(now, finishPeriodDate);
       return windowAccept < WINDOW;
-   }
-
-   @Override
-   public Optional<SubscriptionEntity> getByEmail(String email) {
-      return repo.findActiveSubscriptionByEmail(email);
-   }
-
-   @Override
-   public boolean exitsByIdAndCustomerEmail(long id, String email) {
-      return repo.existsByIdAndCustomer_User_EmailAndActiveTrue(id, email);
    }
 }

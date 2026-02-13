@@ -19,7 +19,6 @@ public interface CustomerMapper extends BaseMapper<CustomerEntity, CustomerDtoOu
       return CustomerEntity.builder()
               .user(user)
               .phoneContact(dto.contact())
-              .active(true)
               .build();
    }
 }

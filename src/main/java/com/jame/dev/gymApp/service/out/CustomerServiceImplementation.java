@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -28,13 +29,33 @@ public class CustomerServiceImplementation implements CustomerService {
    private final CustomerMapper customerMapper;
 
    @Override
+   @Transactional(readOnly = true)
    public Page<@NonNull CustomerEntity> getPage(@NonNull Pageable pageable) {
       return repo.findAllByActiveTrue(pageable);
    }
 
    @Override
+   @Transactional(readOnly = true)
    public Optional<CustomerEntity> getById(@NonNull Long id) {
       return repo.findById(id);
+   }
+
+   @Override
+   @Transactional(readOnly = true)
+   public Optional<CustomerEntity> getByEmail(String email) {
+      return repo.findByUser_EmailAndActiveTrue(email);
+   }
+
+   @Override
+   @Transactional(readOnly = true)
+   public Optional<CustomerEntity> getUserByEmail(@NotBlank final String email) {
+      return repo.findByUser_EmailAndActiveTrue(email);
+   }
+
+   @Override
+   @Transactional(readOnly = true)
+   public boolean exitsByIdAndCustomerEmail(long id, String email) {
+      return repo.existsByIdAndUser_EmailAndActiveTrue(id, email);
    }
 
    @Override
@@ -52,9 +73,9 @@ public class CustomerServiceImplementation implements CustomerService {
       final UserEntity user = userRepo.findByEmail(dto.email())
               .orElseThrow(() -> new UserNotFoundException("User Not Found."));
       final CustomerEntity customerEntity = customerMapper.toEntity(dto, user);
-      return repo.save(customerEntity);
+      customerEntity.setCreatedAt(Instant.now());
+      return repo.saveAndFlush(customerEntity);
    }
-
 
    @Override
    @Transactional
@@ -69,21 +90,7 @@ public class CustomerServiceImplementation implements CustomerService {
       user.setEmail(dto.email());
       customer.setUser(user);
       customer.setPhoneContact(dto.contact());
+      customer.setUpdatedAt(Instant.now());
       return repo.save(customer);
-   }
-
-   @Override
-   public Optional<CustomerEntity> getUserByEmail(@NotBlank final String email) {
-      return repo.findByUser_EmailAndActiveTrue(email);
-   }
-
-   @Override
-   public boolean exitsByIdAndCustomerEmail(long id, String email) {
-      return repo.existsByIdAndUser_EmailAndActiveTrue(id, email);
-   }
-
-   @Override
-   public Optional<CustomerEntity> getByEmail(String email) {
-      return repo.findByUser_EmailAndActiveTrue(email);
    }
 }

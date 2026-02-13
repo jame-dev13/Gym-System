@@ -19,5 +19,4 @@ public interface SubscriptionRepository extends CustomJpaRepository<Subscription
            """)
    Optional<SubscriptionEntity> findActiveSubscriptionByEmail(@Param("email") @NonNull final String email);
    boolean existsByIdAndCustomer_User_EmailAndActiveTrue(long id, String email);
-   boolean existsByCustomer_User_EmailAndActiveTrue(String email);
 }
