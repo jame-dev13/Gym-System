@@ -21,11 +21,12 @@ import java.util.Set;
 @Builder
 @Entity
 @Table(name = "users", indexes = {
-        @Index(name = "idx_users_email_unq", columnList = "email", unique = true)
+        @Index(name = "idx_users_email_unq", columnList = "email", unique = true),
+        @Index(name = "idx_users_pagination", columnList = "id, active")
 })
 @SQLDelete(sql = "UPDATE users SET active = false WHERE id = ?")
 public class UserEntity {
-   @Id
+    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    @Column(nullable = false)
    @Setter(AccessLevel.NONE)

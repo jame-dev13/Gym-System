@@ -7,13 +7,15 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity
-@Table(name = "membership_pricing")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @ToString
 @Builder
+@Table(name = "membership_pricing", indexes = {
+        @Index(name = "idx_membership_id_unq", columnList = "membership_id", unique = true)
+})
 public class PricingEntity {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,11 +23,13 @@ public class PricingEntity {
    private Integer id;
 
    @OneToOne(fetch = FetchType.LAZY, optional = false)
+   @JoinColumn(name = "membership_id")
    @ToString.Exclude
    @NonNull
    private MemberShipEntity memberShipEntity;
 
    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+   @JoinColumn(name = "price_id")
    @NonNull
    private BigDecimal price;
 

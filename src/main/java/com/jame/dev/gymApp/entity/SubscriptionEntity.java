@@ -8,12 +8,15 @@ import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table(name = "subscriptions")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @Builder
+@Table(name = "subscriptions", indexes = {
+        @Index(name = "idx_subscription_customer_id", columnList = "customer_id"),
+        @Index(name = "idx_subscriptions_pagination", columnList = "id, active")
+})
 public class SubscriptionEntity {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -83,3 +86,4 @@ public class SubscriptionEntity {
       );
    }
 }
+

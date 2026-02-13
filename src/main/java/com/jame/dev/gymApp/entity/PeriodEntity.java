@@ -7,12 +7,15 @@ import lombok.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "periods")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @ToString
+@Table(name = "periods", indexes = {
+        @Index(name = "idx_period_period", columnList = "period"),
+        @Index(name = "idx_period_start_period", columnList = "start_period")
+})
 public class PeriodEntity {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +32,6 @@ public class PeriodEntity {
    private LocalDate startPeriod;
 
    @Column(name = "end_period", nullable = false)
-   @NonNull
    private LocalDate endPeriod;
 
    @Builder
