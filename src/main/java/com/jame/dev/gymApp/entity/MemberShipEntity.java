@@ -13,10 +13,9 @@ import java.util.Objects;
 @ToString
 @Builder
 @Entity
-@Table(name = "memberships",
-        indexes = @Index(name = "idx_memberships_membership",
-                columnList = "membership",
-                unique = true))
+@Table(name = "memberships", indexes = {
+        @Index(name = "idx_memberships_membership_unq", columnList = "membership", unique = true)
+})
 public class MemberShipEntity {
 
    @Id
@@ -32,8 +31,8 @@ public class MemberShipEntity {
 
    @Override
    public boolean equals(Object o) {
-      if(this == o) return true;
-      if(o == null || o.getClass() != getClass()) return false;
+      if (this == o) return true;
+      if (o == null || o.getClass() != getClass()) return false;
       MemberShipEntity that = (MemberShipEntity) o;
       return Objects.nonNull(that.id) && (Objects.equals(that
               .id, id));

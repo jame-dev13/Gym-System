@@ -4,6 +4,7 @@ package com.jame.dev.gymApp.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
@@ -15,8 +16,12 @@ import java.util.Objects;
 @ToString
 @Builder
 @Entity
-@Table(name = "customers")
+@Table(name = "customers", indexes = {
+        @Index(name = "idx_customer_user_id_unq", columnList = "user_id", unique = true),
+        @Index(name = "idx_customer_pagination_id_active", columnList = "id, active")
+})
 @SQLDelete(sql = "UPDATE customers SET active = false WHERE id = ?")
+@SQLRestriction("active = true")
 public class CustomerEntity {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)

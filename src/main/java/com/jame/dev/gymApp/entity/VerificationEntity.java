@@ -6,19 +6,22 @@ import lombok.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "tokens")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Getter
 @Setter
 @ToString
+@Table(name = "tokens", indexes = {
+        @Index(name = "idx_verification_user_unq", columnList = "user_id", unique = true)
+})
 public class VerificationEntity {
    @Id
    @Column(nullable = false, length = 10, unique = true)
    private String id;
 
    @OneToOne(fetch = FetchType.LAZY, optional = false)
+   @JoinColumn(name = "user_id")
    @NonNull
    @ToString.Exclude
    private UserEntity user;
@@ -30,15 +33,15 @@ public class VerificationEntity {
    private boolean verified;
 
    @Override
-   public boolean equals(final Object o){
-      if(this == o) return true;
-      if(o == null || o.getClass() != this.getClass()) return false;
+   public boolean equals(final Object o) {
+      if (this == o) return true;
+      if (o == null || o.getClass() != this.getClass()) return false;
       final VerificationEntity that = (VerificationEntity) o;
       return (that.id != null) && (that.id.equals(this.id));
    }
 
    @Override
-   public int hashCode(){
+   public int hashCode() {
       return getClass().hashCode();
    }
 }
