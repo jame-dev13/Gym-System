@@ -149,7 +149,7 @@ public class InitConfig {
 
    private SubscriptionDtoInput createSubscription(final String email) {
       final Membership[] memberships = {BIWEEKLY, MONTHLY, QUARTERLY, ANNUAL};
-      final int randomIdx = random.nextInt(0, memberships.length - 1);
+      final int randomIdx = random.nextInt(0, memberships.length);
       return new SubscriptionDtoInput(email, memberships[randomIdx]);
    }
 

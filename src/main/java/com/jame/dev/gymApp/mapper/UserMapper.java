@@ -26,7 +26,6 @@ public interface UserMapper extends BaseMapper<UserEntity, UserDtoOutput> {
               .password(dto.password())
               .provider(dto.authProvider())
               .roles(roles)
-              .active(true)
               .build();
    }
 }

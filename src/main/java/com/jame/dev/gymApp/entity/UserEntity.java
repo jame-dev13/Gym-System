@@ -7,11 +7,10 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
-
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,14 +23,9 @@ import java.util.Set;
         @Index(name = "idx_users_email_unq", columnList = "email", unique = true),
         @Index(name = "idx_users_pagination", columnList = "id, active")
 })
-@SQLDelete(sql = "UPDATE users SET active = false WHERE id = ?")
-public class UserEntity {
-    @Id
-   @GeneratedValue(strategy = GenerationType.IDENTITY)
-   @Column(nullable = false)
-   @Setter(AccessLevel.NONE)
-   private Long id;
-
+@SQLDelete(sql = "UPDATE users SET active = false, deleted_at = NOW() WHERE id = ?", table = "users")
+@SQLRestriction("active = true")
+public class UserEntity extends BaseEntity {
    @OneToOne(
            mappedBy = "user",
            cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.REMOVE},
@@ -64,25 +58,4 @@ public class UserEntity {
            joinColumns = @JoinColumn(name = "user_id"),
            inverseJoinColumns = @JoinColumn(name = "role_id"))
    private Set<RoleEntity> roles = new HashSet<>();
-
-   @Column(name = "active", nullable = false)
-   private boolean active;
-
-   @PrePersist
-   private void setActive() {
-      this.active = Boolean.TRUE;
-   }
-
-   @Override
-   public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      UserEntity that = (UserEntity) o;
-      return Objects.nonNull(that.id) && (Objects.equals(that.id, id));
-   }
-
-   @Override
-   public int hashCode() {
-      return getClass().hashCode();
-   }
 }
