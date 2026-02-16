@@ -5,7 +5,6 @@ import lombok.*;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -21,7 +20,6 @@ import java.util.List;
         @Index(name = "idx_subscriptions_pagination", columnList = "id, active")
 })
 @SQLDelete(sql = "UPDATE subscriptions SET active = false, deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("active = true")
 public class SubscriptionEntity extends  BaseEntity {
 
    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.MERGE, CascadeType.REFRESH})

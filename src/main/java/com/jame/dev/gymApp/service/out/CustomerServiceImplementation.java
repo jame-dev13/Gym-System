@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.service.out;
 
+import com.jame.dev.gymApp.aspects.annotations.DoNotFilter;
 import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
@@ -65,6 +66,7 @@ public class CustomerServiceImplementation implements CustomerService {
 
    @Override
    @Transactional
+   @DoNotFilter
    public CustomerEntity save(@NonNull CustomerDtoInput dto) {
       final boolean userExists = repo.existsByUser_EmailAndActiveTrue(dto.email());
       if (userExists) {
