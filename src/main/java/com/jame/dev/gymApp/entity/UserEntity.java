@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -24,7 +23,6 @@ import java.util.Set;
         @Index(name = "idx_users_pagination", columnList = "id, active")
 })
 @SQLDelete(sql = "UPDATE users SET active = false, deleted_at = NOW() WHERE id = ?", table = "users")
-@SQLRestriction("active = true")
 public class UserEntity extends BaseEntity {
    @OneToOne(
            mappedBy = "user",

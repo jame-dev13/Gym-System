@@ -1,12 +1,12 @@
 package com.jame.dev.gymApp.service.out;
 
+import com.jame.dev.gymApp.aspects.annotations.DoNotFilter;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.UserNotFoundException;
 import com.jame.dev.gymApp.factories.UserFactory;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.CacheMutated;
-import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.updaters.UserUpdater;
@@ -25,7 +25,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserServiceImplementation implements UserService {
    private final UserRepository repo;
-   private final CustomerRepository customerRepo;
    private final UserFactory userFactory;
    private final UserUpdater userUpdater;
    private final ApplicationEventPublisher eventPublisher;
@@ -50,6 +49,7 @@ public class UserServiceImplementation implements UserService {
 
    @Transactional
    @Override
+   @DoNotFilter
    public UserEntity save(@NonNull UserDtoInput dto) {
       final boolean userExists = repo.existsByEmail(dto.email());
       if (userExists) {

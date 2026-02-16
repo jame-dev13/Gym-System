@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.service.out;
 
+import com.jame.dev.gymApp.aspects.annotations.DoNotFilter;
 import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.entity.PeriodEntity;
 import com.jame.dev.gymApp.entity.PricingEntity;
@@ -60,6 +61,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
 
    @Transactional
    @Override
+   @DoNotFilter
    public SubscriptionEntity save(@NonNull SubscriptionDtoInput dto) {
       final CustomerEntity customer = customerRepo.findByUser_EmailAndActiveTrue(dto.customerEmail())
               .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
