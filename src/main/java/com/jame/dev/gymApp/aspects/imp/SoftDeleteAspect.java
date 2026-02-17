@@ -1,6 +1,5 @@
 package com.jame.dev.gymApp.aspects.imp;
 
-
 import com.jame.dev.gymApp.aspects.annotations.DoNotFilter;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
-@Order(0)
+@Order(1)
 public class SoftDeleteAspect {
 
    @PersistenceContext
@@ -25,11 +24,6 @@ public class SoftDeleteAspect {
       final String filterName = doNotFilter.filterName();
 
       session.disableFilter(filterName);
-
-      try {
-         return proceedingJoinPoint.proceed();
-      } finally {
-         session.enableFilter(filterName).setParameter("active", true);
-      }
+      return proceedingJoinPoint.proceed();
    }
 }

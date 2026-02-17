@@ -142,7 +142,7 @@ public class CustomerServiceTest {
    void saveCustomer() {
       final String emailUser = this.testUser.getEmail();
       final CustomerDtoInput dto = new CustomerDtoInput(emailUser, "4270143");
-      when(repo.existsByUser_EmailAndActiveTrue(anyString())).thenReturn(false);
+      when(repo.existsByUser(anyString())).thenReturn(false);
       when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(this.testUser));
       when(customerMapper.toEntity(dto, testUser)).thenReturn(customerTest);
       when(repo.save(any(CustomerEntity.class)))
@@ -151,7 +151,7 @@ public class CustomerServiceTest {
       final CustomerEntity customerAdded = service.save(dto);
       final ArgumentCaptor<CustomerEntity> captor = ArgumentCaptor.forClass(CustomerEntity.class);
 
-      verify(repo, times(1)).existsByUser_EmailAndActiveTrue(anyString());
+      verify(repo, times(1)).existsByUser(anyString());
       verify(userRepo, times(1)).findByEmail(anyString());
       verify(customerMapper, times(1)).toEntity(dto, testUser);
       verify(repo, times(1)).save(captor.capture());

@@ -1,6 +1,5 @@
 package com.jame.dev.gymApp.service.out;
 
-import com.jame.dev.gymApp.aspects.annotations.DoNotFilter;
 import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.entity.PeriodEntity;
 import com.jame.dev.gymApp.entity.PricingEntity;
@@ -61,13 +60,20 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
 
    @Transactional
    @Override
-   @DoNotFilter
    public SubscriptionEntity save(@NonNull SubscriptionDtoInput dto) {
-      final CustomerEntity customer = customerRepo.findByUser_EmailAndActiveTrue(dto.customerEmail())
+      final CustomerEntity customer = customerRepo.findByUser_Email(dto.customerEmail())
+              .map(c -> {
+                 if (!c.isActive()) {
+                    throw new NoActiveException("Customer is active");
+                 }
+                 return c;
+              })
               .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
-      if (!customer.isActive()) {
-         throw new NoActiveException("Customer not active.");
+
+      if (repo.existsByCustomer(customer)) {
+         throw new AlreadyExistsException("There's a subscription linked to the customer with: " + dto.customerEmail());
       }
+
       final PricingEntity pricing = pricingRepo.findByMemberShipEntity_Membership(dto.membership())
               .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
       final SubscriptionEntity subscription = subscriptionFactory.createFrom(dto, customer, pricing, LocalDate.now());

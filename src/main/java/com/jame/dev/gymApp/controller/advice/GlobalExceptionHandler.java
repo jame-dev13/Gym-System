@@ -256,4 +256,13 @@ public class GlobalExceptionHandler {
               .buildErrorResponse(ex, request, HttpStatus.FORBIDDEN, "AUTHORIZE_OPERATION");
       return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
    }
+
+   @ExceptionHandler(NoActiveException.class)
+   public ResponseEntity<ApiErrorResponse> handleNoActiveException(
+           NoActiveException ex,
+           HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.CONFLICT, "SAVE_OPERATION");
+      return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+   }
 }
