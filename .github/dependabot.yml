@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    open-pull-requests-limit: 5
+    assignees:
+      - "jame-dev13"
+    groups:
+      spring-dependencies:
+        patterns:
+          - "org.springframework.boot*"
+          - "org.springframework.cloud*"
