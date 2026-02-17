@@ -1,8 +1,8 @@
 package com.jame.dev.gymApp.service.out;
 
-import com.jame.dev.gymApp.aspects.annotations.DoNotFilter;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
+import com.jame.dev.gymApp.exception.NoActiveException;
 import com.jame.dev.gymApp.exception.UserNotFoundException;
 import com.jame.dev.gymApp.factories.UserFactory;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
@@ -49,16 +49,20 @@ public class UserServiceImplementation implements UserService {
 
    @Transactional
    @Override
-   @DoNotFilter
    public UserEntity save(@NonNull UserDtoInput dto) {
-      final boolean userExists = repo.existsByEmail(dto.email());
-      if (userExists) {
-         throw new AlreadyExistsException("User already exists.");
-      }
-      final UserEntity userEntity = repo.save(userFactory.createFrom(dto));
-      userEntity.setUpdatedAt(Instant.now());
-      eventPublisher.publishEvent(new CacheMutated("users"));
-      return userEntity;
+      return (UserEntity) repo.findByEmail(dto.email())
+              .map(user -> {
+                 if (!user.isActive()) {
+                    throw new NoActiveException("User's account deactivated.");
+                 }
+                 throw new AlreadyExistsException("User already exists.");
+              })
+              .orElseGet(() -> {
+                  final UserEntity userCreated = userFactory.createFrom(dto);
+                  userCreated.setCreatedAt(Instant.now());
+                  eventPublisher.publishEvent(new CacheMutated("users"));
+                  return repo.saveAndFlush(userCreated);
+              });
    }
 
    @Override

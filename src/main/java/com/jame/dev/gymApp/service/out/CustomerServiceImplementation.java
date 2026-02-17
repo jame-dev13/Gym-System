@@ -1,11 +1,11 @@
 package com.jame.dev.gymApp.service.out;
 
-import com.jame.dev.gymApp.aspects.annotations.DoNotFilter;
 import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.CustomerNotFoundException;
-import com.jame.dev.gymApp.exception.UserNotFoundException;
+import com.jame.dev.gymApp.exception.NoActiveException;
+import com.jame.dev.gymApp.exception.UserEntityNotFoundException;
 import com.jame.dev.gymApp.mapper.CustomerMapper;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
@@ -14,6 +14,7 @@ import com.jame.dev.gymApp.service.in.CustomerService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomerServiceImplementation implements CustomerService {
@@ -44,13 +46,13 @@ public class CustomerServiceImplementation implements CustomerService {
    @Override
    @Transactional(readOnly = true)
    public Optional<CustomerEntity> getByEmail(String email) {
-      return repo.findByUser_EmailAndActiveTrue(email);
+      return repo.findByUser_Email(email);
    }
 
    @Override
    @Transactional(readOnly = true)
    public Optional<CustomerEntity> getUserByEmail(@NotBlank final String email) {
-      return repo.findByUser_EmailAndActiveTrue(email);
+      return repo.findByUser_Email(email);
    }
 
    @Override
@@ -66,17 +68,25 @@ public class CustomerServiceImplementation implements CustomerService {
 
    @Override
    @Transactional
-   @DoNotFilter
    public CustomerEntity save(@NonNull CustomerDtoInput dto) {
-      final boolean userExists = repo.existsByUser_EmailAndActiveTrue(dto.email());
-      if (userExists) {
-         throw new AlreadyExistsException("User id already exists.");
-      }
       final UserEntity user = userRepo.findByEmail(dto.email())
-              .orElseThrow(() -> new UserNotFoundException("User Not Found."));
-      final CustomerEntity customerEntity = customerMapper.toEntity(dto, user);
-      customerEntity.setCreatedAt(Instant.now());
-      return repo.saveAndFlush(customerEntity);
+              .orElseThrow(() -> new UserEntityNotFoundException("User not found."));
+      if (!user.isActive()) {
+         throw new NoActiveException("This user's account is deactivated.");
+      }
+
+      return (CustomerEntity) repo.findByUser(user)
+              .map(customer -> {
+                 if (!customer.isActive()) {
+                    throw new NoActiveException("Account is deactivated.");
+                 }
+                 throw new AlreadyExistsException("Customer Already exists.");
+              })
+              .orElseGet(() -> {
+                 final CustomerEntity customerEntity = customerMapper.toEntity(dto, user);
+                 customerEntity.setCreatedAt(Instant.now());
+                 return repo.saveAndFlush(customerEntity);
+              });
    }
 
    @Override
