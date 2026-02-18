@@ -17,22 +17,18 @@ class CustomerMapperTest {
    private final CustomerMapper customerMapper = new CustomerMapperImpl(userMapper);
 
    private final UserEntity testUser = UserEntity.builder()
-           .id(1L)
            .name("user")
            .email("user@maul.com")
            .password("12bf4")
            .roles(Set.of(new RoleEntity(null, Role.USER)))
-           .active(true)
            .build();
 
    @Test
    void toDto() {
       CustomerDtoOutput dto = customerMapper.toDto(
               CustomerEntity.builder()
-                      .id(1L)
                       .user(testUser)
                       .phoneContact("128133")
-                      .active(true)
                       .build());
       Assertions.assertNotNull(dto, "Should not be null.");
    }

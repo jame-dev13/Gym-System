@@ -82,13 +82,11 @@ class UserControllerTest {
            .authProvider(AuthProvider.LOCAL)
            .build();
    final UserEntity userEntity = UserEntity.builder()
-           .id(1L)
            .name(input.name())
            .email(input.email())
            .password(input.password())
            .roles(Set.of(new RoleEntity(null, Role.ADMIN)))
            .provider(AuthProvider.LOCAL)
-           .active(true)
            .build();
    final UserDtoOutput dto = UserDtoOutput.builder()
            .id(userEntity.getId())
@@ -211,13 +209,11 @@ class UserControllerTest {
               .authProvider(AuthProvider.LOCAL)
               .build();
       final UserEntity userEntity = UserEntity.builder()
-              .id(1L)
               .name(input.name())
               .email(input.email())
               .password(input.password())
               .roles(Set.of(new RoleEntity(null, Role.ADMIN)))
               .provider(AuthProvider.LOCAL)
-              .active(true)
               .build();
 
       final UserDtoOutput dto = UserDtoOutput.builder()

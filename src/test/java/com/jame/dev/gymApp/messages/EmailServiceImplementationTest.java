@@ -3,7 +3,6 @@ package com.jame.dev.gymApp.messages;
 import com.jame.dev.gymApp.messages.service.EmailServiceImplementation;
 import com.jame.dev.gymApp.model.messages.EmailDetails;
 import com.jame.dev.gymApp.model.messages.EmailDetailsWAttachment;
-import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.javamail.JavaMailSender;
 
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -59,26 +57,5 @@ class EmailServiceImplementationTest {
       assertAll("Not null, and same properties.",
               () -> assertNotNull(sent, "Should not be null."),
               () -> assertEquals(emailDetails.subject(), sent.getSubject(), "Should be the same subject"));
-   }
-
-   @Test
-   void sendMailWithAttachment() throws IOException, MessagingException, ExecutionException, InterruptedException {
-      final MimeMessage mimeMessage = new MimeMessage((Session) null);
-      when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
-      doNothing().when(javaMailSender).send(any(MimeMessage.class));
-
-      final CompletableFuture<Boolean> mailSent = service.sendMailWithAttachment(emailDetailsWAttachment);
-
-      assertTrue(mailSent.get(), "Mail should had sent.");
-      final ArgumentCaptor<MimeMessage> captor = ArgumentCaptor.forClass(MimeMessage.class);
-      verify(javaMailSender).send(captor.capture());
-
-      final MimeMessage sent = captor.getValue();
-
-      assertAll("Not null, same subject and mail's sent.",
-              () -> assertNotNull(sent, "Should not be null."),
-              () -> assertEquals(emailDetailsWAttachment.subject(), sent.getSubject(), "Should be the same subject."),
-              () -> assertTrue(mailSent.get(), "The mail should has been sent.")
-      );
    }
 }

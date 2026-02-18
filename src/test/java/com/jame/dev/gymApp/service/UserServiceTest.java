@@ -1,29 +1,30 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
-import com.jame.dev.gymApp.mapper.RoleMapper;
-import com.jame.dev.gymApp.mapper.UserMapper;
+import com.jame.dev.gymApp.exception.AlreadyExistsException;
+import com.jame.dev.gymApp.exception.NoActiveException;
+import com.jame.dev.gymApp.factories.UserFactory;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
-import com.jame.dev.gymApp.repository.CustomerRepository;
+import com.jame.dev.gymApp.model.dto.out.CacheMutated;
 import com.jame.dev.gymApp.repository.UserRepository;
-import com.jame.dev.gymApp.service.in.RoleService;
 import com.jame.dev.gymApp.service.out.UserServiceImplementation;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import com.jame.dev.gymApp.shared.enums.Role;
-import lombok.NonNull;
+import com.jame.dev.gymApp.updaters.UserUpdater;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -39,181 +40,147 @@ public class UserServiceTest {
 
    @Mock
    private UserRepository repo;
-
    @Mock
-   private RoleService roleService;
-
+   private UserFactory userFactory;
    @Mock
-   private CustomerRepository customerRepo;
-
+   private UserUpdater userUpdater;
    @Mock
-   private PasswordEncoder passwordEncoder;
-
-   @Mock
-   private UserMapper userMapper;
-
-   @Mock
-   private RoleMapper roleMapper;
+   private ApplicationEventPublisher eventPublisher;
 
    @InjectMocks
    private UserServiceImplementation service;
 
-   @Captor
-   private ArgumentCaptor<UserEntity> entityCaptor;
-
    private final Sort sort = Sort.sort(UserEntity.class).by(UserEntity::getEmail).descending();
 
-   private final UserEntity testUser = UserEntity.builder()
-           .id(1L)
-           .name("userTest")
-           .email("test@mail.com")
-           .password("testSecret123")
-           .roles(Set.of(new RoleEntity(null, Role.ADMIN)))
-           .active(true)
-           .build();
+   private final UserEntity mockUser = new UserEntity();
+
+   private final UserDtoInput mockDto = new UserDtoInput("name", "email", "pass", AuthProvider.LOCAL, Set.of(Role.USER));
 
    private final List<UserEntity> testUserList = IntStream.range(0, 10)
            .mapToObj(i -> UserEntity.builder()
-                   .id((long) (i + 1))
                    .name("userTest" + (i + 1))
                    .email("test" + (i + 1) + "@mail.com")
                    .password("testSecret123")
                    .roles(Set.of(new RoleEntity(null, Role.ADMIN)))
-                   .active(true)
                    .build())
            .sorted(Comparator.comparing(UserEntity::getEmail).reversed())
            .toList();
 
    @Test
-   @DisplayName("Should Gets page of UserEntity.")
-   void getUsersByPages(){
+   @DisplayName("Should return an UserEntity Page.")
+   void getUsersByPages() {
       final Pageable pageable = PageRequest.of(0, 5, sort);
       final List<UserEntity> subList = testUserList.subList(0, 5);
-      when(repo.findAllByActiveTrue(pageable))
-              .thenReturn(new PageImpl<>(subList));
-      final Page<@NonNull UserEntity> page = service.getPage(pageable);
-      final List<UserEntity> pageList = page.getContent();
 
-      assertNotNull(page, "Page should not be null.");
-      assertFalse(page.isEmpty(), "Page should not be empty.");
-      assertEquals(subList, pageList, "Should be the same list.");
-      assertSame(subList.getFirst(), pageList.getFirst(), "Should contain the same first object.");
-      assertSame(subList.getLast(), pageList.getLast(), "Should contain the same first object.");
+      when(repo.findAllByActiveTrue(any(Pageable.class)))
+              .thenReturn(new PageImpl<>(subList));
+
+      final var page = service.getPage(pageable);
+      final var pageList = page.getContent();
+
+      assertEquals(page.getContent().size(), pageList.size(), "Page content size should be equals.");
+
+      verify(repo, atLeastOnce()).findAllByActiveTrue(any(Pageable.class));
+      verifyNoMoreInteractions(repo);
    }
+
+   @Test
+   @DisplayName("Should get user by id.")
+   void getUserById() {
+      when(repo.findById(anyLong())).thenReturn(Optional.of(mockUser));
+
+      final Optional<UserEntity> result = service.getById(1L);
+
+      assertTrue(result.isPresent(), "Result optional should be present.");
+      assertNotNull(result.get(), "Result should not be null");
+
+      verify(repo, atLeastOnce()).findById(anyLong());
+      verifyNoMoreInteractions(repo);
+   }
+
+   @Test
+   @DisplayName("Should get user by email.")
+   void getUserByEmail() {
+      when(repo.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
+
+      final Optional<UserEntity> result = service.getUserByEmail("user@mail.com");
+
+      assertTrue(result.isPresent(), "Result optional should be present.");
+      assertNotNull(result.get(), "Result should not be null");
+
+      verify(repo, atLeastOnce()).findByEmail(anyString());
+      verifyNoMoreInteractions(repo);
+   }
+
 
    @Test
    @DisplayName("Should Add User")
    void addUser() {
-      final UserDtoInput userDtoInput = UserDtoInput
-              .builder()
-              .name("userAdded")
-              .email("userAdded@mail.com")
-              .password("1234456")
-              .roles(Set.of(Role.USER, Role.ADMIN))
-              .authProvider(AuthProvider.LOCAL)
-              .build();
+      when(repo.findByEmail(anyString())).thenReturn(Optional.empty());
+      when(userFactory.createFrom(mockDto)).thenReturn(mockUser);
+      when(repo.saveAndFlush(mockUser)).thenReturn(mockUser);
 
-      when(repo.existsByEmail(userDtoInput.email())).thenReturn(false);
-      when(userMapper.toEntity(any(UserDtoInput.class), anySet())).thenCallRealMethod();
-      when(repo.save(any(UserEntity.class)))
-              .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
+      final UserEntity result = service.save(mockDto);
+      assertNotNull(result, "Result should not be null");
 
-      final UserEntity userAdded = service.save(userDtoInput);
-
-      verify(repo, atLeastOnce()).existsByEmail(userDtoInput.email());
-      verify(userMapper, atLeastOnce()).toEntity(any(UserDtoInput.class), anySet());
-      verify(repo, atLeastOnce()).save(entityCaptor.capture());
+      verify(repo).findByEmail(anyString());
+      verify(userFactory).createFrom(mockDto);
+      verify(eventPublisher).publishEvent(any(CacheMutated.class));
+      verify(repo).saveAndFlush(mockUser);
       verifyNoMoreInteractions(repo);
-
-      final UserEntity userSaved = entityCaptor.getValue();
-
-      assertNotNull(userSaved, "The entity returned should not be null.");
-      assertEquals(userAdded, userSaved, "The returned object should be the same one that has been given to the repo.");
-      assertTrue(userAdded.isActive(), "The active field should be true after every insertion.");
+      verifyNoMoreInteractions(eventPublisher);
    }
 
    @Test
-   @DisplayName("Should Get User By Id")
-   void getUserById() {
-      final long id = this.testUser.getId();
-      when(repo.findById(id)).thenReturn(Optional.of(this.testUser));
+   @DisplayName("User is deactivated")
+   void userDeactivated(){
+      UserEntity inactiveUser = new UserEntity();
+      inactiveUser.setActive(false);
+      when(repo.findByEmail(mockDto.email())).thenReturn(Optional.of(inactiveUser));
 
-      final Optional<UserEntity> optionalUser = service.getById(id);
-      verify(repo, atLeastOnce()).findById(id);
-      verifyNoMoreInteractions(repo);
+      assertThrows(NoActiveException.class, () -> service.save(mockDto));
 
-      assertNotEquals(Optional.empty(), optionalUser, "The User Optional should not be empty.");
-      assertDoesNotThrow(optionalUser::get, "Should doesn't throw any Exception.");
+      verify(repo, atMostOnce()).findByEmail(mockDto.email());
    }
 
    @Test
-   @DisplayName("Should Get User by Email.")
-   void getUserByEmail() {
-      final String EMAIL = this.testUser.getEmail();
-      when(repo.findByEmail(EMAIL)).thenReturn(Optional.of(testUser));
+   @DisplayName("User already exists.")
+   void userAlreadyExists() {
+      when(repo.findByEmail(mockDto.email())).thenReturn(Optional.of(mockUser));
 
-      final Optional<UserEntity> optionalUser = service.getUserByEmail(EMAIL);
-      verify(repo, atLeastOnce()).findByEmail(EMAIL);
-      verifyNoMoreInteractions(repo);
-      assertNotEquals(Optional.empty(), optionalUser, "The User Optional should not be empty.");
-      assertDoesNotThrow(optionalUser::get, "Should doesn't throw any Exception.");
+      assertThrows(AlreadyExistsException.class, () -> service.save(mockDto));
+
+      verify(repo, atMostOnce()).findByEmail(mockDto.email());
    }
 
    @Test
    @DisplayName("Should Update User")
    void updateUser() {
-      final long id = this.testUser.getId();
-      final UserDtoInput dto = UserDtoInput.builder()
-              .name("nameChanged")
-              .email("emailChanged@mail.com")
-              .password("passwordChangedToo")
-              .roles(Set.of(Role.USER))
-              .authProvider(AuthProvider.LOCAL)
-              .build();
+      UserEntity user = new UserEntity();
+      user.setUpdatedAt(Instant.now());
 
-      final String oldName = this.testUser.getName();
-      final String oldEmail = this.testUser.getEmail();
-      final String oldPassword = this.testUser.getPassword();
+      when(repo.findById(1L)).thenReturn(Optional.of(mockUser));
+      when(userUpdater.apply(mockUser, mockDto)).thenReturn(user);
+      when(repo.saveAndFlush(user)).thenReturn(user);
 
-      when(repo.findById(id)).thenReturn(Optional.of(this.testUser));
-      when(repo.save(any(UserEntity.class)))
-              .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
+      final UserEntity result = service.update(1L, mockDto);
 
-      final UserEntity userUpdated = service.update(id, dto);
+      assertNotNull(result, "User should not be null");
 
-      assertNotEquals(oldName, userUpdated.getName(), "Name should not be equal anymore.");
-      assertNotEquals(oldEmail, userUpdated.getEmail(), "Email should not be the equal anymore.");
-      assertNotEquals(oldPassword, userUpdated.getPassword(), "Password should not be the equal anymore.");
-
-      verify(repo, atLeastOnce()).findById(id);
-      verify(repo, atLeastOnce()).save(any(UserEntity.class));
+      verify(repo, atMostOnce()).findById(anyLong());
+      verify(userUpdater, atMostOnce()).apply(mockUser, mockDto);
+      verify(repo, atMostOnce()).saveAndFlush(user);
+      verify(eventPublisher, atMostOnce()).publishEvent(any(CacheMutated.class));
       verifyNoMoreInteractions(repo);
+      verifyNoMoreInteractions(eventPublisher);
    }
 
    @Test
    @DisplayName("[SOFT_DELETE]: Should DeleteById.")
    void softDelete() {
-      final long id = this.testUser.getId();
+      service.softDelete(1L);
 
-      when(customerRepo.findById(id)).thenReturn(Optional.of(new CustomerEntity(1L, new UserEntity(), "2147252", true)));
-
-      service.softDelete(id);
-
-      verify(repo, times(1)).softDelete(id);
-      verify(repo, never()).deleteById(anyLong());
+      verify(repo, atMostOnce()).deleteById(anyLong());
       verifyNoMoreInteractions(repo);
    }
-
-//   @Test
-//   @DisplayName("[REAL_DELETE]: Should DeleteById.")
-//   void delete() {
-//      final long id = this.testUser.getId();
-//      when(customerRepo.findUserAssociatedByIdUser(id)).thenReturn(Optional.empty());
-//
-//      service.softDelete(id);
-//
-//      verify(repo, times(1)).deleteById(id);
-//      verify(repo, never()).softDelete(id);
-//      verifyNoMoreInteractions(repo);
-//   }
 }

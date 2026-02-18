@@ -69,13 +69,11 @@ public class AuthServiceImplementationTest {
    private AuthServiceImplementation service;
 
    private final UserEntity user = UserEntity.builder()
-           .id(1L)
            .name("userTest")
            .email("userTest@mail.com")
            .password("user123")
            .provider(AuthProvider.LOCAL)
            .roles(Set.of(new RoleEntity(1, Role.USER)))
-           .active(true)
            .build();
    private final VerificationEntity verification = VerificationEntity.builder()
            .id("123ABC")
@@ -110,8 +108,7 @@ public class AuthServiceImplementationTest {
       final String html = "<p>Hola</p>";
       when(userService.save(any(UserDtoInput.class))).thenReturn(user);
       when(verificationService.save(any(UserEntity.class))).thenReturn(verification);
-      when(emailService.html(anyString(), anyString()))
-              .thenReturn(html);
+
       when(emailService.sendSimpleEmail(any(EmailDetails.class)))
               .thenReturn(CompletableFuture.completedFuture(true));
 
@@ -119,7 +116,6 @@ public class AuthServiceImplementationTest {
 
       verify(userService, times(1)).save(dtoCaptor.capture());
       verify(verificationService, times(1)).save(entityCaptor.capture());
-      verify(emailService, atLeastOnce()).html(emailCaptor.capture(), codeCaptor.capture());
       verify(emailService, atLeastOnce()).sendSimpleEmail(any(EmailDetails.class));
       verifyNoMoreInteractions(userService, verificationService, emailService);
    }
@@ -127,10 +123,8 @@ public class AuthServiceImplementationTest {
    @Test
    @DisplayName("Sign-In: Successful authentication and cookies with token generation.")
    void signIn() {
-      final SignInDto dto = SignInDto.builder()
-              .email(this.user.getEmail())
-              .password(this.user.getPassword())
-              .build();
+      final SignInDto dto = new SignInDto(this.user.getEmail(),
+      this.user.getPassword());
       final User userAuthMock = new User(
               dto.email(),
               dto.password(),

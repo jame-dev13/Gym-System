@@ -36,13 +36,11 @@ public class UserMapperTest {
    @DisplayName("Should map to Dto")
    void toDto(){
       UserEntity user = UserEntity.builder()
-              .id(1L)
               .name("userEntity")
               .email("userEntity@mail.com")
               .password("1223432")
               .roles(Set.of(userRoleEntity))
               .provider(AuthProvider.LOCAL)
-              .active(true)
               .build();
       UserDtoOutput dto = userMapper.toDto(user);
       assertNotNull(dto, "Should not be null.");

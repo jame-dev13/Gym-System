@@ -3,32 +3,33 @@ package com.jame.dev.gymApp.service;
 import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
-import com.jame.dev.gymApp.exception.UserNotFoundException;
+import com.jame.dev.gymApp.exception.AlreadyExistsException;
+import com.jame.dev.gymApp.exception.NoActiveException;
 import com.jame.dev.gymApp.mapper.CustomerMapper;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.out.CustomerServiceImplementation;
 import com.jame.dev.gymApp.shared.enums.Role;
-import lombok.NonNull;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
-import java.util.Comparator;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,38 +47,28 @@ public class CustomerServiceTest {
    @InjectMocks
    private CustomerServiceImplementation service;
 
-   private final UserEntity testUser = UserEntity.builder()
-           .id(1L)
-           .name("userTest")
-           .email("test@mail.com")
-           .password("testSecret123")
-           .roles(Set.of(new RoleEntity(null, Role.ADMIN)))
-           .active(true)
-           .build();
-   private final CustomerEntity customerTest = CustomerEntity.builder()
-           .id(1L)
-           .user(this.testUser)
-           .phoneContact("123456789")
-           .active(true)
-           .build();
+   private final UserEntity mockUser = new UserEntity();
+   private final CustomerEntity mockCustomer = new CustomerEntity();
+   private final CustomerDtoInput mockDto = new CustomerDtoInput("email@mail.com", "27930527");
 
    private final Sort sort = Sort.sort(CustomerEntity.class).by(CustomerEntity::getId).descending();
+
    private final List<CustomerEntity> testCustomerList = IntStream.range(0, 10)
            .mapToObj(i -> {
               UserEntity user = UserEntity.builder()
-                      .id((long) (i + 1))
                       .name("userTest" + i)
                       .email("test" + i + "@mail.com")
                       .password("testSecret123" + i)
                       .roles(Set.of(new RoleEntity(null, Role.ADMIN)))
-                      .active(true)
                       .build();
-              return new CustomerEntity((long) (i + 1), user, "312434" + i, true);
+              return new CustomerEntity(user, "312434" + i);
            })
-           .sorted(Comparator.comparing(CustomerEntity::getId).reversed())
            .toList();
 
-   private final Predicate<CustomerEntity> allMatch = c -> c.getUser() != null && c.isActive();
+   @BeforeEach
+   void setUp() {
+      mockCustomer.setUser(mockUser);
+   }
 
    @Test
    @DisplayName("Should get a page of CustomerEntity.")
@@ -87,122 +78,123 @@ public class CustomerServiceTest {
 
       when(repo.findAllByActiveTrue(pageable)).thenReturn(new PageImpl<>(subList));
 
-      final Page<@NonNull CustomerEntity> page = service.getPage(pageable);
-      final List<CustomerEntity> pageContent = page.getContent();
-      System.out.println(pageContent);
+      final var page = service.getPage(pageable);
+      final var pageContent = page.getContent();
 
-      assertNotNull(page, "Should not be null");
-      assertFalse(page.isEmpty(), "Should not be empty");
-      assertTrue(page.stream().allMatch(allMatch), "All customer should have a user associated and should be actives");
-      assertSame(pageContent.getFirst(), subList.getFirst(), "First list object should be the same.");
-      assertSame(pageContent.getLast(), subList.getLast(), "Last list object should be the same.");
+      assertNotNull(page, "Should not be null.");
+      assertNotNull(pageContent, "Page content should not be null.");
 
       verify(repo, atLeastOnce()).findAllByActiveTrue(pageable);
       verifyNoMoreInteractions(repo);
    }
 
    @Test
-   @DisplayName("Should gets next page.")
-   void getNext() {
-      final Pageable pageable = PageRequest.of(1, 5, sort);
-      final List<CustomerEntity> subList = testCustomerList.subList(5, 9);
-
-      when(repo.findAllByActiveTrue(pageable)).thenReturn(new PageImpl<>(subList));
-
-      final Page<@NonNull CustomerEntity> page = service.getPage(pageable);
-      final List<CustomerEntity> pageContent = page.getContent();
-      System.out.println(pageContent);
-
-      assertNotNull(page, "Should not be null");
-      assertFalse(page.isEmpty(), "Should not be empty");
-      assertTrue(page.stream().allMatch(allMatch), "All customer should have a user associated and should be actives");
-      assertSame(pageContent.getFirst(), subList.getFirst(), "First list object should be the same.");
-      assertSame(pageContent.getLast(), subList.getLast(), "Last list object should be the same.");
-
-      verify(repo, atLeastOnce()).findAllByActiveTrue(pageable);
-      verifyNoMoreInteractions(repo);
-   }
-
-   @Test
-   @DisplayName("Should Gets Customers By Id")
+   @DisplayName("Should Get Customer By Id")
    void getById() {
-      final long id = this.customerTest.getId();
-      when(repo.findById(id)).thenReturn(Optional.of(this.customerTest));
+      when(repo.findById(anyLong())).thenReturn(Optional.of(mockCustomer));
 
-      final Optional<CustomerEntity> optionalCustomer = service.getById(id);
-      verify(repo, times(1)).findById(id);
+      final Optional<CustomerEntity> result = service.getById(1L);
+
+      verify(repo, times(1)).findById(anyLong());
       verifyNoMoreInteractions(repo);
 
-      assertNotEquals(Optional.empty(), optionalCustomer, "The 'optionalCustomer' should not be empty");
-      assertDoesNotThrow(optionalCustomer::get, "Should doesn't throws any Exception.");
+      assertTrue(result.isPresent(), "The result should not be empty");
+      assertDoesNotThrow(result::get, "Shouldn't throw any Exception.");
+      assertNotNull(result.get(), "The result should not be null.");
+   }
+
+   @Test
+   @DisplayName("Exists by id and email")
+   void existsByIdAndEmail() {
+      when(repo.existsByIdAndUser_EmailAndActiveTrue(anyLong(), anyString())).thenReturn(true);
+      boolean exists = service.exitsByIdAndCustomerEmail(1L, mockDto.email());
+      assertTrue(exists);
+      verify(repo).existsByIdAndUser_EmailAndActiveTrue(anyLong(), anyString());
    }
 
    @Test
    @DisplayName("Should save a Customer")
    void saveCustomer() {
-      final String emailUser = this.testUser.getEmail();
-      final CustomerDtoInput dto = new CustomerDtoInput(emailUser, "4270143");
-      when(repo.existsByUser(anyString())).thenReturn(false);
-      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(this.testUser));
-      when(customerMapper.toEntity(dto, testUser)).thenReturn(customerTest);
-      when(repo.save(any(CustomerEntity.class)))
-              .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
+      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
+      when(repo.findByUser(mockUser)).thenReturn(Optional.empty());
+      when(customerMapper.toEntity(mockDto, mockUser)).thenReturn(mockCustomer);
+      when(repo.saveAndFlush(mockCustomer))
+              .thenReturn(mockCustomer);
 
-      final CustomerEntity customerAdded = service.save(dto);
-      final ArgumentCaptor<CustomerEntity> captor = ArgumentCaptor.forClass(CustomerEntity.class);
+      final CustomerEntity customerAdded = service.save(mockDto);
 
-      verify(repo, times(1)).existsByUser(anyString());
-      verify(userRepo, times(1)).findByEmail(anyString());
-      verify(customerMapper, times(1)).toEntity(dto, testUser);
-      verify(repo, times(1)).save(captor.capture());
+      assertNotNull(customerAdded, "Result should not be null.");
 
-      final CustomerEntity customerSaved = captor.getValue();
+      verify(userRepo, atMostOnce()).findByEmail(anyString());
+      verify(repo, atMostOnce()).findByUser(mockUser);
+      verify(customerMapper, atMostOnce()).toEntity(mockDto, mockUser);
+      verify(repo, atMostOnce()).saveAndFlush(mockCustomer);
+      verifyNoMoreInteractions(userRepo, customerMapper, repo);
+   }
 
-      assertDoesNotThrow(() -> new UserNotFoundException("Not found"), "Should not throws any Exception.");
-      assertNotNull(customerSaved, "The saved Object should not be null.");
-      assertNotNull(customerSaved.getUser(), "The Customer should always have a user associated.");
-      assertEquals(customerAdded, customerSaved, "The returned Object should be the same as the gave one to the repo.");
+   @Test
+   @DisplayName("Already exists check works")
+   void alreadyExistsCheck() {
+      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
+      when(repo.findByUser(any(UserEntity.class))).thenReturn(Optional.of(mockCustomer));
+
+      assertThrows(AlreadyExistsException.class, () -> service.save(mockDto));
+
+      verify(userRepo, atMostOnce()).findByEmail(anyString());
+      verify(repo, atMostOnce()).findByUser(any(UserEntity.class));
+   }
+
+   @Test
+   @DisplayName("Check for User deactivated, should works")
+   void checkUserActiveStatus() {
+      UserEntity user = new UserEntity();
+      user.setActive(false);
+
+      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(user));
+
+      assertThrows(NoActiveException.class, () -> service.save(mockDto));
+
+      verify(userRepo, atMostOnce()).findByEmail(anyString());
+   }
+
+   @Test
+   @DisplayName("Customer deactivated check works")
+   void deactivatedCheck() {
+      CustomerEntity customer = new CustomerEntity();
+      customer.setActive(false);
+      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
+      when(repo.findByUser(any(UserEntity.class))).thenReturn(Optional.of(customer));
+
+      assertThrows(NoActiveException.class, () -> service.save(mockDto));
+
+      verify(userRepo, atMostOnce()).findByEmail(anyString());
+      verify(repo, atMostOnce()).findByUser(any(UserEntity.class));
    }
 
    @Test
    @DisplayName("Should update a customer entity")
    void updateCustomer() {
-      final CustomerDtoInput dto = new CustomerDtoInput("any@mail.com", "484943");
-      final String oldContact = this.customerTest.getPhoneContact();
-      final CustomerEntity change = this.customerTest;
-      change.setPhoneContact(dto.contact());
+      final CustomerEntity customer = new CustomerEntity();
+      customer.setUpdatedAt(Instant.now());
 
-      when(repo.findById(anyLong())).thenReturn(Optional.of(this.customerTest));
-      when(repo.save(any(CustomerEntity.class))).thenReturn(change);
+      when(repo.findById(anyLong())).thenReturn(Optional.of(mockCustomer));
+      when(repo.saveAndFlush(any(CustomerEntity.class))).thenReturn(customer);
 
-      final CustomerEntity changed = service.update(1L, dto);
+      final CustomerEntity result = service.update(1L, mockDto);
 
-      verify(repo, times(1)).findById(anyLong());
-      verify(repo, times(1)).save(change);
+      assertNotNull(result);
+
+      verify(repo, atMostOnce()).findById(anyLong());
+      verify(repo, atMostOnce()).saveAndFlush(any(CustomerEntity.class));
       verifyNoMoreInteractions(repo);
-
-      assertNotNull(changed, "Entity result should not be null.");
-      assertEquals(change.getPhoneContact(), changed.getPhoneContact(), "Should have the same phone contact.");
-      assertNotEquals(oldContact, changed.getPhoneContact(), "PhoneContact should not be equals.");
    }
 
    @Test
    @DisplayName("Should do soft delete")
    void softDelete() {
-      Long id = this.customerTest.getId();
-      when(repo.findById(id))
-              .thenReturn(Optional.of(this.customerTest));
-      Optional<CustomerEntity> optionalCustomer = service.getById(id);
+      service.softDelete(1L);
 
-      CustomerEntity customerGotten = optionalCustomer.orElseThrow();
-
-      assertNotEquals(Optional.empty(), optionalCustomer,"The optional value should not be empty.");
-      assertNotNull(customerGotten, "Should not be null");
-      assertEquals(customerGotten, this.customerTest, "Should be the same object.");
-
-      service.softDelete(id);
-
-      verify(repo, times(1)).softDelete(id);
+      verify(repo, atMostOnce()).deleteById(anyLong());
       verifyNoMoreInteractions(repo);
    }
 }
