@@ -90,19 +90,17 @@ class SubscriptionControllerTest {
 
    private final String URI_TEMPLATE = "/admin/subscriptions";
 
-   private final CustomerEntity customer = new CustomerEntity(1L, new UserEntity(), "2744232", true);
+   private final CustomerEntity customer = new CustomerEntity(new UserEntity(), "2744232");
    private final PricingEntity pricing = new PricingEntity(1, new MemberShipEntity(1, Membership.MONTHLY), BigDecimal.valueOf(300.0d));
    private final PeriodEntity period = new PeriodEntity(Period.MONTHLY, LocalDate.now());
    private final SubscriptionEntity subscriptionEntity = SubscriptionEntity.builder()
-           .id(1L)
            .customer(customer)
            .pricing(pricing)
            .subscriptionPeriods(List.of(period))
-           .active(true)
            .finished(false)
            .build();
    private final SubscriptionDtoOutput dto = mapToDto(subscriptionEntity);
-   private final SubscriptionDtoInput dtoInput = new SubscriptionDtoInput(1L, 1);
+   private final SubscriptionDtoInput dtoInput = new SubscriptionDtoInput( "cmail@mail.com", Membership.MONTHLY);
    private final ObjectMapper objectMapper = new ObjectMapper()
            .registerModule(new JavaTimeModule());
 

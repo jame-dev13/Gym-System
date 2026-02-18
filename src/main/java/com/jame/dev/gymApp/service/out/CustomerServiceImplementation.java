@@ -103,6 +103,6 @@ public class CustomerServiceImplementation implements CustomerService {
       customer.setUser(user);
       customer.setPhoneContact(dto.contact());
       customer.setUpdatedAt(Instant.now());
-      return repo.save(customer);
+      return repo.saveAndFlush(customer);
    }
 }

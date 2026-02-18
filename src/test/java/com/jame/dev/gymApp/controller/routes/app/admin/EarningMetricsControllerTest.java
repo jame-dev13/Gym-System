@@ -3,8 +3,8 @@ package com.jame.dev.gymApp.controller.routes.app.admin;
 import com.jame.dev.gymApp.auth.filters.CustomAuthorizationFilter;
 import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.metrics.service.in.EarningMetricsService;
+import com.jame.dev.gymApp.model.dto.out.MonthTotal;
 import com.jame.dev.gymApp.model.metrics.TotalPerMembershipTypeDto;
-import com.jame.dev.gymApp.model.metrics.MonthTotal;
 import com.jame.dev.gymApp.shared.enums.Membership;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -44,7 +45,7 @@ class EarningMetricsControllerTest {
 
    @Test
    @DisplayName("Should return the total earned.")
-   void getTotalEarnings() throws Exception{
+   void getTotalEarnings() throws Exception {
       final String URI = URI_TEMPLATE + "/total";
       when(service.getTotal()).thenReturn(BigDecimal.valueOf(10_000d));
 
@@ -61,9 +62,9 @@ class EarningMetricsControllerTest {
    @DisplayName("Should return the list of months and his total earned.")
    void getTotalPerMonth() throws Exception {
       final String URI = URI_TEMPLATE + "/months";
-      when(service.getTotalPerMonth()).thenReturn(List.of(
-              new MonthTotal(2025, "December", BigDecimal.valueOf(3_000d))
-      ));
+      var returnData = Map.of(2026, List.of(
+              new MonthTotal( "December", BigDecimal.valueOf(3_000d))));
+      when(service.getTotalPerMonth()).thenReturn(returnData);
 
       this.mockMvc.perform(get(URI)
                       .accept(MediaType.APPLICATION_JSON))

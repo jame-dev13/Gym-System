@@ -73,10 +73,8 @@ class CustomerControllerTest {
 
    private final String URI_TEMPLATE = "/admin/customers";
    private final CustomerEntity customer = CustomerEntity.builder()
-           .id(1L)
            .user(new UserEntity())
            .phoneContact("2244234")
-           .active(true)
            .build();
 
    @Test
@@ -123,10 +121,8 @@ class CustomerControllerTest {
    void getPageFromCache() throws Exception {
       final Pageable pageable = PageRequest.of(0, 2);
       final CustomerEntity customer = CustomerEntity.builder()
-              .id(1L)
               .user(new UserEntity())
               .phoneContact("2244234")
-              .active(true)
               .build();
 
       final CustomerDtoOutput customerDto =
@@ -162,7 +158,7 @@ class CustomerControllerTest {
                       new UserDtoOutput(1L, "userdto", "user@mail.com",
                               Set.of(Role.USER)),
                       "82048223");
-      final CustomerEntity customer = new CustomerEntity(id, new UserEntity(), "1393141", true);
+      final CustomerEntity customer = new CustomerEntity(new UserEntity(), "1393141");
       when(customerService.getById(id)).thenReturn(Optional.of(customer));
       when(mapper.toDto(any(CustomerEntity.class))).thenReturn(customerDto);
 
@@ -186,11 +182,8 @@ class CustomerControllerTest {
    @Test
    @DisplayName("Should post a customer")
    void postCustomer() throws Exception {
-      final CustomerDtoInput customerDtoInput = CustomerDtoInput.builder()
-              .email("user@mail.com")
-              .contact("24842543")
-              .build();
-      final CustomerEntity customerEntity = new CustomerEntity(1L, new UserEntity(), customerDtoInput.contact(), true);
+      final CustomerDtoInput customerDtoInput = new CustomerDtoInput("user@mail.com", "24842543");
+      final CustomerEntity customerEntity = new CustomerEntity(new UserEntity(), customerDtoInput.contact());
       final CustomerDtoOutput customerDto =
               new CustomerDtoOutput(customerEntity.getId(),
                       new UserDtoOutput(1L, "userdto", "user@mail.com", Set.of(Role.USER)),
@@ -215,11 +208,8 @@ class CustomerControllerTest {
    @DisplayName("Should patch the customer")
    void patchContactCustomer() throws Exception {
       final String oldPhone = "213642424";
-      final CustomerDtoInput customerDtoInput = CustomerDtoInput.builder()
-              .email("user@mail.com")
-              .contact("24842543")
-              .build();
-      final CustomerEntity customerEntity = new CustomerEntity(1L, new UserEntity(), customerDtoInput.contact(), true);
+      final CustomerDtoInput customerDtoInput = new CustomerDtoInput("user@mail.com", "24842543");
+      final CustomerEntity customerEntity = new CustomerEntity(new UserEntity(), customerDtoInput.contact());
       final CustomerDtoOutput customerDto =
               new CustomerDtoOutput(customerEntity.getId(),
                       new UserDtoOutput(1L, "userdto", "user@mail.com", Set.of(Role.USER)),

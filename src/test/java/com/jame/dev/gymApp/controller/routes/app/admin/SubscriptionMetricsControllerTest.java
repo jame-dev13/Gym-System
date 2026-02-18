@@ -3,11 +3,9 @@ package com.jame.dev.gymApp.controller.routes.app.admin;
 import com.jame.dev.gymApp.auth.filters.CustomAuthorizationFilter;
 import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.metrics.service.in.SubscriptionMetricsService;
-import com.jame.dev.gymApp.model.metrics.PeriodCountDto;
 import com.jame.dev.gymApp.model.metrics.SubsPerMembership;
 import com.jame.dev.gymApp.model.metrics.SubsPerMonthDto;
 import com.jame.dev.gymApp.shared.enums.Membership;
-import com.jame.dev.gymApp.shared.enums.Period;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,21 +73,6 @@ class SubscriptionMetricsControllerTest {
       verifyNoMoreInteractions(service);
    }
 
-   @Test
-   @DisplayName("Should return a list of subscriptions grouped by periods.")
-   void getPerPeriod() throws Exception {
-      final String URI = URI_TEMPLATE + "/periods";
-      when(service.getSubscriptionsPerPeriod()).thenReturn(List.of(
-              new PeriodCountDto(Period.MONTHLY, 2L)
-      ));
-
-      mockMvc.perform(get(URI)
-              .accept(MediaType.APPLICATION_JSON))
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.[0]").exists());
-      verify(service, atLeastOnce()).getSubscriptionsPerPeriod();
-      verifyNoMoreInteractions(service);
-   }
 
    @Test
    @DisplayName("Should return a list of subs grouped by memberships.")

@@ -60,8 +60,9 @@ public class UserServiceImplementation implements UserService {
               .orElseGet(() -> {
                   final UserEntity userCreated = userFactory.createFrom(dto);
                   userCreated.setCreatedAt(Instant.now());
+                  final UserEntity userSaved = repo.saveAndFlush(userCreated);
                   eventPublisher.publishEvent(new CacheMutated("users"));
-                  return repo.saveAndFlush(userCreated);
+                  return userSaved;
               });
    }
 
@@ -69,8 +70,9 @@ public class UserServiceImplementation implements UserService {
    public UserEntity update(final Long id, @NonNull final UserDtoInput dto) {
       final UserEntity userEntity = repo.findById(id)
               .orElseThrow(() -> new UserNotFoundException("User Not Found."));
-      final UserEntity userUpdated = repo.save(userUpdater.apply(userEntity, dto));
-      userUpdated.setUpdatedAt(Instant.now());
+      final UserEntity modified = userUpdater.apply(userEntity, dto);
+      modified.setUpdatedAt(Instant.now());
+      final UserEntity userUpdated = repo.saveAndFlush(modified);
       eventPublisher.publishEvent(new CacheMutated("users"));
       return userUpdated;
    }

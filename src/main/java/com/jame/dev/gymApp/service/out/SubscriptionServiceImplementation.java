@@ -62,12 +62,6 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Override
    public SubscriptionEntity save(@NonNull SubscriptionDtoInput dto) {
       final CustomerEntity customer = customerRepo.findByUser_Email(dto.customerEmail())
-              .map(c -> {
-                 if (!c.isActive()) {
-                    throw new NoActiveException("Customer is active");
-                 }
-                 return c;
-              })
               .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
 
       if (repo.existsByCustomer(customer)) {
@@ -76,9 +70,10 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
 
       final PricingEntity pricing = pricingRepo.findByMemberShipEntity_Membership(dto.membership())
               .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
+
       final SubscriptionEntity subscription = subscriptionFactory.createFrom(dto, customer, pricing, LocalDate.now());
       subscription.setCreatedAt(Instant.now());
-      return repo.save(subscription);
+      return repo.saveAndFlush(subscription);
    }
 
    @Transactional
@@ -90,7 +85,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
               .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
       subscriptionEntity.setPricing(pricingEntity);
       subscriptionEntity.setUpdatedAt(Instant.now());
-      return repo.save(subscriptionEntity);
+      return repo.saveAndFlush(subscriptionEntity);
    }
 
    @Transactional
@@ -137,7 +132,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
               subscriptionEntity, pricing, currentPeriod.getEndPeriod()
       );
       subscriptionRenew.setUpdatedAt(Instant.now());
-      return repo.save(subscriptionRenew);
+      return repo.saveAndFlush(subscriptionRenew);
    }
 
    private boolean canRenew(final PeriodEntity period, final SubscriptionEntity subscriptionEntity) {

@@ -30,10 +30,8 @@ public class SubscriptionMapperTest {
    @BeforeEach
    void setup() {
       this.customer = CustomerEntity.builder()
-              .id(1L)
               .user(new UserEntity())
               .phoneContact("3926441")
-              .active(true)
               .build();
       this.pricing = PricingEntity.builder()
               .id(1)
@@ -41,11 +39,9 @@ public class SubscriptionMapperTest {
               .price(BigDecimal.valueOf(300.00d))
               .build();
       this.subs = SubscriptionEntity.builder()
-              .id(1L)
               .customer(customer)
               .pricing(pricing)
               .subscriptionPeriods(List.of(new PeriodEntity()))
-              .active(true)
               .finished(false)
               .build();
    }
@@ -66,10 +62,8 @@ public class SubscriptionMapperTest {
    @Test
    @DisplayName("To Entity")
    void toEntity() {
-      final SubscriptionDtoInput dtoInput = SubscriptionDtoInput.builder()
-              .customerId(1L)
-              .pricingId(1)
-              .build();
+      final SubscriptionDtoInput dtoInput = new SubscriptionDtoInput("cmail@mail.com",
+              Membership.MONTHLY);
       final List<PeriodEntity> periods = new ArrayList<>();
 
       SubscriptionEntity subs = subscriptionMapper.toEntity(dtoInput, customer, pricing, periods);
