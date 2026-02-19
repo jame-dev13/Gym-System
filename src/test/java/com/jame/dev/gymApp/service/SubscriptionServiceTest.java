@@ -216,6 +216,7 @@ class SubscriptionServiceTest {
       SubscriptionEntity subscription = mock(SubscriptionEntity.class);
       PricingEntity pricingMock = mock(PricingEntity.class);
 
+      when(subscription.isFinished()).thenReturn(true);
       when(subscription.getCustomer()).thenReturn(customerMocked);
       when(customerMocked.getUser()).thenReturn(userMocked);
       when(userMocked.getEmail()).thenReturn(email);
