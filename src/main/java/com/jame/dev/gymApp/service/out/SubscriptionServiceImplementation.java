@@ -1,9 +1,6 @@
 package com.jame.dev.gymApp.service.out;
 
-import com.jame.dev.gymApp.entity.CustomerEntity;
-import com.jame.dev.gymApp.entity.PeriodEntity;
-import com.jame.dev.gymApp.entity.PricingEntity;
-import com.jame.dev.gymApp.entity.SubscriptionEntity;
+import com.jame.dev.gymApp.entity.*;
 import com.jame.dev.gymApp.exception.*;
 import com.jame.dev.gymApp.factories.SubscriptionFactory;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
@@ -117,7 +114,12 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    private SubscriptionEntity renew(long id, SubscriptionDtoInput input) {
       final SubscriptionEntity subscriptionEntity = repo.findById(id)
               .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
-      final String email = subscriptionEntity.getCustomer().getUser().getEmail();
+
+      if(!subscriptionEntity.isFinished()) {
+         throw new RenewSubscriptionException("Subscription unfinished, cannot renew yet.");
+      }
+
+      final String email = extractEmailFromSubscriptionCustomer(subscriptionEntity);
       if (!Objects.equals(email, input.customerEmail())) {
          throw new RenewSubscriptionException("Customer doesn't match.");
       }
@@ -136,12 +138,20 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    }
 
    private boolean canRenew(final PeriodEntity period, final SubscriptionEntity subscriptionEntity) {
-      if (subscriptionEntity.isFinished()) return true;
+      if(subscriptionEntity.isFinished()) return true;
       final int WINDOW = 4;
       final LocalDate now = LocalDate.now();
       final LocalDate finishPeriodDate = period.getEndPeriod();
       if (now.isAfter(finishPeriodDate)) return true;
       final long windowAccept = ChronoUnit.DAYS.between(now, finishPeriodDate);
       return windowAccept < WINDOW;
+   }
+
+   private String extractEmailFromSubscriptionCustomer(SubscriptionEntity entity) {
+      return Optional.of(entity)
+              .map(SubscriptionEntity::getCustomer)
+              .map(CustomerEntity::getUser)
+              .map(UserEntity::getEmail)
+              .orElseThrow(() -> new EmailNotFoundExceptuon("Customer not identified."));
    }
 }

@@ -265,4 +265,13 @@ public class GlobalExceptionHandler {
               .buildErrorResponse(ex, request, HttpStatus.CONFLICT, "SAVE_OPERATION");
       return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
    }
+
+   @ExceptionHandler(EmailNotFoundExceptuon.class)
+   public ResponseEntity<ApiErrorResponse> handleEmailNotFoundException(
+           EmailNotFoundExceptuon ex,
+           HttpServletRequest request) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "UPDATE_OPERATION");
+      return ResponseEntity.status(errorResponse.status()).body(errorResponse);
+   }
 }
