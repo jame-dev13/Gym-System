@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
@@ -43,10 +45,11 @@ public class JwtServiceImplementation implements JwtService {
 
    @Override
    public boolean isExpired(String token) {
-      final Date expiration = extractExpiration(token)
-              .orElseThrow(() -> new ExtractClaimException(EXCEPTION_MESSAGE));
-      final Date currentTime = new Date(System.currentTimeMillis());
-      return currentTime.after(expiration);
+      final Clock clock = jwtUtils.getClock();
+      final Instant expiration = extractExpiration(token)
+              .orElseThrow(() -> new ExtractClaimException(EXCEPTION_MESSAGE))
+              .toInstant();
+      return Instant.now(clock).isAfter(expiration);
    }
 
    @Override

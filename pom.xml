@@ -30,6 +30,7 @@
     <java.version>21</java.version>
     <lombok.version>1.18.42</lombok.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
+    <io.jsonwebtoken.version>0.13.0</io.jsonwebtoken.version>
   </properties>
   <dependencies>
     <dependency>
@@ -134,17 +135,17 @@
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-api</artifactId>
-      <version>0.11.5</version>
+      <version>${io.jsonwebtoken.version}</version>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-impl</artifactId>
-      <version>0.11.5</version>
+      <version>${io.jsonwebtoken.version}</version>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-jackson</artifactId>
-      <version>0.13.0</version>
+      <version>${io.jsonwebtoken.version}</version>
     </dependency>
     <dependency>
       <groupId>redis.clients</groupId>

@@ -10,6 +10,8 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisPooled;
 
+import java.time.Clock;
+
 @Configuration
 public class AppConfig {
 
@@ -46,5 +48,10 @@ public class AppConfig {
       mapper.registerModule(new JavaTimeModule());
       mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
       return mapper;
+   }
+
+   @Bean(name = "clock")
+   public Clock clock(){
+      return Clock.systemUTC();
    }
 }
