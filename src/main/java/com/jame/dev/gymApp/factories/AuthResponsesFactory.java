@@ -7,7 +7,7 @@ import com.jame.dev.gymApp.exception.UserNotFoundException;
 import com.jame.dev.gymApp.jwt.service.JwtService;
 import com.jame.dev.gymApp.mapper.RoleMapper;
 import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
-import com.jame.dev.gymApp.model.dto.auth.IdentityDto;
+import com.jame.dev.gymApp.model.dto.auth.SessionDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInOkDto;
 import com.jame.dev.gymApp.service.in.CustomerService;
 import com.jame.dev.gymApp.shared.enums.Role;
@@ -59,10 +59,10 @@ public class AuthResponsesFactory {
       return buildSignInOkDto(isUser, username);
    }
 
-   public IdentityDto createIdentityDtoFrom(String username, Collection<? extends GrantedAuthority> authorities) {
+   public SessionDto createSessionFrom(String username, Collection<? extends GrantedAuthority> authorities) {
       final Set<Role> roles = roleMapper.authoritiesToRoles(authorities);
       final Optional<CustomerEntity> customer = customerService.getUserByEmail(username);
-      return new IdentityDto(username, roles, (customer.isPresent() && customer.get().isActive()));
+      return new SessionDto(username, roles, (customer.isPresent() && customer.get().isActive()));
    }
 
    private SignInOkDto buildSignInOkDto(

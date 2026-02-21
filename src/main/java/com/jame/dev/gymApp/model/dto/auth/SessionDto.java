@@ -5,7 +5,7 @@ import com.jame.dev.gymApp.shared.enums.Role;
 
 import java.util.Set;
 
-public record IdentityDto(
+public record SessionDto(
         @JsonProperty("email")
         String email,
         @JsonProperty("roles")

@@ -100,8 +100,8 @@ public class GlobalExceptionHandler {
            AuthenticationNullException ex,
            HttpServletRequest request) {
       final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "AUTH_OPERATION");
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+              .buildErrorResponse(ex, request, HttpStatus.UNAUTHORIZED, "NO_ACCESS");
+      return ResponseEntity.status(errorResponse.status()).body(errorResponse);
    }
 
    @ExceptionHandler(CantSaveUserException.class)
