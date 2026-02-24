@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@Deprecated
 public class AppCacheServiceImplementation<T> implements AppCacheService<T> {
    private Class<T> type;
    private final JedisPooled cacheAppPool;

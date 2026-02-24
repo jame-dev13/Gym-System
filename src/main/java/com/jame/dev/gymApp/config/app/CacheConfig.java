@@ -13,6 +13,7 @@ import redis.clients.jedis.JedisPooled;
 
 @Configuration
 @RequiredArgsConstructor
+@Deprecated
 public class CacheConfig {
 
    private final JedisPooled cacheAppPool;
