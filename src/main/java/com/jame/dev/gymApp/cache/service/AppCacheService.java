@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 
 import java.util.Optional;
 
+@Deprecated
 public interface AppCacheService<T> {
 
    Optional<Page<@NonNull T>> getCache(final String key);

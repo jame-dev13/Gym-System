@@ -25,6 +25,7 @@ public class AppConfig {
    private String passwordRedis;
 
    @Bean(name = "tokensPool")
+   @Deprecated
    public JedisPooled tokensPool(){
       return new JedisPooled(new HostAndPort(host, port),
               DefaultJedisClientConfig.builder()
@@ -34,6 +35,7 @@ public class AppConfig {
    }
 
    @Bean(name = "cacheAppPool")
+   @Deprecated
    public JedisPooled cacheAppPool(){
       return new JedisPooled(new HostAndPort(host, port),
               DefaultJedisClientConfig.builder()
