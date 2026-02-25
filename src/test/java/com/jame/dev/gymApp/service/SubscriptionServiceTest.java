@@ -3,8 +3,11 @@ package com.jame.dev.gymApp.service;
 import com.jame.dev.gymApp.entity.*;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.CustomerNotFoundException;
-import com.jame.dev.gymApp.factories.SubscriptionFactory;
+import com.jame.dev.gymApp.factories.in.Factory;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
+import com.jame.dev.gymApp.model.dto.in.SubscriptionFactoryDtoInput;
+import com.jame.dev.gymApp.model.dto.out.PageDto;
+import com.jame.dev.gymApp.model.dto.out.SubscriptionDtoOutput;
 import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.PricingRepository;
 import com.jame.dev.gymApp.repository.SubscriptionRepository;
@@ -46,7 +49,7 @@ class SubscriptionServiceTest {
    private PricingRepository pricingRepo;
 
    @Mock
-   private SubscriptionFactory subscriptionFactory;
+   private Factory<SubscriptionEntity, SubscriptionDtoOutput, SubscriptionFactoryDtoInput> subscriptionFactory;
 
    @Mock
    private SubscriptionUpdater subscriptionUpdater;
@@ -87,15 +90,18 @@ class SubscriptionServiceTest {
    void getPageByActive() {
       final Pageable pageable = PageRequest.of(0, 5);
       final List<SubscriptionEntity> subList = testSubsList.subList(0, 5);
-      when(repo.findAllByActiveTrue(pageable)).thenReturn(new PageImpl<>(subList));
+      PageDto<SubscriptionDtoOutput> pageDto = mock();
+      when(repo.findAll(pageable)).thenReturn(new PageImpl<>(subList));
+      when(subscriptionFactory.createPageFrom(any())).thenReturn(pageDto);
 
       final var page = service.getPage(pageable);
-      final var pageContent = page.getContent();
+      final var pageContent = page.content();
 
       assertNotNull(page, "Page shouldn't be null");
       assertNotNull(pageContent, "Page content shouldn't be null");
 
-      verify(repo, atLeastOnce()).findAllByActiveTrue(pageable);
+      verify(repo, atLeastOnce()).findAll(pageable);
+      verify(subscriptionFactory, atLeastOnce()).createPageFrom(any());
       verifyNoMoreInteractions(repo);
    }
 
@@ -104,7 +110,7 @@ class SubscriptionServiceTest {
    void getById() {
       when(repo.findById(anyLong())).thenReturn(Optional.of(this.mockSubscription));
 
-      final Optional<SubscriptionEntity> result = service.getById(1L);
+      final var result = service.getById(1L);
 
       assertTrue(result.isPresent(), "Result should be present.");
       assertNotNull(result.get(), "Result shouldn't be null.");
@@ -116,16 +122,18 @@ class SubscriptionServiceTest {
    @Test
    @DisplayName("Save subscription")
    void save() {
+      SubscriptionDtoOutput output = mock(SubscriptionDtoOutput.class);
       when(customerRepo.findByUser_Email(anyString())).thenReturn(Optional.of(customerMock));
       when(repo.existsByCustomer(customerMock)).thenReturn(false);
       when(pricingRepo.findByMemberShipEntity_Membership(any(Membership.class)))
               .thenReturn(Optional.of(pricingMock));
-      when(subscriptionFactory.createFrom(dtoMock, customerMock, pricingMock, LocalDate.now()))
+      when(subscriptionFactory.createFromInput(any(SubscriptionFactoryDtoInput.class)))
               .thenReturn(mockSubscription);
       when(repo.saveAndFlush(mockSubscription))
               .thenReturn(mockSubscription);
+      when(subscriptionFactory.createFromEntity(any())).thenReturn(output);
 
-      final SubscriptionEntity result = service.save(this.dtoMock);
+      final var result = service.save(this.dtoMock);
 
       assertNotNull(result);
 
@@ -133,7 +141,7 @@ class SubscriptionServiceTest {
       verify(repo, atMostOnce()).existsByCustomer(customerMock);
       verify(pricingRepo, atMostOnce()).findByMemberShipEntity_Membership(any(Membership.class));
       verify(subscriptionFactory, atMostOnce())
-              .createFrom(eq(dtoMock), eq(customerMock), eq(pricingMock), any(LocalDate.class));
+              .createFromInput(any(SubscriptionFactoryDtoInput.class));
       verify(repo, atLeastOnce()).saveAndFlush(mockSubscription);
       verifyNoMoreInteractions(repo, customerRepo, pricingRepo, subscriptionFactory);
    }
@@ -166,6 +174,7 @@ class SubscriptionServiceTest {
    @Test
    @DisplayName("Should update the SubscriptionEntity")
    void update() {
+      SubscriptionDtoOutput output = mock(SubscriptionDtoOutput.class);
       SubscriptionEntity subscriptionEntity = new SubscriptionEntity();
       subscriptionEntity.setUpdatedAt(Instant.now());
 
@@ -174,14 +183,16 @@ class SubscriptionServiceTest {
               .thenReturn(Optional.of(pricingMock));
       when(repo.saveAndFlush(any(SubscriptionEntity.class))).
               thenReturn(subscriptionEntity);
+      when(subscriptionFactory.createFromEntity(any())).thenReturn(output);
 
-      final SubscriptionEntity result = service.update(1L, dtoMock);
+      final var result = service.update(1L, dtoMock);
 
       assertNotNull(result);
 
       verify(repo, atMostOnce()).findById(anyLong());
       verify(pricingRepo, atMostOnce()).findByMemberShipEntity_Membership(any(Membership.class));
       verify(repo, atMostOnce()).saveAndFlush(subscriptionEntity);
+      verify(subscriptionFactory, atMostOnce()).createFromEntity(any());
       verifyNoMoreInteractions(repo, pricingRepo);
    }
 
@@ -216,6 +227,8 @@ class SubscriptionServiceTest {
       SubscriptionEntity subscription = mock(SubscriptionEntity.class);
       PricingEntity pricingMock = mock(PricingEntity.class);
 
+      SubscriptionDtoOutput output = mock(SubscriptionDtoOutput.class);
+
       when(subscription.isFinished()).thenReturn(true);
       when(subscription.getCustomer()).thenReturn(customerMocked);
       when(customerMocked.getUser()).thenReturn(userMocked);
@@ -228,15 +241,15 @@ class SubscriptionServiceTest {
       when(repo.findById(1L)).thenReturn(Optional.of(subscription));
       when(pricingRepo.findByMemberShipEntity_Membership(any())).thenReturn(Optional.of(pricingMock));
 
-      when(subscriptionUpdater.apply(any(), any(), any())).thenReturn(subscription);
       when(repo.saveAndFlush(any())).thenReturn(subscription);
+      when(subscriptionFactory.createFromEntity(any())).thenReturn(output);
 
       final var result = service.put(1L, dtoMock);
 
       assertNotNull(result);
       verify(repo).findById(1L);
-      verify(subscriptionUpdater).apply(eq(subscription), eq(pricingMock), eq(now));
       verify(repo).saveAndFlush(subscription);
+      verify(subscriptionFactory, atMostOnce()).createFromEntity(any());
    }
 
    @Test

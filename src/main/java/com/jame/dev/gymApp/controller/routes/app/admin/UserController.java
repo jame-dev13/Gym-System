@@ -1,36 +1,27 @@
 package com.jame.dev.gymApp.controller.routes.app.admin;
 
-import com.jame.dev.gymApp.cache.service.AppCacheService;
 import com.jame.dev.gymApp.controller.security.VerifyAdmin;
 import com.jame.dev.gymApp.controller.service.BaseControllerCommon;
-import com.jame.dev.gymApp.entity.UserEntity;
-import com.jame.dev.gymApp.mapper.BaseMapper;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.service.common.BaseCrudService;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
 @RestController
 @RequestMapping("/app/v1/administration/users")
 @PreAuthorize("hasRole('ADMIN')")
-public class UserController extends BaseControllerCommon<UserEntity, UserDtoInput, UserDtoOutput> {
+public class UserController extends BaseControllerCommon<UserDtoOutput, UserDtoInput> {
    private final VerifyAdmin verifyAdmin;
-
    public UserController(
-           final BaseCrudService<UserEntity, UserDtoInput, Long> service,
-           final AppCacheService<UserDtoOutput> cache,
-           final BaseMapper<UserEntity, UserDtoOutput> mapper,
+           final BaseCrudService<UserDtoOutput, UserDtoInput, Long> service,
            final VerifyAdmin verifyAdmin) {
-      super(service, cache, mapper, "users", UserEntity::getId);
+      super(service, UserDtoOutput::id);
       this.verifyAdmin = verifyAdmin;
    }
-
 
    @GetMapping
    public ResponseEntity<@NonNull Page<@NonNull UserDtoOutput>> getUsers(

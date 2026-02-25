@@ -10,6 +10,7 @@ import com.jame.dev.gymApp.messages.service.EmailService;
 import com.jame.dev.gymApp.messages.service.HtmlTemplates;
 import com.jame.dev.gymApp.model.dto.auth.*;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
+import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.model.messages.EmailDetails;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.service.in.VerificationService;
@@ -24,6 +25,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -49,19 +51,19 @@ public class AuthServiceImplementation implements AuthService {
               dto.password(),
               AuthProvider.LOCAL, Set.of(Role.USER)
       );
-      final UserEntity user = userService.save(dtoValid);
-      if (user == null) {
+      final UserDtoOutput user = userService.save(dtoValid);
+      if (Objects.isNull(user)) {
          throw new CantSaveUserException("Operation failed.");
       }
-      final VerificationEntity verification = verificationService.save(user);
+      final VerificationEntity verification = verificationService.save(user.id());
       if (verification == null) {
          throw new CantSaveVerifcationEntityException("Can't save the verification.");
       }
       final EmailDetails emailDetails = EmailDetailsFactory.createDetailsFrom(
-              user.getEmail(),
+              user.email(),
               "Verification Code",
               HtmlTemplates.verificationTemplate()
-                      .replace("{{recipient}}", user.getEmail())
+                      .replace("{{recipient}}", user.email())
                       .replace("{{token}}", verification.getId()));
       emailService.sendSimpleEmail(emailDetails)
               .thenAccept(sent ->

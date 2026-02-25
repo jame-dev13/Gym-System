@@ -1,6 +1,5 @@
 package com.jame.dev.gymApp.controller.routes.app.user;
 
-import com.jame.dev.gymApp.cache.service.AppCacheService;
 import com.jame.dev.gymApp.controller.service.ControllerIdentifiable;
 import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.mapper.BaseMapper;
@@ -17,15 +16,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/app/v1/customers")
 @PreAuthorize("hasRole('USER')")
-public class CustomerUsersController extends ControllerIdentifiable<CustomerEntity, CustomerDtoInput, CustomerDtoOutput> {
-
+public class CustomerUsersController extends ControllerIdentifiable<CustomerEntity, CustomerDtoOutput, CustomerDtoInput> {
 
    public CustomerUsersController(
-           BaseCrudService<CustomerEntity, CustomerDtoInput, Long> service,
-           AppCacheService<CustomerDtoOutput> cache,
-           BaseMapper<CustomerEntity, CustomerDtoOutput> mapper,
-           EmailIdentifiable<CustomerEntity> identifiable) {
-      super(service, cache, mapper, "customers", CustomerEntity::getId, identifiable);
+           BaseCrudService<CustomerDtoOutput, CustomerDtoInput, Long> service,
+           EmailIdentifiable<CustomerEntity> identifiable,
+           BaseMapper<CustomerEntity, CustomerDtoOutput> mapper) {
+      super(service, CustomerDtoOutput::id, identifiable, mapper);
    }
 
    @PostMapping

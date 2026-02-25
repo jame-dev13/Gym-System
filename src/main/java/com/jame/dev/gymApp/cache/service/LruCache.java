@@ -3,6 +3,7 @@ package com.jame.dev.gymApp.cache.service;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Deprecated
 public class LruCache<K, V> extends LinkedHashMap<K, V> {
    private int capacity;
 

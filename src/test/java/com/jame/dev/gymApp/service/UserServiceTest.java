@@ -4,9 +4,10 @@ import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.NoActiveException;
-import com.jame.dev.gymApp.factories.UserFactory;
+import com.jame.dev.gymApp.factories.in.Factory;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
-import com.jame.dev.gymApp.model.dto.out.CacheMutated;
+import com.jame.dev.gymApp.model.dto.out.PageDto;
+import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.out.UserServiceImplementation;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
@@ -18,7 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,11 +41,9 @@ public class UserServiceTest {
    @Mock
    private UserRepository repo;
    @Mock
-   private UserFactory userFactory;
+   private Factory<UserEntity, UserDtoOutput, UserDtoInput> userFactory;
    @Mock
    private UserUpdater userUpdater;
-   @Mock
-   private ApplicationEventPublisher eventPublisher;
 
    @InjectMocks
    private UserServiceImplementation service;
@@ -71,16 +69,19 @@ public class UserServiceTest {
    void getUsersByPages() {
       final Pageable pageable = PageRequest.of(0, 5, sort);
       final List<UserEntity> subList = testUserList.subList(0, 5);
+      final PageDto<UserDtoOutput> output = mock();
 
-      when(repo.findAllByActiveTrue(any(Pageable.class)))
+      when(repo.findAll(any(Pageable.class)))
               .thenReturn(new PageImpl<>(subList));
+      when(userFactory.createPageFrom(any())).thenReturn(output);
 
       final var page = service.getPage(pageable);
-      final var pageList = page.getContent();
+      final var pageList = page.content();
 
-      assertEquals(page.getContent().size(), pageList.size(), "Page content size should be equals.");
+      assertEquals(page.content().size(), pageList.size(), "Page content size should be equals.");
 
-      verify(repo, atLeastOnce()).findAllByActiveTrue(any(Pageable.class));
+      verify(repo, atLeastOnce()).findAll(any(Pageable.class));
+      verify(userFactory, atLeastOnce()).createPageFrom(any());
       verifyNoMoreInteractions(repo);
    }
 
@@ -89,7 +90,7 @@ public class UserServiceTest {
    void getUserById() {
       when(repo.findById(anyLong())).thenReturn(Optional.of(mockUser));
 
-      final Optional<UserEntity> result = service.getById(1L);
+      final var result = service.getById(1L);
 
       assertTrue(result.isPresent(), "Result optional should be present.");
       assertNotNull(result.get(), "Result should not be null");
@@ -103,7 +104,7 @@ public class UserServiceTest {
    void getUserByEmail() {
       when(repo.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
 
-      final Optional<UserEntity> result = service.getUserByEmail("user@mail.com");
+      final var result = service.getUserByEmail("user@mail.com");
 
       assertTrue(result.isPresent(), "Result optional should be present.");
       assertNotNull(result.get(), "Result should not be null");
@@ -116,19 +117,20 @@ public class UserServiceTest {
    @Test
    @DisplayName("Should Add User")
    void addUser() {
+      UserDtoOutput output = mock(UserDtoOutput.class);
       when(repo.findByEmail(anyString())).thenReturn(Optional.empty());
-      when(userFactory.createFrom(mockDto)).thenReturn(mockUser);
+      when(userFactory.createFromInput(mockDto)).thenReturn(mockUser);
       when(repo.saveAndFlush(mockUser)).thenReturn(mockUser);
+      when(userFactory.createFromEntity(mockUser)).thenReturn(output);
 
-      final UserEntity result = service.save(mockDto);
+      final var result = service.save(mockDto);
       assertNotNull(result, "Result should not be null");
 
       verify(repo).findByEmail(anyString());
-      verify(userFactory).createFrom(mockDto);
-      verify(eventPublisher).publishEvent(any(CacheMutated.class));
+      verify(userFactory).createFromInput(mockDto);
       verify(repo).saveAndFlush(mockUser);
+      verify(userFactory).createFromEntity(mockUser);
       verifyNoMoreInteractions(repo);
-      verifyNoMoreInteractions(eventPublisher);
    }
 
    @Test
@@ -156,23 +158,24 @@ public class UserServiceTest {
    @Test
    @DisplayName("Should Update User")
    void updateUser() {
+      UserDtoOutput output = mock(UserDtoOutput.class);
+
       UserEntity user = new UserEntity();
       user.setUpdatedAt(Instant.now());
 
       when(repo.findById(1L)).thenReturn(Optional.of(mockUser));
-      when(userUpdater.apply(mockUser, mockDto)).thenReturn(user);
       when(repo.saveAndFlush(user)).thenReturn(user);
+      when(userFactory.createFromEntity(mockUser)).thenReturn(output);
 
-      final UserEntity result = service.update(1L, mockDto);
+      final var result = service.update(1L, mockDto);
 
       assertNotNull(result, "User should not be null");
 
       verify(repo, atMostOnce()).findById(anyLong());
       verify(userUpdater, atMostOnce()).apply(mockUser, mockDto);
       verify(repo, atMostOnce()).saveAndFlush(user);
-      verify(eventPublisher, atMostOnce()).publishEvent(any(CacheMutated.class));
+      verify(userFactory, atMostOnce()).createFromEntity(mockUser);
       verifyNoMoreInteractions(repo);
-      verifyNoMoreInteractions(eventPublisher);
    }
 
    @Test

@@ -1,86 +1,95 @@
 package com.jame.dev.gymApp.service.out;
 
+import com.jame.dev.gymApp.aspects.annotations.CacheEvictUsers;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.NoActiveException;
-import com.jame.dev.gymApp.exception.UserNotFoundException;
-import com.jame.dev.gymApp.factories.UserFactory;
+import com.jame.dev.gymApp.exception.UserEntityNotFoundException;
+import com.jame.dev.gymApp.factories.PageDtoFactory;
+import com.jame.dev.gymApp.factories.in.Factory;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
-import com.jame.dev.gymApp.model.dto.out.CacheMutated;
+import com.jame.dev.gymApp.model.dto.out.PageDto;
+import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.UserService;
+import com.jame.dev.gymApp.shared.enums.CacheValues;
 import com.jame.dev.gymApp.updaters.UserUpdater;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImplementation implements UserService {
    private final UserRepository repo;
-   private final UserFactory userFactory;
+   private final Factory<UserEntity, UserDtoOutput, UserDtoInput> userFactory;
    private final UserUpdater userUpdater;
-   private final ApplicationEventPublisher eventPublisher;
+   private final PageDtoFactory<UserEntity, UserDtoOutput> pageDtoFactory;
 
    @Override
-   @Transactional(readOnly = true)
-   public Page<@NonNull UserEntity> getPage(@NonNull Pageable pageable) {
-      return repo.findAllByActiveTrue(pageable);
-   }
-
-   @Override
-   @Transactional(readOnly = true)
    public Optional<UserEntity> getUserByEmail(String email) {
       return repo.findByEmail(email);
    }
 
    @Override
    @Transactional(readOnly = true)
-   public Optional<UserEntity> getById(@NonNull Long id) {
-      return repo.findById(id);
+   @Cacheable(
+           value = CacheValues.USERS,
+           key = "#pageable.pageNumber + ':' + #pageable.pageSize"
+   )
+   public PageDto<UserDtoOutput> getPage(@NonNull Pageable pageable) {
+      final Page<UserEntity> entityPage = repo.findAll(pageable);
+      return pageDtoFactory.createPageDtoFrom(entityPage);
    }
 
-   @Transactional
    @Override
-   public UserEntity save(@NonNull UserDtoInput dto) {
-      return (UserEntity) repo.findByEmail(dto.email())
+   @Transactional
+   @CacheEvict(value = CacheValues.USERS, allEntries = true)
+   public UserDtoOutput save(@NonNull UserDtoInput input) {
+      return (UserDtoOutput) repo.findByEmail(input.email())
               .map(user -> {
                  if (!user.isActive()) {
-                    throw new NoActiveException("User's account deactivated.");
+                    throw new NoActiveException("User exists but isn't active.");
                  }
                  throw new AlreadyExistsException("User already exists.");
-              })
-              .orElseGet(() -> {
-                  final UserEntity userCreated = userFactory.createFrom(dto);
-                  userCreated.setCreatedAt(Instant.now());
-                  final UserEntity userSaved = repo.saveAndFlush(userCreated);
-                  eventPublisher.publishEvent(new CacheMutated("users"));
-                  return userSaved;
+              }).orElseGet(() -> {
+                 final UserEntity userCreated = userFactory.createFromInput(input);
+                 final UserEntity userSaved = repo.saveAndFlush(userCreated);
+                 return userFactory.createFromEntity(userSaved);
               });
    }
 
    @Override
-   public UserEntity update(final Long id, @NonNull final UserDtoInput dto) {
-      final UserEntity userEntity = repo.findById(id)
-              .orElseThrow(() -> new UserNotFoundException("User Not Found."));
-      final UserEntity modified = userUpdater.apply(userEntity, dto);
-      modified.setUpdatedAt(Instant.now());
-      final UserEntity userUpdated = repo.saveAndFlush(modified);
-      eventPublisher.publishEvent(new CacheMutated("users"));
-      return userUpdated;
+   @Transactional(readOnly = true)
+   @Cacheable(value = CacheValues.USER, key = "#id")
+   public Optional<UserDtoOutput> getById(@NonNull Long id) {
+      final var entity = repo.findById(id);
+      return entity.isPresent() ?
+              entity.map(userFactory::createFromEntity) : Optional.empty();
    }
 
-   @Transactional
    @Override
+   @Transactional
+   @CacheEvictUsers
+   public UserDtoOutput update(Long id, @NonNull UserDtoInput input) {
+      final var userEntity = repo.findById(id)
+              .orElseThrow(() -> new UserEntityNotFoundException("User Not found."));
+      userUpdater.apply(userEntity, input);
+      final UserEntity userSaved = repo.saveAndFlush(userEntity);
+      return userFactory.createFromEntity(userSaved);
+   }
+
+   @Override
+   @Transactional
+   @CacheEvictUsers
    public void softDelete(@NonNull Long id) {
       repo.deleteById(id);
-      eventPublisher.publishEvent(new CacheMutated("users"));
    }
 }

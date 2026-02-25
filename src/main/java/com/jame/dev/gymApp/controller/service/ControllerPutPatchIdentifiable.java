@@ -1,6 +1,5 @@
 package com.jame.dev.gymApp.controller.service;
 
-import com.jame.dev.gymApp.cache.service.AppCacheService;
 import com.jame.dev.gymApp.exception.EntityNotFoundException;
 import com.jame.dev.gymApp.mapper.BaseMapper;
 import com.jame.dev.gymApp.service.common.BaseCrudService;
@@ -11,14 +10,16 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.function.Function;
 
-public abstract class ControllerPutPatchIdentifiable<E, DTO_IN, DTO_OUT> extends
-        BaseControllerPatchAndPut<E, DTO_IN, DTO_OUT> {
+public abstract class ControllerPutPatchIdentifiable<E, DTO_OUT, DTO_IN> extends
+        BaseControllerPatchAndPut<DTO_OUT, DTO_IN> {
 
    private final EmailIdentifiable<E> identifiable;
+   private final BaseMapper<E, DTO_OUT> mapper;
 
-   public ControllerPutPatchIdentifiable(BaseCrudService<E, DTO_IN, Long> service, AppCacheService<DTO_OUT> cache, BaseMapper<E, DTO_OUT> mapper, String key, Function<E, Long> idExtractor, CRUDServiceServicePatch<E, DTO_IN, Long> patchService, CRUDServiceServicePut<E, DTO_IN, Long> putService, EmailIdentifiable<E> identifiable) {
-      super(service, cache, mapper, key, idExtractor, patchService, putService);
+   public ControllerPutPatchIdentifiable(BaseCrudService<DTO_OUT, DTO_IN, Long> service, Function<DTO_OUT, Long> idExtractor, CRUDServiceServicePatch<DTO_OUT, DTO_IN, Long> patchService, CRUDServiceServicePut<DTO_OUT, DTO_IN, Long> putService, EmailIdentifiable<E> identifiable, BaseMapper<E, DTO_OUT> mapper) {
+      super(service, idExtractor, patchService, putService);
       this.identifiable = identifiable;
+      this.mapper = mapper;
    }
 
    public ResponseEntity<DTO_OUT> getByEmail(String email) {

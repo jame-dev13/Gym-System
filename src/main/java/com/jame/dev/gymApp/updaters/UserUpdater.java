@@ -16,7 +16,7 @@ public class UserUpdater {
    private final RoleRepository roleRepository;
    private final PasswordEncoder passwordEncoder;
 
-   public UserEntity apply(final UserEntity userEntity, final UserDtoInput dto) {
+   public void apply(final UserEntity userEntity, final UserDtoInput dto) {
       final boolean pwdCondition = dto.password() == null || dto.password().isBlank();
       final String oldPassword = userEntity.getPassword();
       final String passwordFinal = (pwdCondition) ? oldPassword : passwordEncoder.encode(dto.password());
@@ -26,7 +26,5 @@ public class UserUpdater {
       userEntity.setPassword(passwordFinal);
       userEntity.setProvider(AuthProvider.LOCAL != dto.authProvider() ? AuthProvider.LOCAL : dto.authProvider());
       userEntity.setRoles(roleMapper.toEntitySet(dto.roles(), roleRepository));
-
-      return userEntity;
    }
 }

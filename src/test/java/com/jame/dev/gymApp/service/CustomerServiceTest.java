@@ -5,12 +5,16 @@ import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.NoActiveException;
-import com.jame.dev.gymApp.mapper.CustomerMapper;
+import com.jame.dev.gymApp.factories.in.Factory;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
+import com.jame.dev.gymApp.model.dto.in.CustomerFactoryDtoInput;
+import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
+import com.jame.dev.gymApp.model.dto.out.PageDto;
 import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.out.CustomerServiceImplementation;
 import com.jame.dev.gymApp.shared.enums.Role;
+import com.jame.dev.gymApp.updaters.CustomerUpdater;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,12 +41,12 @@ public class CustomerServiceTest {
 
    @Mock
    private CustomerRepository repo;
-
    @Mock
    private UserRepository userRepo;
-
    @Mock
-   private CustomerMapper customerMapper;
+   private Factory<CustomerEntity, CustomerDtoOutput, CustomerFactoryDtoInput> customerFactory;
+   @Mock
+   private CustomerUpdater customerUpdater;
 
    @InjectMocks
    private CustomerServiceImplementation service;
@@ -75,25 +79,29 @@ public class CustomerServiceTest {
    void getByPageable() {
       final Pageable pageable = PageRequest.of(0, 5, sort);
       final List<CustomerEntity> subList = testCustomerList.subList(0, 5);
-
-      when(repo.findAllByActiveTrue(pageable)).thenReturn(new PageImpl<>(subList));
+      final PageDto<CustomerDtoOutput> output = mock();
+      when(repo.findAll(pageable))
+              .thenReturn(new PageImpl<>(subList));
+      when(customerFactory.createPageFrom(any())).thenReturn(output);
 
       final var page = service.getPage(pageable);
-      final var pageContent = page.getContent();
+      final var pageContent = page.content();
 
       assertNotNull(page, "Should not be null.");
       assertNotNull(pageContent, "Page content should not be null.");
 
-      verify(repo, atLeastOnce()).findAllByActiveTrue(pageable);
+      verify(repo, atLeastOnce()).findAll(pageable);
+      verify(customerFactory, atLeastOnce()).createPageFrom(any());
       verifyNoMoreInteractions(repo);
    }
 
    @Test
    @DisplayName("Should Get Customer By Id")
    void getById() {
-      when(repo.findById(anyLong())).thenReturn(Optional.of(mockCustomer));
+      when(repo.findById(anyLong()))
+              .thenReturn(Optional.of(mockCustomer));
 
-      final Optional<CustomerEntity> result = service.getById(1L);
+      final var result = service.getById(1L);
 
       verify(repo, times(1)).findById(anyLong());
       verifyNoMoreInteractions(repo);
@@ -115,21 +123,24 @@ public class CustomerServiceTest {
    @Test
    @DisplayName("Should save a Customer")
    void saveCustomer() {
+      CustomerDtoOutput output =  mock(CustomerDtoOutput.class);
       when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
       when(repo.findByUser(mockUser)).thenReturn(Optional.empty());
-      when(customerMapper.toEntity(mockDto, mockUser)).thenReturn(mockCustomer);
+      when(customerFactory.createFromInput(any())).thenReturn(mockCustomer);
       when(repo.saveAndFlush(mockCustomer))
               .thenReturn(mockCustomer);
-
-      final CustomerEntity customerAdded = service.save(mockDto);
+      when(customerFactory.createFromEntity(any()))
+              .thenReturn(output);
+      final var customerAdded = service.save(mockDto);
 
       assertNotNull(customerAdded, "Result should not be null.");
 
       verify(userRepo, atMostOnce()).findByEmail(anyString());
       verify(repo, atMostOnce()).findByUser(mockUser);
-      verify(customerMapper, atMostOnce()).toEntity(mockDto, mockUser);
+      verify(customerFactory, atMostOnce()).createFromInput(any());
       verify(repo, atMostOnce()).saveAndFlush(mockCustomer);
-      verifyNoMoreInteractions(userRepo, customerMapper, repo);
+      verify(customerFactory, atMostOnce()).createFromEntity(mockCustomer);
+      verifyNoMoreInteractions(userRepo, customerFactory, repo);
    }
 
    @Test
@@ -177,15 +188,19 @@ public class CustomerServiceTest {
       final CustomerEntity customer = new CustomerEntity();
       customer.setUpdatedAt(Instant.now());
 
+      CustomerDtoOutput output = mock(CustomerDtoOutput.class);
+
       when(repo.findById(anyLong())).thenReturn(Optional.of(mockCustomer));
       when(repo.saveAndFlush(any(CustomerEntity.class))).thenReturn(customer);
+      when(customerFactory.createFromEntity(any())).thenReturn(output);
 
-      final CustomerEntity result = service.update(1L, mockDto);
+      final var result = service.update(1L, mockDto);
 
       assertNotNull(result);
 
       verify(repo, atMostOnce()).findById(anyLong());
       verify(repo, atMostOnce()).saveAndFlush(any(CustomerEntity.class));
+      verify(customerFactory, atMostOnce()).createFromEntity(customer);
       verifyNoMoreInteractions(repo);
    }
 
