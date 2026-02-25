@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-public record PageDto<T>(
+public record PageDto<T> (
         @JsonProperty("content") List<T> content,
         @JsonProperty("page") int page,
         @JsonProperty("size") int size,

@@ -25,7 +25,7 @@ public class VerifyAdmin {
       final String email = dto.email();
       final UserEntity userEntity = userService.getUserByEmail(email)
               .orElseThrow(() -> new UserEntityNotFoundException("User not found."));
-      var verificationEntity = verificationService.save(userEntity);
+      var verificationEntity = verificationService.save(userEntity.getId());
       var verificationDto = verificationService.verify(verificationEntity.getUser().getEmail(), verificationEntity.getId());
       if (verificationDto.verified()) {
          final String htmlBody = HtmlTemplates.adminCredentials()

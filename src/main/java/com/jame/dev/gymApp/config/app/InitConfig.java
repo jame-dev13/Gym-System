@@ -4,6 +4,8 @@ import com.jame.dev.gymApp.entity.*;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
+import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
+import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.service.in.*;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import com.jame.dev.gymApp.shared.enums.Membership;
@@ -62,14 +64,14 @@ public class InitConfig {
                  .roles(Set.of(Role.USER))
                  .authProvider(AuthProvider.LOCAL)
                  .build();
-         final UserEntity adminEntity = userService.save(admin);
-         final VerificationEntity verificationAdmin = verificationService.save(adminEntity);
-         verificationService.verify(adminEntity.getEmail(), verificationAdmin.getId());
-         final UserEntity userEntity = userService.save(user);
-         final VerificationEntity verificationUser = verificationService.save(userEntity);
-         verificationService.verify(userEntity.getEmail(), verificationUser.getId());
+         final UserDtoOutput adminSaved = userService.save(admin);
+         final VerificationEntity verificationAdmin = verificationService.save(adminSaved.id());
+         verificationService.verify(adminSaved.email(), verificationAdmin.getId());
+         final UserDtoOutput userSaved = userService.save(user);
+         final VerificationEntity verificationUser = verificationService.save(userSaved.id());
+         verificationService.verify(userSaved.email(), verificationUser.getId());
 
-         final CustomerDtoInput customerDtoInput = new CustomerDtoInput(userEntity.getEmail(), "1112223334");
+         final CustomerDtoInput customerDtoInput = new CustomerDtoInput(userSaved.email(), "1112223334");
          customerService.save(customerDtoInput);
 
          log.info("Runner InitUsersAndCustomers end execution.");
@@ -120,13 +122,13 @@ public class InitConfig {
                  .forEach(i -> {
                     //Users
                     final UserDtoInput userDto = createUser(i + 1);
-                    final UserEntity userEntity = userService.save(userDto);
-                    saveAndVerifyUser(verificationService, userEntity);
+                    final UserDtoOutput userEntity = userService.save(userDto);
+                    saveAndVerifyUser(verificationService, userEntity.id());
                     //Customers
-                    final CustomerDtoInput customerDto = createCustomer(userEntity.getEmail(), i + 1);
-                    final CustomerEntity customer = customerService.save(customerDto);
+                    final CustomerDtoInput customerDto = createCustomer(userEntity.email(), i + 1);
+                    final CustomerDtoOutput customer = customerService.save(customerDto);
                     //Subscriptions
-                    final SubscriptionDtoInput subDto = createSubscription(customer.getUser().getEmail());
+                    final SubscriptionDtoInput subDto = createSubscription(customer.user().email());
                     subscriptionService.save(subDto);
                  });
          log.info("Runner CreationOfUsersCustomersAndSubscriptions end execution.");
@@ -154,8 +156,8 @@ public class InitConfig {
    }
 
    private void saveAndVerifyUser(final VerificationService verificationService,
-                                  final UserEntity user) {
-      final var userVerification = verificationService.save(user);
-      verificationService.verify(user.getEmail(), userVerification.getId());
+                                  final long userId) {
+      final var userVerification = verificationService.save(userId);
+      verificationService.verify(userVerification.getUser().getEmail(), userVerification.getId());
    }
 }

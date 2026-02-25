@@ -1,6 +1,5 @@
 package com.jame.dev.gymApp.controller.routes.app.user;
 
-import com.jame.dev.gymApp.cache.service.AppCacheService;
 import com.jame.dev.gymApp.controller.service.ControllerPutPatchIdentifiable;
 import com.jame.dev.gymApp.entity.SubscriptionEntity;
 import com.jame.dev.gymApp.mapper.BaseMapper;
@@ -18,17 +17,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/app/v1/subscriptions")
 @PreAuthorize("hasRole('USER')")
 public class SubscriptionUsersBaseController extends ControllerPutPatchIdentifiable<
-        SubscriptionEntity, SubscriptionDtoInput, SubscriptionDtoOutput> {
-
+        SubscriptionEntity, SubscriptionDtoOutput, SubscriptionDtoInput> {
 
    public SubscriptionUsersBaseController(
-           final BaseCrudService<SubscriptionEntity, SubscriptionDtoInput, Long> service,
-           final AppCacheService<SubscriptionDtoOutput> cache,
-           final BaseMapper<SubscriptionEntity, SubscriptionDtoOutput> mapper,
-           final CRUDServiceServicePatch<SubscriptionEntity, SubscriptionDtoInput, Long> patchService,
-           final CRUDServiceServicePut<SubscriptionEntity, SubscriptionDtoInput, Long> putService,
-           final EmailIdentifiable<SubscriptionEntity> identifiable) {
-      super(service, cache, mapper, "subscriptions", SubscriptionEntity::getId, patchService, putService, identifiable);
+           BaseCrudService<SubscriptionDtoOutput, SubscriptionDtoInput, Long> service,
+           CRUDServiceServicePatch<SubscriptionDtoOutput, SubscriptionDtoInput, Long> patchService,
+           CRUDServiceServicePut<SubscriptionDtoOutput, SubscriptionDtoInput, Long> putService,
+           EmailIdentifiable<SubscriptionEntity> identifiable,
+           BaseMapper<SubscriptionEntity, SubscriptionDtoOutput> mapper) {
+      super(service, SubscriptionDtoOutput::id, patchService, putService, identifiable, mapper);
    }
 
    @PreAuthorize("@subscriptionSecurity.isOwner(#id, authentication)")

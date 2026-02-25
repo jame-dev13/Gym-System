@@ -2,17 +2,20 @@ package com.jame.dev.gymApp.service.out;
 
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
+import com.jame.dev.gymApp.exception.UserEntityNotFoundException;
 import com.jame.dev.gymApp.exception.UserNotFoundException;
 import com.jame.dev.gymApp.exception.VerificationEntityNotFoundException;
 import com.jame.dev.gymApp.factories.VerificationFactory;
 import com.jame.dev.gymApp.model.dto.auth.ExpirationWindowDto;
 import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
+import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.repository.VerificationRepository;
 import com.jame.dev.gymApp.service.in.TokenGeneratorService;
 import com.jame.dev.gymApp.service.in.VerificationService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -20,18 +23,23 @@ import java.time.temporal.ChronoUnit;
 @Service
 @RequiredArgsConstructor
 public class VerificationServiceImplementation implements VerificationService {
+   private final UserRepository userRepository;
    private final VerificationRepository verificationRepository;
    private final TokenGeneratorService tokenGeneratorService;
    private final VerificationFactory verificationFactory;
 
    @Override
-   public VerificationEntity save(@NonNull UserEntity user) {
+   @Transactional
+   public VerificationEntity save(final long userId) {
+      final UserEntity user = userRepository.findById(userId)
+              .orElseThrow(() -> new UserEntityNotFoundException("User not found."));
       final String token = tokenGeneratorService.generateToken();
       final VerificationEntity verification = verificationFactory.createVerification(user, token);
-      return verificationRepository.save(verification);
+      return verificationRepository.saveAndFlush(verification);
    }
 
    @Override
+   @Transactional
    public VerificationDto verify(@NonNull final String email, @NonNull final String token) {
       final VerificationEntity verification = verificationRepository.findByUser_Email(email)
               .orElseThrow(() -> new VerificationEntityNotFoundException("Verification not found: " + email));
@@ -45,7 +53,7 @@ public class VerificationServiceImplementation implements VerificationService {
 
       if (isSameToken && isValid) {
          verification.setVerified(true);
-         verificationRepository.save(verification);
+         verificationRepository.saveAndFlush(verification);
          return verificationFactory.createDto(email, true, "Verified.");
       }
       final String msgExpired = """
@@ -57,6 +65,7 @@ public class VerificationServiceImplementation implements VerificationService {
    }
 
    @Override
+   @Transactional
    public ExpirationWindowDto getMoreExpTime(@NonNull String email) {
       final VerificationEntity verificationEntity = verificationRepository.findByUser_Email(email)
               .orElseThrow(() -> new VerificationEntityNotFoundException("Verification not found: " + email));
@@ -77,6 +86,7 @@ public class VerificationServiceImplementation implements VerificationService {
    }
 
    @Override
+   @Transactional
    public void delete(@NonNull String token) {
       final VerificationEntity verification = verificationRepository.findById(token)
               .orElseThrow(() -> new VerificationEntityNotFoundException("Verification entity not found: " + token));

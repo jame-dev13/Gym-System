@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisPooled;
@@ -45,11 +46,11 @@ public class AppConfig {
    }
 
    @Bean(name = "mapper")
+   @Primary
    public ObjectMapper mapper(){
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.registerModule(new JavaTimeModule());
-      mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-      return mapper;
+      return new ObjectMapper()
+              .registerModule(new JavaTimeModule())
+              .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
    }
 
    @Bean(name = "clock")

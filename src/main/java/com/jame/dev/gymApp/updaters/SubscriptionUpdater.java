@@ -7,6 +7,7 @@ import com.jame.dev.gymApp.factories.PeriodFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.List;
 public class SubscriptionUpdater {
    private final PeriodFactory periodFactory;
 
-   public SubscriptionEntity apply(
+   public void applyRenew(
            final SubscriptionEntity subscriptionEntity, PricingEntity pricing, final LocalDate endPeriod) {
       final LocalDate now = LocalDate.now();
       final long daysDiff = ChronoUnit.DAYS.between(endPeriod, now);
@@ -28,8 +29,13 @@ public class SubscriptionUpdater {
       subscriptionEntity.setPricing(pricing);
       subscriptionEntity.setSubscriptionPeriods(periods);
       subscriptionEntity.setFinished(false);
+      subscriptionEntity.setUpdatedAt(Instant.now());
+   }
 
-      return subscriptionEntity;
+   public void apply(final SubscriptionEntity subscription,
+                     final PricingEntity newPricing) {
+      subscription.setPricing(newPricing);
+      subscription.setUpdatedAt(Instant.now());
    }
 
 }

@@ -1,7 +1,5 @@
 package com.jame.dev.gymApp.controller.service;
 
-import com.jame.dev.gymApp.cache.service.AppCacheService;
-import com.jame.dev.gymApp.mapper.BaseMapper;
 import com.jame.dev.gymApp.service.common.BaseCrudService;
 import com.jame.dev.gymApp.service.common.CRUDServiceServicePatch;
 import com.jame.dev.gymApp.service.common.CRUDServiceServicePut;
@@ -10,29 +8,28 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.function.Function;
 
-public abstract class BaseControllerPatchAndPut<E, DTO_IN, DTO_OUT> extends
-        BaseControllerCommon<E, DTO_IN, DTO_OUT> {
-   private final CRUDServiceServicePatch<E, DTO_IN, Long> patchService;
-   private final CRUDServiceServicePut<E, DTO_IN, Long> putService;
+public abstract class BaseControllerPatchAndPut<DTO_OUT, DTO_IN> extends
+        BaseControllerCommon<DTO_OUT, DTO_IN> {
+   private final CRUDServiceServicePatch<DTO_OUT, DTO_IN, Long> patchService;
+   private final CRUDServiceServicePut<DTO_OUT, DTO_IN, Long> putService;
 
-   public BaseControllerPatchAndPut(BaseCrudService<E, DTO_IN, Long> service, AppCacheService<DTO_OUT> cache, BaseMapper<E, DTO_OUT> mapper, String key, Function<E, Long> idExtractor, CRUDServiceServicePatch<E, DTO_IN, Long> patchService, CRUDServiceServicePut<E, DTO_IN, Long> putService) {
-      super(service, cache, mapper, key, idExtractor);
+   public BaseControllerPatchAndPut(
+           BaseCrudService<DTO_OUT, DTO_IN, Long> service,
+           Function<DTO_OUT, Long> idExtractor,
+           CRUDServiceServicePatch<DTO_OUT, DTO_IN, Long> patchService,
+           CRUDServiceServicePut<DTO_OUT, DTO_IN, Long> putService) {
+      super(service, idExtractor);
       this.patchService = patchService;
       this.putService = putService;
    }
 
    protected ResponseEntity<@NonNull DTO_OUT> patch(final long id) {
-      super.invalidateIfExists();
-      final E entity = this.patchService.patch(id);
-      final DTO_OUT dto = super.mapper.toDto(entity);
-      return ResponseEntity.ok(dto);
+      final DTO_OUT response = patchService.patch(id);
+      return ResponseEntity.ok(response);
    }
-
    protected ResponseEntity<@NonNull DTO_OUT> put(long id, @NonNull final DTO_IN dto) {
-      super.invalidateIfExists();
-      final E entity = putService.put(id, dto);
-      final DTO_OUT dtoResponse = super.mapper.toDto(entity);
-      return ResponseEntity.ok(dtoResponse);
+      final DTO_OUT response = putService.put(id, dto);
+      return ResponseEntity.ok(response);
    }
 
 }

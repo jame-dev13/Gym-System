@@ -20,7 +20,6 @@ public class TokenServiceImplementation implements BlacklistService {
    private final StringRedisTemplate tokensRedisTemplate;
    private final JwtService jwtService;
 
-
    @Override
    public void blacklistToken(String key) {
       if (tokensRedisTemplate.hasKey(key)) {
