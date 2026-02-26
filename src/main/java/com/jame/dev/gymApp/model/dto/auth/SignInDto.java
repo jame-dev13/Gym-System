@@ -1,19 +1,15 @@
 package com.jame.dev.gymApp.model.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.jame.dev.gymApp.aspects.annotations.EmailValid;
+import com.jame.dev.gymApp.aspects.annotations.NotEmptyNull;
 
 public record SignInDto(
         @JsonProperty("email")
-        @NotNull
-        @NotBlank
-        @Email
+        @EmailValid
         String email,
         @JsonProperty("password")
-        @NotNull
-        @NotBlank
+        @NotEmptyNull
         String password
 ) {
 }

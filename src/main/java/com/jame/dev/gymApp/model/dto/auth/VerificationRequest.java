@@ -1,12 +1,10 @@
 package com.jame.dev.gymApp.model.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.jame.dev.gymApp.aspects.annotations.NotEmptyNull;
 
 public record VerificationRequest(
         @JsonProperty("token")
-        @NotNull
-        @NotBlank
+        @NotEmptyNull
         String token) {
 }

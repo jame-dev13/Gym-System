@@ -10,6 +10,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Deprecated
 public class RedisCacheInvalidationService {
    private final JedisPooled cacheAppPool;
 

@@ -17,7 +17,6 @@ import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.CustomerService;
 import com.jame.dev.gymApp.shared.enums.CacheValues;
 import com.jame.dev.gymApp.updaters.CustomerUpdater;
-import jakarta.validation.constraints.NotBlank;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -26,11 +25,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class CustomerServiceImplementation implements CustomerService {
    private final CustomerRepository repo;
    private final UserRepository userRepo;
@@ -44,7 +45,7 @@ public class CustomerServiceImplementation implements CustomerService {
            key = "#pageable.pageNumber + ':' + #pageable.pageSize",
            unless = "#result == null"
    )
-   public PageDto<CustomerDtoOutput> getPage(@NonNull Pageable pageable) {
+   public PageDto<CustomerDtoOutput> getPage(Pageable pageable) {
       final Page<CustomerEntity> page = repo.findAll(pageable);
       return customerFactory.createPageFrom(page);
    }
@@ -52,7 +53,7 @@ public class CustomerServiceImplementation implements CustomerService {
    @Override
    @Transactional(readOnly = true)
    @Cacheable(value = CacheValues.CUSTOMER, key = "#id")
-   public Optional<CustomerDtoOutput> getById(@NonNull Long id) {
+   public Optional<CustomerDtoOutput> getById(long id) {
       final var entity = repo.findById(id);
       return entity.isPresent() ?
               entity.map(customerFactory::createFromEntity) : Optional.empty();
@@ -66,7 +67,7 @@ public class CustomerServiceImplementation implements CustomerService {
 
    @Override
    @Transactional(readOnly = true)
-   public Optional<CustomerEntity> getUserByEmail(@NotBlank final String email) {
+   public Optional<CustomerEntity> getUserByEmail(final String email) {
       return repo.findByUser_Email(email);
    }
 
@@ -79,7 +80,7 @@ public class CustomerServiceImplementation implements CustomerService {
    @Override
    @Transactional
    @CacheEvictCustomers
-   public CustomerDtoOutput update(Long id, @NonNull CustomerDtoInput dto) {
+   public CustomerDtoOutput update(long id, CustomerDtoInput dto) {
       final CustomerEntity customer = repo.findById(id)
               .orElseThrow(() -> new CustomerNotFoundException("Customer not found, id: " + id));
       customerUpdater.apply(customer, dto);
@@ -116,7 +117,7 @@ public class CustomerServiceImplementation implements CustomerService {
    @Override
    @Transactional
    @CacheEvictCustomers
-   public void softDelete(@NonNull Long id) {
+   public void softDelete(long id) {
       repo.deleteById(id);
    }
 }

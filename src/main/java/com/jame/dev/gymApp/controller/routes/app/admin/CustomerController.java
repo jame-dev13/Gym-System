@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.*;
 @PreAuthorize("hasRole('ADMIN')")
 public class CustomerController extends BaseControllerCommon<CustomerDtoOutput, CustomerDtoInput> {
 
-   public CustomerController(final BaseCrudService<CustomerDtoOutput, CustomerDtoInput, Long> service) {
+   public CustomerController(
+           final BaseCrudService<CustomerDtoOutput, CustomerDtoInput> service) {
       super(service, CustomerDtoOutput::id);
    }
 
@@ -33,13 +34,12 @@ public class CustomerController extends BaseControllerCommon<CustomerDtoOutput, 
 
    @PostMapping
    public ResponseEntity<@NonNull CustomerDtoOutput> postCustomer(@RequestBody final CustomerDtoInput dto) {
-      String LOCATION = "/admin/customers";
-      return super.create(dto, LOCATION);
+      return super.create(dto);
    }
 
    @PutMapping("/{id}")
-   public ResponseEntity<@NonNull CustomerDtoOutput> updateCustomer(@PathVariable("id") final Long id,
-                                                                          @RequestBody final CustomerDtoInput dto) {
+   public ResponseEntity<@NonNull CustomerDtoOutput> updateCustomer(@PathVariable("id") final long id,
+                                                                    @RequestBody final CustomerDtoInput dto) {
       return super.update(id, dto);
    }
 

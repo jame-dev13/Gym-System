@@ -1,5 +1,7 @@
 package com.jame.dev.gymApp.service.common;
 
-public interface Patchable<E, ID> {
-   E patch (ID Id);
+import com.jame.dev.gymApp.aspects.annotations.Minimum;
+
+public interface Patchable<E> {
+   E patch (@Minimum long Id);
 }

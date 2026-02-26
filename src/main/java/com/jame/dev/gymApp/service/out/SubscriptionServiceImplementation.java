@@ -16,12 +16,14 @@ import com.jame.dev.gymApp.shared.enums.CacheValues;
 import com.jame.dev.gymApp.updaters.SubscriptionUpdater;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -29,8 +31,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
+@Validated
 public class SubscriptionServiceImplementation implements SubscriptionService {
    private final SubscriptionRepository repo;
    private final CustomerRepository customerRepo;
@@ -53,7 +57,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Override
    @Transactional
    @CacheEvict(value = CacheValues.SUBSCRIPTIONS, allEntries = true)
-   public SubscriptionDtoOutput save(@NonNull SubscriptionDtoInput dto) {
+   public SubscriptionDtoOutput save(SubscriptionDtoInput dto) {
       final CustomerEntity customer = customerRepo.findByUser_Email(dto.customerEmail())
               .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
 
@@ -78,7 +82,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Override
    @Transactional
    @CacheEvictSubscriptions
-   public SubscriptionDtoOutput patch(Long id) {
+   public SubscriptionDtoOutput patch(long id) {
       final SubscriptionEntity subscription = repo.findById(id)
               .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
       subscription.setFinished(true);
@@ -90,7 +94,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Override
    @Transactional
    @CacheEvictSubscriptions
-   public SubscriptionDtoOutput update(Long id, @NonNull SubscriptionDtoInput dto) {
+   public SubscriptionDtoOutput update(long id, SubscriptionDtoInput dto) {
       final SubscriptionEntity subscriptionEntity = repo.findById(id)
               .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
 
@@ -106,24 +110,24 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Transactional
    @Override
    @CacheEvictSubscriptions
-   public SubscriptionDtoOutput put(@NonNull Long id, @NonNull SubscriptionDtoInput input) {
+   public SubscriptionDtoOutput put(long id, SubscriptionDtoInput input) {
       return renew(id, input);
    }
 
    @Override
    @Transactional
    @CacheEvictSubscriptions
-   public void softDelete(@NonNull Long id) {
+   public void softDelete(long id) {
       repo.deleteById(id);
    }
 
    @Override
    @Transactional(readOnly = true)
    @Cacheable(value = CacheValues.SUBSCRIPTION, key = "#id")
-   public Optional<SubscriptionDtoOutput> getById(@NonNull Long id) {
-      final var entity = repo.findById(id);
-      return entity.isPresent() ?
-              entity.map(subscriptionFactory::createFromEntity) : Optional.empty();
+   public Optional<SubscriptionDtoOutput> getById(long id) {
+      final var entity = repo.findById(id)
+              .orElseThrow(() -> new SubscriptionNotFoundException("Subscription not found."));
+      return Optional.of(subscriptionFactory.createFromEntity(entity));
    }
 
    @Override
@@ -179,6 +183,6 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
               .map(SubscriptionEntity::getCustomer)
               .map(CustomerEntity::getUser)
               .map(UserEntity::getEmail)
-              .orElseThrow(() -> new EmailNotFoundExceptuon("Customer not identified."));
+              .orElseThrow(() -> new EmailNotFoundException("Customer not identified."));
    }
 }

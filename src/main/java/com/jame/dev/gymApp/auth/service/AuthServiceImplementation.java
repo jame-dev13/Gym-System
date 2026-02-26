@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.auth.service;
 
+import com.jame.dev.gymApp.aspects.annotations.NotEmptyNull;
 import com.jame.dev.gymApp.cache.service.BlacklistService;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
@@ -93,7 +94,7 @@ public class AuthServiceImplementation implements AuthService {
    }
 
    @Override
-   public CookieResponseDto refresh(String token) {
+   public CookieResponseDto refresh(@NotEmptyNull final String token) {
       blacklistService.blacklistToken(token);
       return authFactory.createRefreshCookieResponseFrom(token);
    }

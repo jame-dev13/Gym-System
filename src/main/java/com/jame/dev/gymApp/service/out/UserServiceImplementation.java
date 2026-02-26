@@ -14,7 +14,6 @@ import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.shared.enums.CacheValues;
 import com.jame.dev.gymApp.updaters.UserUpdater;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -22,11 +21,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class UserServiceImplementation implements UserService {
    private final UserRepository repo;
    private final Factory<UserEntity, UserDtoOutput, UserDtoInput> userFactory;
@@ -44,7 +45,7 @@ public class UserServiceImplementation implements UserService {
            value = CacheValues.USERS,
            key = "#pageable.pageNumber + ':' + #pageable.pageSize"
    )
-   public PageDto<UserDtoOutput> getPage(@NonNull Pageable pageable) {
+   public PageDto<UserDtoOutput> getPage(Pageable pageable) {
       final Page<UserEntity> entityPage = repo.findAll(pageable);
       return pageDtoFactory.createPageDtoFrom(entityPage);
    }
@@ -52,7 +53,7 @@ public class UserServiceImplementation implements UserService {
    @Override
    @Transactional
    @CacheEvict(value = CacheValues.USERS, allEntries = true)
-   public UserDtoOutput save(@NonNull UserDtoInput input) {
+   public UserDtoOutput save(UserDtoInput input) {
       return (UserDtoOutput) repo.findByEmail(input.email())
               .map(user -> {
                  if (!user.isActive()) {
@@ -69,16 +70,16 @@ public class UserServiceImplementation implements UserService {
    @Override
    @Transactional(readOnly = true)
    @Cacheable(value = CacheValues.USER, key = "#id")
-   public Optional<UserDtoOutput> getById(@NonNull Long id) {
-      final var entity = repo.findById(id);
-      return entity.isPresent() ?
-              entity.map(userFactory::createFromEntity) : Optional.empty();
+   public Optional<UserDtoOutput> getById(long id) {
+      final var entity = repo.findById(id)
+              .orElseThrow(() -> new UserEntityNotFoundException("User not found."));
+      return Optional.of(userFactory.createFromEntity(entity));
    }
 
    @Override
    @Transactional
    @CacheEvictUsers
-   public UserDtoOutput update(Long id, @NonNull UserDtoInput input) {
+   public UserDtoOutput update(long id, UserDtoInput input) {
       final var userEntity = repo.findById(id)
               .orElseThrow(() -> new UserEntityNotFoundException("User Not found."));
       userUpdater.apply(userEntity, input);
@@ -89,7 +90,7 @@ public class UserServiceImplementation implements UserService {
    @Override
    @Transactional
    @CacheEvictUsers
-   public void softDelete(@NonNull Long id) {
+   public void softDelete(long id) {
       repo.deleteById(id);
    }
 }

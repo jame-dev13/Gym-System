@@ -7,15 +7,16 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.function.Function;
 
+@Deprecated
 public abstract class BaseControllerPatchable<DTO_OUT, DTO_IN>
         extends BaseControllerCommon<DTO_OUT, DTO_IN> {
 
-   private final CRUDServiceServicePatch<DTO_OUT, DTO_IN, Long> patchService;
+   private final CRUDServiceServicePatch<DTO_OUT, DTO_IN> patchService;
 
    public BaseControllerPatchable(
-           BaseCrudService<DTO_OUT, DTO_IN, Long> service,
+           BaseCrudService<DTO_OUT, DTO_IN> service,
            Function<DTO_OUT, Long> idExtractor,
-           CRUDServiceServicePatch<DTO_OUT, DTO_IN, Long> patchService) {
+           CRUDServiceServicePatch<DTO_OUT, DTO_IN> patchService) {
       super(service, idExtractor);
       this.patchService = patchService;
    }

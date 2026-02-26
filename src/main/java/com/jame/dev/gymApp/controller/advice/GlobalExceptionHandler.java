@@ -2,10 +2,12 @@ package com.jame.dev.gymApp.controller.advice;
 
 import com.jame.dev.gymApp.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -208,8 +210,8 @@ public class GlobalExceptionHandler {
            IllegalArgumentException ex,
            HttpServletRequest request) {
       final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_OPERATION");
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+              .buildErrorResponse(ex, request, HttpStatus.BAD_REQUEST, "ARGUMENT_OPERATION");
+      return ResponseEntity.status(errorResponse.status()).body(errorResponse);
    }
 
    @ExceptionHandler(AlreadyExistsException.class)
@@ -266,12 +268,31 @@ public class GlobalExceptionHandler {
       return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
    }
 
-   @ExceptionHandler(EmailNotFoundExceptuon.class)
+   @ExceptionHandler(EmailNotFoundException.class)
    public ResponseEntity<ApiErrorResponse> handleEmailNotFoundException(
-           EmailNotFoundExceptuon ex,
+           EmailNotFoundException ex,
            HttpServletRequest request) {
       final ApiErrorResponse errorResponse = responseFactory
               .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "UPDATE_OPERATION");
+      return ResponseEntity.status(errorResponse.status()).body(errorResponse);
+   }
+
+   @ExceptionHandler(MethodArgumentNotValidException.class)
+   public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValidException(
+           MethodArgumentNotValidException ex,
+           HttpServletRequest request
+   ) {
+      final ApiErrorResponse errorResponse = responseFactory
+              .buildErrorResponse(ex, request, HttpStatus.BAD_REQUEST, "VALIDATION_OPERATION");
+      return ResponseEntity.status(errorResponse.status()).body(errorResponse);
+   }
+
+   @ExceptionHandler(ConstraintViolationException.class)
+   public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
+           ConstraintViolationException ex,
+           HttpServletRequest request) {
+
+      final var errorResponse = responseFactory.buildErrorResponse(ex, request, HttpStatus.BAD_REQUEST, "CONSTRAINT_OPERATION");
       return ResponseEntity.status(errorResponse.status()).body(errorResponse);
    }
 }

@@ -11,8 +11,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface SubscriptionRepository extends CustomJpaRepository<SubscriptionEntity, Long> {
-   boolean existsByCustomer_IdAndFinishedFalse(final long id);
-
    @Query("""
            SELECT s FROM SubscriptionEntity s
            JOIN FETCH s.customer c

@@ -7,15 +7,16 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.function.Function;
 
+@Deprecated
 public abstract class BaseControllerPutable<DTO_OUT, DTO_IN>
         extends BaseControllerCommon<DTO_OUT, DTO_IN> {
 
-   private final CRUDServiceServicePut<DTO_OUT, DTO_IN, Long> putService;
+   private final CRUDServiceServicePut<DTO_OUT, DTO_IN> putService;
 
    public BaseControllerPutable(
-           BaseCrudService<DTO_OUT, DTO_IN, Long> service,
+           BaseCrudService<DTO_OUT, DTO_IN> service,
            Function<DTO_OUT, Long> idExtractor,
-           CRUDServiceServicePut<DTO_OUT, DTO_IN, Long> putService) {
+           CRUDServiceServicePut<DTO_OUT, DTO_IN> putService) {
       super(service, idExtractor);
       this.putService = putService;
    }
