@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.controller.routes.auth;
 
 import com.jame.dev.gymApp.model.dto.auth.SessionDto;
 import com.jame.dev.gymApp.service.in.SessionService;
+import jakarta.validation.Valid;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,8 @@ public class SessionController {
 
    @GetMapping
    public ResponseEntity<SessionDto> getMe(
-           @CookieValue(name = "access") @NonNull final String access,
+           @Valid
+           @CookieValue(name = "access") final String access,
            @NonNull Authentication authentication) {
       final SessionDto sessionDto = sessionService.getSession(access, authentication);
       return ResponseEntity.ok(sessionDto);

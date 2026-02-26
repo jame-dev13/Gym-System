@@ -1,11 +1,12 @@
 package com.jame.dev.gymApp.service.in;
 
+import com.jame.dev.gymApp.aspects.annotations.NotEmptyNull;
+import com.jame.dev.gymApp.aspects.annotations.NotNullObject;
 import com.jame.dev.gymApp.model.dto.auth.SessionDto;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.security.core.Authentication;
 
 public interface SessionService {
    SessionDto getSession(
-           @NotNull(message = "Access cookie no present.") String access,
-           @NotNull(message = "Authentication null.") Authentication authentication);
+           @NotEmptyNull String access,
+           @NotNullObject Authentication authentication);
 }

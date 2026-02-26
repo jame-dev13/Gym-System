@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.service.out;
 
+import com.jame.dev.gymApp.aspects.annotations.EmailValid;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
 import com.jame.dev.gymApp.exception.UserEntityNotFoundException;
@@ -16,12 +17,14 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class VerificationServiceImplementation implements VerificationService {
    private final UserRepository userRepository;
    private final VerificationRepository verificationRepository;
@@ -40,7 +43,7 @@ public class VerificationServiceImplementation implements VerificationService {
 
    @Override
    @Transactional
-   public VerificationDto verify(@NonNull final String email, @NonNull final String token) {
+   public VerificationDto verify(final String email, final String token) {
       final VerificationEntity verification = verificationRepository.findByUser_Email(email)
               .orElseThrow(() -> new VerificationEntityNotFoundException("Verification not found: " + email));
       if (verification.isVerified()) {
@@ -66,7 +69,7 @@ public class VerificationServiceImplementation implements VerificationService {
 
    @Override
    @Transactional
-   public ExpirationWindowDto getMoreExpTime(@NonNull String email) {
+   public ExpirationWindowDto getMoreExpTime(String email) {
       final VerificationEntity verificationEntity = verificationRepository.findByUser_Email(email)
               .orElseThrow(() -> new VerificationEntityNotFoundException("Verification not found: " + email));
 
@@ -95,7 +98,7 @@ public class VerificationServiceImplementation implements VerificationService {
    }
 
    @Override
-   public boolean isVerified(String email) {
+   public boolean isVerified(@EmailValid String email) {
       final VerificationEntity verification = verificationRepository.findByUser_Email(email)
               .orElseThrow(() -> new UserNotFoundException("User with: %s not found.".formatted(email)));
       return verification.isVerified();

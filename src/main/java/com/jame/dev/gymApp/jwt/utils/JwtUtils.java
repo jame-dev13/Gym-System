@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.jwt.utils;
 
+import com.jame.dev.gymApp.exception.AccessExpiredException;
 import com.jame.dev.gymApp.exception.InvalidSignedJwtKeyException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -19,6 +20,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -41,6 +43,9 @@ public class JwtUtils {
    }
 
    public <T> Optional<T> getClaim(final String token, final Function<Claims, T> function) {
+      if(Objects.isNull(token)){
+         throw new AccessExpiredException("Session Expired.");
+      }
       try {
          final Claims claims = Jwts.parser()
                  .verifyWith(signWith())

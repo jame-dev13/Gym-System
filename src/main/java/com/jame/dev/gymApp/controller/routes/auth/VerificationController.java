@@ -6,6 +6,7 @@ import com.jame.dev.gymApp.model.dto.auth.ExpirationWindowDto;
 import com.jame.dev.gymApp.model.dto.auth.ExtendExpirationRequest;
 import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
 import com.jame.dev.gymApp.model.dto.auth.VerificationRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -22,11 +23,13 @@ public class VerificationController {
    private final AuthService authService;
 
    @PatchMapping("/{email}")
-   public ResponseEntity<VerificationDto> verifyAccount(@PathVariable("email") final String email,
-                                                        @RequestBody final VerificationRequest request) {
+   public ResponseEntity<VerificationDto> verifyAccount(
+           @Valid
+           @PathVariable("email") final String email,
+           @RequestBody final VerificationRequest request) {
       final VerificationDto verificationDto = authService.verify(email, request.token())
               .orElseThrow(() -> new VerificationTokenNotFoundException("Can't retrieve Verification."));
-      if(!verificationDto.verified()) {
+      if (!verificationDto.verified()) {
          return ResponseEntity
                  .status(HttpStatus.UNAUTHORIZED)
                  .contentType(MediaType.APPLICATION_JSON)
@@ -38,7 +41,9 @@ public class VerificationController {
    }
 
    @PostMapping("/get-more-exp-time")
-   public ResponseEntity<ExpirationWindowDto> getMoreTime(@RequestBody final ExtendExpirationRequest request) {
+   public ResponseEntity<ExpirationWindowDto> getMoreTime(
+           @Valid
+           @RequestBody final ExtendExpirationRequest request) {
       final ExpirationWindowDto expirationWindowDto = authService.setNewExpiration(request.email());
       return ResponseEntity.ok(expirationWindowDto);
    }

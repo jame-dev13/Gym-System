@@ -34,7 +34,9 @@ public class AuthController {
    }
 
    @PostMapping("/signIn")
-   public ResponseEntity<SignInOkDto> sigIn(@RequestBody final SignInDto dto) {
+   public ResponseEntity<SignInOkDto> sigIn(
+           @Valid
+           @RequestBody final SignInDto dto) {
       log.info("[AUTH]: Hit signINn");
       final SignInOkDto response = authService.signIn(dto);
       log.info("{}", response);
@@ -46,7 +48,9 @@ public class AuthController {
    }
 
    @PostMapping("/refresh")
-   public ResponseEntity<Void> refresh(@CookieValue(name = "refresh") final String value) {
+   public ResponseEntity<Void> refresh(
+           @Valid
+           @CookieValue(name = "refresh") final String value) {
       if (Objects.isNull(value)) {
          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
       }

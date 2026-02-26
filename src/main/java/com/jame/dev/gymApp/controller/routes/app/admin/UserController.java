@@ -16,8 +16,9 @@ import org.springframework.web.bind.annotation.*;
 @PreAuthorize("hasRole('ADMIN')")
 public class UserController extends BaseControllerCommon<UserDtoOutput, UserDtoInput> {
    private final VerifyAdmin verifyAdmin;
+
    public UserController(
-           final BaseCrudService<UserDtoOutput, UserDtoInput, Long> service,
+           final BaseCrudService<UserDtoOutput, UserDtoInput> service,
            final VerifyAdmin verifyAdmin) {
       super(service, UserDtoOutput::id);
       this.verifyAdmin = verifyAdmin;
@@ -31,24 +32,29 @@ public class UserController extends BaseControllerCommon<UserDtoOutput, UserDtoI
    }
 
    @GetMapping("/{id}")
-   public ResponseEntity<@NonNull UserDtoOutput> getUser(@PathVariable("id") final long id) {
+   public ResponseEntity<@NonNull UserDtoOutput> getUser(
+           @PathVariable("id") final long id) {
       return super.getOne(id);
    }
 
    @PostMapping
-   public ResponseEntity<@NonNull UserDtoOutput> postUser(@RequestBody final UserDtoInput userDtoInput) {
-      var response = super.create(userDtoInput, "/app/v1/administration/users");
+   public ResponseEntity<@NonNull UserDtoOutput> postUser(
+           @RequestBody final UserDtoInput userDtoInput) {
+      var response = super.create(userDtoInput);
       verifyAdmin.verifyAndApproveAdmin(userDtoInput);
       return response;
    }
 
    @PutMapping("/{id}")
-   public ResponseEntity<@NonNull UserDtoOutput> updateUser(@PathVariable("id") final long id, @RequestBody final @NonNull UserDtoInput userDtoInput) {
+   public ResponseEntity<@NonNull UserDtoOutput> updateUser(
+           @PathVariable("id") final long id,
+           @RequestBody final @NonNull UserDtoInput userDtoInput) {
       return super.update(id, userDtoInput);
    }
 
    @DeleteMapping("/{id}")
-   public ResponseEntity<@NonNull Void> deleteUser(@PathVariable("id") final long id) {
+   public ResponseEntity<@NonNull Void> deleteUser(
+           @PathVariable("id") final long id) {
       return super.delete(id);
    }
 }

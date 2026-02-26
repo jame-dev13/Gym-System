@@ -11,11 +11,13 @@ import com.jame.dev.gymApp.service.in.SessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class SessionServiceImplementation implements SessionService {
    private final IdentityExtractorService identityExtractorService;
    private final JwtService jwtService;

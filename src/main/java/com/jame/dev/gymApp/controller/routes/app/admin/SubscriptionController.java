@@ -10,24 +10,26 @@ import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/app/v1/administration/subs")
 @PreAuthorize("hasRole('ADMIN')")
+@Validated
 public class SubscriptionController extends
         BaseControllerPatchAndPut<SubscriptionDtoOutput, SubscriptionDtoInput> {
-
    public SubscriptionController(
-           final BaseCrudService<SubscriptionDtoOutput, SubscriptionDtoInput, Long> service,
-           final CRUDServiceServicePatch<SubscriptionDtoOutput, SubscriptionDtoInput, Long> patchService,
-           final CRUDServiceServicePut<SubscriptionDtoOutput, SubscriptionDtoInput, Long> putService) {
+           final BaseCrudService<SubscriptionDtoOutput, SubscriptionDtoInput> service,
+           final CRUDServiceServicePatch<SubscriptionDtoOutput, SubscriptionDtoInput> patchService,
+           final CRUDServiceServicePut<SubscriptionDtoOutput, SubscriptionDtoInput> putService) {
       super(service, SubscriptionDtoOutput::id, patchService, putService);
    }
 
    @GetMapping
    public ResponseEntity<@NonNull Page<@NonNull SubscriptionDtoOutput>> getSubscriptionPage(
-           @RequestParam("page") final int page, @RequestParam("size") final int size) {
+           @RequestParam("page") final int page,
+           @RequestParam("size") final int size) {
       return super.getPage(page, size);
    }
 
@@ -40,20 +42,21 @@ public class SubscriptionController extends
    @PostMapping
    public ResponseEntity<@NonNull SubscriptionDtoOutput> postSubscription(
            @RequestBody final SubscriptionDtoInput subscriptionDtoInput) {
-      final String location = "/admin/subs";
-      return super.create(subscriptionDtoInput, location);
+      return super.create(subscriptionDtoInput);
    }
 
    @PutMapping("/{id}")
    public ResponseEntity<@NonNull SubscriptionDtoOutput> updateSubscription(
-           @PathVariable("id") final long id, @RequestBody final SubscriptionDtoInput subscriptionDtoInput) {
+           @PathVariable("id") final long id,
+           @RequestBody final SubscriptionDtoInput subscriptionDtoInput) {
       return super.update(id, subscriptionDtoInput);
    }
 
 
    @PutMapping("/{id}/renew")
    public ResponseEntity<@NonNull SubscriptionDtoOutput> renewSubscription(
-           @PathVariable("id") final long id, @RequestBody final SubscriptionDtoInput subscriptionDtoInput) {
+           @PathVariable("id") final long id,
+           @RequestBody final SubscriptionDtoInput subscriptionDtoInput) {
       return super.put(id, subscriptionDtoInput);
    }
 
