@@ -98,20 +98,18 @@ public class CustomerServiceImplementation implements CustomerService {
          throw new NoActiveException("This user's account is deactivated.");
       }
 
-      return (CustomerDtoOutput) repo.findByUser(user)
-              .map(customer -> {
-                 if (!customer.isActive()) {
-                    throw new NoActiveException("Account is deactivated.");
-                 }
-                 throw new AlreadyExistsException("Customer Already exists.");
-              })
-              .orElseGet(() -> {
-                 final CustomerEntity customerSaved = repo.saveAndFlush(
-                         customerFactory
-                                 .createFromInput(new CustomerFactoryDtoInput(user, dto))
-                 );
-                 return customerFactory.createFromEntity(customerSaved);
-              });
+      repo.findByUserId(user.getId()).ifPresent(customer -> {
+         if (!customer.isActive()) {
+            throw new NoActiveException("Account is deactivated.");
+         }
+         throw new AlreadyExistsException("Customer Already exists.");
+      });
+
+      final CustomerEntity customerSaved = repo.saveAndFlush(
+              customerFactory
+                      .createFromInput(new CustomerFactoryDtoInput(user, dto))
+      );
+      return customerFactory.createFromEntity(customerSaved);
    }
 
    @Override

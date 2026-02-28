@@ -2,10 +2,10 @@ package com.jame.dev.gymApp.entity;
 
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
@@ -13,8 +13,7 @@ import java.time.Instant;
 @MappedSuperclass
 @Getter
 @Setter
-@FilterDef(name = "deletedFilter", parameters = @ParamDef(name = "active", type = Boolean.class))
-@Filter(name = "deletedFilter", condition = "active = :active")
+@SQLRestriction("active = true")
 public abstract class BaseEntity {
 
    @Id

@@ -54,17 +54,16 @@ public class UserServiceImplementation implements UserService {
    @Transactional
    @CacheEvict(value = CacheValues.USERS, allEntries = true)
    public UserDtoOutput save(UserDtoInput input) {
-      return (UserDtoOutput) repo.findByEmail(input.email())
-              .map(user -> {
-                 if (!user.isActive()) {
-                    throw new NoActiveException("User exists but isn't active.");
-                 }
-                 throw new AlreadyExistsException("User already exists.");
-              }).orElseGet(() -> {
-                 final UserEntity userCreated = userFactory.createFromInput(input);
-                 final UserEntity userSaved = repo.saveAndFlush(userCreated);
-                 return userFactory.createFromEntity(userSaved);
-              });
+      repo.findByEmail(input.email()).ifPresent(user -> {
+         if (!user.isActive()) {
+            throw new NoActiveException("User exists but isn't active.");
+         }
+         throw new AlreadyExistsException("User already exists.");
+      });
+
+      final UserEntity userCreated = userFactory.createFromInput(input);
+      final UserEntity userSaved = repo.saveAndFlush(userCreated);
+      return userFactory.createFromEntity(userSaved);
    }
 
    @Override
