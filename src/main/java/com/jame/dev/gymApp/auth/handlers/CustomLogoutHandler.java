@@ -2,7 +2,9 @@ package com.jame.dev.gymApp.auth.handlers;
 
 import com.jame.dev.gymApp.auth.service.LogoutService;
 import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
+import com.jame.dev.gymApp.controller.advice.InputError;
 import com.jame.dev.gymApp.exception.TokenAlreadyBlacklistedException;
+import com.jame.dev.gymApp.shared.enums.ErrorCodes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +34,8 @@ public class CustomLogoutHandler implements LogoutHandler {
          logoutService.logout(request, response);
       } catch (TokenAlreadyBlacklistedException e) {
          final String body = responseFactory
-                 .jsonErrorResponse(e, request, HttpStatus.BAD_REQUEST, "LOGOUT_ERROR");
+                 .jsonErrorResponse(
+                         new InputError(e, request, HttpStatus.BAD_REQUEST, ErrorCodes.LOGOUT));
          writeResponse(response, body);
       }
    }

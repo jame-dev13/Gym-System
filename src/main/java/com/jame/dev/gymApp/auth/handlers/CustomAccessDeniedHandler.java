@@ -1,6 +1,8 @@
 package com.jame.dev.gymApp.auth.handlers;
 
 import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
+import com.jame.dev.gymApp.controller.advice.InputError;
+import com.jame.dev.gymApp.shared.enums.ErrorCodes;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,7 +25,8 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
    @Override
    public void handle(@NonNull HttpServletRequest request, HttpServletResponse response, @NonNull AccessDeniedException accessDeniedException) throws IOException, ServletException {
       final String payload = responseFactory
-              .jsonErrorResponse(accessDeniedException, request, HttpStatus.FORBIDDEN, "ACCESS_DENIED");
+              .jsonErrorResponse(new InputError(
+                      accessDeniedException, request, HttpStatus.FORBIDDEN, ErrorCodes.ACCESS_DENIED));
       final PrintWriter writer = response.getWriter();
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       response.setContentType(MediaType.APPLICATION_JSON_VALUE);
