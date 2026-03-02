@@ -2,102 +2,70 @@ package com.jame.dev.gymApp.controller.advice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
 
 import java.time.OffsetDateTime;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class ApiErrorResponseFactory {
    private final ObjectMapper mapper;
 
-   public ApiErrorResponse buildErrorResponse(final Throwable th, final HttpServletRequest request,
-                                              final HttpStatus status, final String code) {
-      return build(th, request, status, code);
+   public ResponseEntity<ApiErrorResponse> buildResponse(final InputError inputError) {
+      final ApiErrorResponse errorResponse = buildError(inputError);
+      return ResponseEntity
+              .status(errorResponse.status())
+              .body(errorResponse);
    }
 
-   public ApiErrorResponse buildErrorResponse(
-           final BindException ex,
-           final HttpServletRequest request,
-           final HttpStatus status,
-           final String code
-   ){
-      return build(ex, request, status, code);
-   }
-
-   public ApiErrorResponse buildErrorResponse(
-           final ConstraintViolationException ex,
-           final HttpServletRequest request,
-           final HttpStatus status,
-           final String code
-   ){
-      return build(ex, request, status, code);
-   }
-
-
-
-   public String jsonErrorResponse(final Throwable th, final HttpServletRequest request,
-                                   final HttpStatus status, final String code) {
-      final ApiErrorResponse response = build(th, request, status, code);
-      try {
-         return mapper.writeValueAsString(response);
-      } catch (JsonProcessingException e) {
-         throw new RuntimeException(e);
+   public String jsonErrorResponse (final InputError inputError) {
+      try{
+         return mapper.writeValueAsString(buildError(inputError));
+      }catch(JsonProcessingException e){
+         throw new RuntimeException("Error mapping error.", e);
       }
    }
 
-   private ApiErrorResponse build(final Throwable th, final HttpServletRequest request,
-                                  final HttpStatus status, final String code) {
-      return ApiErrorResponse.builder()
-              .timestamp(OffsetDateTime.now())
-              .status(status.value())
-              .error(status.getReasonPhrase())
-              .message(th.getMessage())
-              .path(request.getRequestURI())
-              .code(code)
-              .build();
-   }
-
-
-   private ApiErrorResponse build(
-           final BindException ex,
-           final HttpServletRequest request,
-           final HttpStatus status,
-           final String code) {
-      final String msg = ex.getMessage();
+   private ApiErrorResponse buildError(final InputError inputError) {
+      final Throwable th = inputError.ex();
+      final var request = inputError.request();
+      final String msg = switch (th) {
+         case BindException ex -> extractMessage(ex);
+         case ConstraintViolationException ex -> extractMessage(ex);
+         default -> th.getMessage();
+      };
 
       return ApiErrorResponse.builder()
               .timestamp(OffsetDateTime.now())
-              .status(status.value())
-              .error(status.getReasonPhrase())
+              .status(inputError.httpStatusCode().value())
+              .error(inputError.httpStatusCode().getReasonPhrase())
               .message(msg)
               .path(request.getRequestURI())
-              .code(code)
+              .code(inputError.errorCode().getCode())
               .build();
    }
 
-   private ApiErrorResponse build(
-           final ConstraintViolationException ex,
-           final HttpServletRequest request,
-           final HttpStatus status,
-           final String code) {
-      final String msg = ex.getConstraintViolations()
-              .iterator()
-              .next()
-              .getMessage();
-
-      return ApiErrorResponse.builder()
-              .timestamp(OffsetDateTime.now())
-              .status(status.value())
-              .error(status.getReasonPhrase())
-              .message(msg)
-              .path(request.getRequestURI())
-              .code(code)
-              .build();
+   private String extractMessage(final BindException bindException) {
+      return bindException.getBindingResult()
+              .getFieldErrors()
+              .stream()
+              .map(FieldError::getDefaultMessage)
+              .collect(Collectors.joining(" "));
    }
+
+   private String extractMessage(final ConstraintViolationException constraintViolationException) {
+      return constraintViolationException.getConstraintViolations()
+              .stream()
+              .map(ConstraintViolation::getMessage)
+              .collect(Collectors.joining(" "));
+   }
+
+
 }

@@ -74,7 +74,7 @@ public class AuthServiceImplementation implements AuthService {
    @Override
    public SignInOkDto signIn(SignInDto dto) {
       if (!isLocalProvider(dto)) {
-         throw new NonLocalAuthenticationAllowedException("This should not be authenticated by the local provider.");
+         throw new NonLocalAuthenticationAllowedException("This should be authenticated by the local provider.");
       }
 
       if (!verificationService.isVerified(dto.email())) {

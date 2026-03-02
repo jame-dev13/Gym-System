@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.controller.advice;
 
 import com.jame.dev.gymApp.exception.*;
+import com.jame.dev.gymApp.shared.enums.ErrorCodes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.NonNull;
@@ -19,262 +20,201 @@ public class GlobalExceptionHandler {
    @ExceptionHandler(UserNotFoundException.class)
    public ResponseEntity<@NonNull ApiErrorResponse> handleUserNotFoundException(final UserNotFoundException ex,
                                                                                 final HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "USER_NOT_FOUND");
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-              .body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
+      ));
    }
 
    @ExceptionHandler(CustomerNotFoundException.class)
    public ResponseEntity<@NonNull ApiErrorResponse> handleCustomerNotFoundException(final CustomerNotFoundException ex,
                                                                                     final HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "CUSTOMER_NOT_FOUND");
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-              .body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
+      ));
    }
 
    @ExceptionHandler(MembershipNotFoundException.class)
    public ResponseEntity<@NonNull ApiErrorResponse> handleMembershipNotFoundException(final MembershipNotFoundException ex,
                                                                                       final HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "MEMBERSHIP_NOT_FOUND");
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-              .body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
+      ));
    }
 
    @ExceptionHandler(PeriodNotFoundException.class)
    public ResponseEntity<@NonNull ApiErrorResponse> handlePeriodNotFoundException(final PeriodNotFoundException ex,
                                                                                   final HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "PERIOD_NOT_FOUND");
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-              .body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
+      ));
    }
 
    @ExceptionHandler(PricingNotFoundException.class)
    public ResponseEntity<@NonNull ApiErrorResponse> handlePricingNotFoundException(final PricingNotFoundException ex,
                                                                                    final HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "PRICING_NOT_FOUND");
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-              .body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
+      ));
    }
 
    @ExceptionHandler(SubscriptionNotFoundException.class)
    public ResponseEntity<@NonNull ApiErrorResponse> handleSubscriptionNotFoundException(final SubscriptionNotFoundException ex,
                                                                                         final HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "SUBSCRIPTION_NOT_FOUND");
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-              .body(errorResponse);
-   }
-
-   @ExceptionHandler(NoOperationException.class)
-   public ResponseEntity<ApiErrorResponse> handleNoOperationException(
-           NoOperationException ex,
-           HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "UNSUPPORTED_OPERATION");
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
+      ));
    }
 
    @ExceptionHandler(ExtractClaimException.class)
    public ResponseEntity<ApiErrorResponse> handleExtractClaimException(
            ExtractClaimException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "EXTRACTION_OPERATION");
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.EXTRACTION));
    }
 
    @ExceptionHandler(AuthenticationAttemptFailureException.class)
    public ResponseEntity<ApiErrorResponse> handleAuthenticationAttemptFailureException(
            AuthenticationAttemptFailureException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.FORBIDDEN, "AUTH_OPERATION");
-      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.AUTHENTICATION));
    }
 
    @ExceptionHandler(AuthenticationNullException.class)
    public ResponseEntity<ApiErrorResponse> handleAuthenticationNullException(
            AuthenticationNullException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.UNAUTHORIZED, "NO_ACCESS");
-      return ResponseEntity.status(errorResponse.status()).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.AUTHENTICATION));
    }
 
    @ExceptionHandler(CantSaveUserException.class)
    public ResponseEntity<ApiErrorResponse> handleCantSaveUserException(
            CantSaveUserException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "SERVICE_OPERATION");
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
    }
 
    @ExceptionHandler(CantSaveVerifcationEntityException.class)
    public ResponseEntity<ApiErrorResponse> handleCantSaveVerificationEntityException(
            CantSaveVerifcationEntityException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "SERVICE_OPERATION");
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-   }
-
-   @ExceptionHandler(EmptyCacheObjectException.class)
-   public ResponseEntity<ApiErrorResponse> handleEmptyCacheObjectException(
-           EmptyCacheObjectException ex,
-           HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "CACHE_OPERATION");
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-   }
-
-   @ExceptionHandler(IndexNotFoundException.class)
-   public ResponseEntity<ApiErrorResponse> handleIndexNotFoundException(
-           IndexNotFoundException ex,
-           HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, "CACHE_OPERATION");
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
    }
 
    @ExceptionHandler(InvalidJwtException.class)
    public ResponseEntity<ApiErrorResponse> handleInvalidJwtException(
            InvalidJwtException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.UNAUTHORIZED, "AUTH_OPERATION");
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
-   }
-
-   @ExceptionHandler(InvalidJwtSecretException.class)
-   public ResponseEntity<ApiErrorResponse> handleInvalidJwtSecretException(
-           InvalidJwtSecretException ex,
-           HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.UNAUTHORIZED, "AUTH_OPERATION");
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.FORBIDDEN, ErrorCodes.ACCESS_DENIED));
    }
 
    @ExceptionHandler(InvalidSignedJwtKeyException.class)
    public ResponseEntity<ApiErrorResponse> handleInvalidSignedJwtKeyException(
            InvalidSignedJwtKeyException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.UNAUTHORIZED, "AUTH_OPERATION");
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.FORBIDDEN, ErrorCodes.ACCESS_DENIED));
    }
 
    @ExceptionHandler(RoleNotFoundException.class)
    public ResponseEntity<ApiErrorResponse> handleRoleNotFoundException(
            RoleNotFoundException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "ROLE_NOT_FOUND_OPERATION");
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 
    @ExceptionHandler(TokenAlreadyBlacklistedException.class)
    public ResponseEntity<ApiErrorResponse> handleTokenAlreadyBlacklistedException(
            TokenAlreadyBlacklistedException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.CONFLICT, "AUTH_OPERATION");
-      return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
    }
 
    @ExceptionHandler(VerificationTokenNotFoundException.class)
    public ResponseEntity<ApiErrorResponse> handleVerificationTokenNotFoundException(
            VerificationTokenNotFoundException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.UNAUTHORIZED, "AUTH_OPERATION");
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 
    @ExceptionHandler(UserNotVerifiedException.class)
    public ResponseEntity<ApiErrorResponse> handleUserNotVerifiedException(
            UserNotVerifiedException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.UNAUTHORIZED, "AUTH_OPERATION");
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.FORBIDDEN, ErrorCodes.ACCESS_DENIED));
    }
 
    @ExceptionHandler(IllegalArgumentException.class)
    public ResponseEntity<ApiErrorResponse> handleIllegalArgumentException(
            IllegalArgumentException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.BAD_REQUEST, "ARGUMENT_OPERATION");
-      return ResponseEntity.status(errorResponse.status()).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.ARGUMENT));
    }
 
    @ExceptionHandler(AlreadyExistsException.class)
    public ResponseEntity<ApiErrorResponse> handleAlreadyExistsException(
            AlreadyExistsException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.CONFLICT, "SAVE_OPERATION");
-      return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.CONFLICT, ErrorCodes.VALIDATION));
    }
 
    @ExceptionHandler(AccessExpiredException.class)
    public ResponseEntity<ApiErrorResponse> handleAccessExpiredException(
            AccessExpiredException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.FORBIDDEN, "ACCESS_OPERATION");
-      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.FORBIDDEN, ErrorCodes.ACCESS));
    }
 
    @ExceptionHandler(RenewSubscriptionException.class)
    public ResponseEntity<ApiErrorResponse> handleRenewSubscriptionException(
            RenewSubscriptionException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.CONFLICT, "UPDATE_OPERATION");
-      return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.CONFLICT, ErrorCodes.UPDATE));
    }
 
    @ExceptionHandler(EntityNotFoundException.class)
    public ResponseEntity<ApiErrorResponse> handleEntityNotFoundException(
            EntityNotFoundException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "ENTITY_NOT_FOUND_OPERATION");
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 
    @ExceptionHandler(IllegalSubjectAuthenticatedException.class)
    public ResponseEntity<ApiErrorResponse> handleIllegalSubjectAuthenticatedException(
            IllegalSubjectAuthenticatedException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.FORBIDDEN, "AUTHORIZE_OPERATION");
-      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.NO_ACCESS));
    }
 
    @ExceptionHandler(NoActiveException.class)
    public ResponseEntity<ApiErrorResponse> handleNoActiveException(
            NoActiveException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.CONFLICT, "SAVE_OPERATION");
-      return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
    }
 
    @ExceptionHandler(EmailNotFoundException.class)
    public ResponseEntity<ApiErrorResponse> handleEmailNotFoundException(
            EmailNotFoundException ex,
            HttpServletRequest request) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.NOT_FOUND, "UPDATE_OPERATION");
-      return ResponseEntity.status(errorResponse.status()).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 
    @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -282,17 +222,32 @@ public class GlobalExceptionHandler {
            MethodArgumentNotValidException ex,
            HttpServletRequest request
    ) {
-      final ApiErrorResponse errorResponse = responseFactory
-              .buildErrorResponse(ex, request, HttpStatus.BAD_REQUEST, "VALIDATION_OPERATION");
-      return ResponseEntity.status(errorResponse.status()).body(errorResponse);
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION));
    }
 
    @ExceptionHandler(ConstraintViolationException.class)
    public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
            ConstraintViolationException ex,
            HttpServletRequest request) {
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.CONSTRAINT));
+   }
 
-      final var errorResponse = responseFactory.buildErrorResponse(ex, request, HttpStatus.BAD_REQUEST, "CONSTRAINT_OPERATION");
-      return ResponseEntity.status(errorResponse.status()).body(errorResponse);
+   @ExceptionHandler(NonLocalAuthenticationAllowedException.class)
+   public ResponseEntity<ApiErrorResponse> handleNonLocalAuthenticationAllowedException(
+           NonLocalAuthenticationAllowedException ex,
+           HttpServletRequest request) {
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.SAVE));
+   }
+
+   @ExceptionHandler(VerificationNotFoundException.class)
+   public ResponseEntity<ApiErrorResponse> handleVerificationNotFoundException(
+           VerificationNotFoundException ex,
+           HttpServletRequest request
+   ) {
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 }

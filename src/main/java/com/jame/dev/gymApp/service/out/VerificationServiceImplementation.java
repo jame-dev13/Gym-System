@@ -5,7 +5,7 @@ import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
 import com.jame.dev.gymApp.exception.UserEntityNotFoundException;
 import com.jame.dev.gymApp.exception.UserNotFoundException;
-import com.jame.dev.gymApp.exception.VerificationEntityNotFoundException;
+import com.jame.dev.gymApp.exception.VerificationNotFoundException;
 import com.jame.dev.gymApp.factories.VerificationFactory;
 import com.jame.dev.gymApp.model.dto.auth.ExpirationWindowDto;
 import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
@@ -45,7 +45,7 @@ public class VerificationServiceImplementation implements VerificationService {
    @Transactional
    public VerificationDto verify(final String email, final String token) {
       final VerificationEntity verification = verificationRepository.findByUser_Email(email)
-              .orElseThrow(() -> new VerificationEntityNotFoundException("Verification not found: " + email));
+              .orElseThrow(() -> new VerificationNotFoundException("Verification not found: " + email));
       if (verification.isVerified()) {
          return verificationFactory.createDto(email, true, "Already Verified.");
       }
@@ -71,7 +71,7 @@ public class VerificationServiceImplementation implements VerificationService {
    @Transactional
    public ExpirationWindowDto getMoreExpTime(String email) {
       final VerificationEntity verificationEntity = verificationRepository.findByUser_Email(email)
-              .orElseThrow(() -> new VerificationEntityNotFoundException("Verification not found: " + email));
+              .orElseThrow(() -> new VerificationNotFoundException("Verification not found: " + email));
 
       final Instant now = Instant.now();
       final Instant currentExpirationTime = verificationEntity.getExpiration();
@@ -92,7 +92,7 @@ public class VerificationServiceImplementation implements VerificationService {
    @Transactional
    public void delete(@NonNull String token) {
       final VerificationEntity verification = verificationRepository.findById(token)
-              .orElseThrow(() -> new VerificationEntityNotFoundException("Verification entity not found: " + token));
+              .orElseThrow(() -> new VerificationNotFoundException("Verification entity not found: " + token));
       if (verification.isVerified()) return;
       verificationRepository.deleteById(token);
    }
