@@ -3,10 +3,7 @@ package com.jame.dev.gymApp.controller.service;
 import com.jame.dev.gymApp.aspects.annotations.EmailValid;
 import com.jame.dev.gymApp.exception.EntityNotFoundException;
 import com.jame.dev.gymApp.mapper.BaseMapper;
-import com.jame.dev.gymApp.service.common.BaseCrudService;
-import com.jame.dev.gymApp.service.common.CRUDServiceServicePatch;
-import com.jame.dev.gymApp.service.common.CRUDServiceServicePut;
-import com.jame.dev.gymApp.service.common.EmailIdentifiable;
+import com.jame.dev.gymApp.service.common.*;
 import org.springframework.http.ResponseEntity;
 
 import java.util.function.Function;
@@ -20,8 +17,8 @@ public abstract class ControllerPutPatchIdentifiable<E, DTO_OUT, DTO_IN> extends
    public ControllerPutPatchIdentifiable(
            final BaseCrudService<DTO_OUT, DTO_IN> service,
            final Function<DTO_OUT, Long> idExtractor,
-           final CRUDServiceServicePatch<DTO_OUT, DTO_IN> patchService,
-           final CRUDServiceServicePut<DTO_OUT, DTO_IN> putService,
+           final Patchable<DTO_OUT> patchService,
+           final Putable<DTO_OUT, DTO_IN> putService,
            final EmailIdentifiable<E> identifiable,
            final BaseMapper<E, DTO_OUT> mapper) {
       super(service, idExtractor, patchService, putService);

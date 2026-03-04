@@ -13,6 +13,7 @@ import com.jame.dev.gymApp.model.dto.auth.SignInDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInOkDto;
 import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
+import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.model.messages.EmailDetails;
 import com.jame.dev.gymApp.service.in.CustomerService;
 import com.jame.dev.gymApp.service.in.UserService;
@@ -106,8 +107,10 @@ public class AuthServiceImplementationTest {
               .authProvider(AuthProvider.LOCAL)
               .build();
       final String html = "<p>Hola</p>";
-      when(userService.save(any(UserDtoInput.class))).thenReturn(user);
-      when(verificationService.save(any(UserEntity.class))).thenReturn(verification);
+      when(userService.save(any(UserDtoInput.class))).thenReturn(new UserDtoOutput(
+              1L, "", "", Set.of(Role.USER)
+      ));
+      when(verificationService.save(anyLong())).thenReturn(verification);
 
       when(emailService.sendSimpleEmail(any(EmailDetails.class)))
               .thenReturn(CompletableFuture.completedFuture(true));
@@ -115,7 +118,7 @@ public class AuthServiceImplementationTest {
       assertDoesNotThrow(() -> service.signUp(dto), "Should not throw any Exception.");
 
       verify(userService, times(1)).save(dtoCaptor.capture());
-      verify(verificationService, times(1)).save(entityCaptor.capture());
+      verify(verificationService, times(1)).save(1L);
       verify(emailService, atLeastOnce()).sendSimpleEmail(any(EmailDetails.class));
       verifyNoMoreInteractions(userService, verificationService, emailService);
    }

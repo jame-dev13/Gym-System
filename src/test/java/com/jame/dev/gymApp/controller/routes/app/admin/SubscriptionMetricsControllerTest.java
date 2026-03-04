@@ -40,12 +40,12 @@ class SubscriptionMetricsControllerTest {
    @MockitoBean
    private SubscriptionMetricsService service;
 
-   private final String URI_TEMPLATE = "/admin/metrics/subs";
+   private final String URI_TEMPLATE = "/app/v1/administration/metrics/subs";
 
    @Test
    @DisplayName("Should return the total subscriptions active and unfinished.")
    void getTotalSubscriptions() throws Exception {
-      final String URI = URI_TEMPLATE + "/total";
+      final String URI = URI_TEMPLATE + "/totals";
       when(service.getTotalSubscriptions()).thenReturn(10L);
 
       mockMvc.perform(get(URI)
@@ -60,7 +60,7 @@ class SubscriptionMetricsControllerTest {
    @Test
    @DisplayName("Should return the total subscription made before a given date.")
    void getTotalBefore() throws Exception {
-      final String URI = URI_TEMPLATE + "/before/" + LocalDate.now();
+      final String URI = URI_TEMPLATE + '/' + LocalDate.now() + "/before";
       when(service.getSubscriptionsBefore(any(LocalDate.class)))
               .thenReturn(2L);
 

@@ -5,10 +5,7 @@ import com.jame.dev.gymApp.entity.SubscriptionEntity;
 import com.jame.dev.gymApp.mapper.BaseMapper;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
 import com.jame.dev.gymApp.model.dto.out.SubscriptionDtoOutput;
-import com.jame.dev.gymApp.service.common.BaseCrudService;
-import com.jame.dev.gymApp.service.common.CRUDServiceServicePatch;
-import com.jame.dev.gymApp.service.common.CRUDServiceServicePut;
-import com.jame.dev.gymApp.service.common.EmailIdentifiable;
+import com.jame.dev.gymApp.service.common.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +18,8 @@ public class SubscriptionUsersBaseController extends ControllerPutPatchIdentifia
 
    public SubscriptionUsersBaseController(
            final BaseCrudService<SubscriptionDtoOutput, SubscriptionDtoInput> service,
-           final CRUDServiceServicePatch<SubscriptionDtoOutput, SubscriptionDtoInput> patchService,
-           final CRUDServiceServicePut<SubscriptionDtoOutput, SubscriptionDtoInput> putService,
+           final Patchable<SubscriptionDtoOutput> patchService,
+           final Putable<SubscriptionDtoOutput, SubscriptionDtoInput> putService,
            final EmailIdentifiable<SubscriptionEntity> identifiable,
            final BaseMapper<SubscriptionEntity, SubscriptionDtoOutput> mapper) {
       super(service, SubscriptionDtoOutput::id, patchService, putService, identifiable, mapper);
