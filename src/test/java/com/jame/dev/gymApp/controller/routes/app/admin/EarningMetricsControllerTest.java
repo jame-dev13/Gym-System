@@ -41,7 +41,7 @@ class EarningMetricsControllerTest {
    @MockitoBean
    private EarningMetricsService service;
 
-   private final String URI_TEMPLATE = "/admin/metrics/earnings";
+   private final String URI_TEMPLATE = "/app/v1/administration/metrics/earnings";
 
    @Test
    @DisplayName("Should return the total earned.")
@@ -69,7 +69,7 @@ class EarningMetricsControllerTest {
       this.mockMvc.perform(get(URI)
                       .accept(MediaType.APPLICATION_JSON))
               .andExpect(status().isOk())
-              .andExpect(jsonPath("$.[0]").exists());
+              .andExpect(jsonPath("$.*").exists());
       verify(service, atLeastOnce()).getTotalPerMonth();
       verifyNoMoreInteractions(service);
    }

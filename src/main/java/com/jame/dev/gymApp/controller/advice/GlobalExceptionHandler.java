@@ -8,9 +8,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 @RequiredArgsConstructor
@@ -166,7 +168,7 @@ public class GlobalExceptionHandler {
            AlreadyExistsException ex,
            HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.CONFLICT, ErrorCodes.VALIDATION));
+              ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
    }
 
    @ExceptionHandler(AccessExpiredException.class)
@@ -206,7 +208,7 @@ public class GlobalExceptionHandler {
            NoActiveException ex,
            HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
+              ex, request, HttpStatus.CONFLICT, ErrorCodes.ACCESS));
    }
 
    @ExceptionHandler(EmailNotFoundException.class)
@@ -222,6 +224,20 @@ public class GlobalExceptionHandler {
            MethodArgumentNotValidException ex,
            HttpServletRequest request
    ) {
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION));
+   }
+
+   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+   public ResponseEntity<ApiErrorResponse> handleTypeMismatch(
+           MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.TYPE));
+   }
+
+   @ExceptionHandler(HttpMessageNotReadableException.class)
+   public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadableException(
+           HttpMessageNotReadableException ex, HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
               ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION));
    }
@@ -249,5 +265,23 @@ public class GlobalExceptionHandler {
    ) {
       return responseFactory.buildResponse(new InputError(
               ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
+   }
+
+   @ExceptionHandler(SubscriptionUnfinishedException.class)
+   public ResponseEntity<ApiErrorResponse> handleSubscriptionUnfinishedException(
+           SubscriptionUnfinishedException ex,
+           HttpServletRequest request
+   ) {
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.CONFLICT, ErrorCodes.UPDATE));
+   }
+
+   @ExceptionHandler(MissMatchException.class)
+   public ResponseEntity<ApiErrorResponse> handleMissMatchException(
+           MissMatchException ex,
+           HttpServletRequest request
+   ) {
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.CONFLICT, ErrorCodes.UPDATE));
    }
 }

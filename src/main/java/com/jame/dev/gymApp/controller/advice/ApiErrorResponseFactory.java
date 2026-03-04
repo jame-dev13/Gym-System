@@ -2,16 +2,16 @@ package com.jame.dev.gymApp.controller.advice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.validation.ConstraintViolation;
+import com.jame.dev.gymApp.shared.utils.ErrorResponseUtils;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindException;
-import org.springframework.validation.FieldError;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.OffsetDateTime;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -34,14 +34,8 @@ public class ApiErrorResponseFactory {
    }
 
    private ApiErrorResponse buildError(final InputError inputError) {
-      final Throwable th = inputError.ex();
+      final String msg = extractMessageFrom(inputError.ex());
       final var request = inputError.request();
-      final String msg = switch (th) {
-         case BindException ex -> extractMessage(ex);
-         case ConstraintViolationException ex -> extractMessage(ex);
-         default -> th.getMessage();
-      };
-
       return ApiErrorResponse.builder()
               .timestamp(OffsetDateTime.now())
               .status(inputError.httpStatusCode().value())
@@ -52,20 +46,13 @@ public class ApiErrorResponseFactory {
               .build();
    }
 
-   private String extractMessage(final BindException bindException) {
-      return bindException.getBindingResult()
-              .getFieldErrors()
-              .stream()
-              .map(FieldError::getDefaultMessage)
-              .collect(Collectors.joining(" "));
+   private String extractMessageFrom(Throwable th) {
+      return switch (th) {
+         case BindException ex -> ErrorResponseUtils.extractMessage(ex);
+         case ConstraintViolationException ex -> ErrorResponseUtils.extractMessage(ex);
+         case MethodArgumentTypeMismatchException ignored -> "Type not allowed.";
+         case HttpMessageNotReadableException ignored -> "Payload malformed.";
+         default -> th.getMessage();
+      };
    }
-
-   private String extractMessage(final ConstraintViolationException constraintViolationException) {
-      return constraintViolationException.getConstraintViolations()
-              .stream()
-              .map(ConstraintViolation::getMessage)
-              .collect(Collectors.joining(" "));
-   }
-
-
 }

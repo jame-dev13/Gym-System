@@ -4,8 +4,9 @@ import com.jame.dev.gymApp.aspects.annotations.Minimum;
 import com.jame.dev.gymApp.aspects.annotations.NotNullObject;
 import com.jame.dev.gymApp.exception.EntityNotFoundException;
 import com.jame.dev.gymApp.model.dto.out.PageDto;
-import com.jame.dev.gymApp.service.common.BaseCrudService;
+import com.jame.dev.gymApp.service.common.ServiceComplex;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -18,9 +19,8 @@ import java.util.function.Function;
 
 @RequiredArgsConstructor
 @Validated
-public abstract class BaseControllerCommon<DTO_OUT, DTO_IN> {
-
-   protected final BaseCrudService<DTO_OUT, DTO_IN> service;
+public abstract class ControllerComplex<DTO_OUT, DTO_IN, E> {
+   private final ServiceComplex<DTO_OUT, DTO_IN, E> service;
    private final Function<DTO_OUT, Long> idExtractor;
 
    public ResponseEntity<@NonNull Page<@NonNull DTO_OUT>> getPage(
@@ -63,5 +63,20 @@ public abstract class BaseControllerCommon<DTO_OUT, DTO_IN> {
            final long id) {
       service.softDelete(id);
       return ResponseEntity.noContent().build();
+   }
+
+   protected ResponseEntity<@NonNull DTO_OUT> patch(
+           @Positive(message = "Value must be positive integer and non cero.")
+           final long id) {
+      final DTO_OUT response = service.patch(id);
+      return ResponseEntity.ok(response);
+   }
+   protected ResponseEntity<@NonNull DTO_OUT> put(
+           @Positive(message = "Value must be positive integer and non cero.")
+           final long id,
+           @Valid
+           @NotNullObject(message = "Payload must not be null.") final DTO_IN dto) {
+      final DTO_OUT response = service.put(id, dto);
+      return ResponseEntity.ok(response);
    }
 }

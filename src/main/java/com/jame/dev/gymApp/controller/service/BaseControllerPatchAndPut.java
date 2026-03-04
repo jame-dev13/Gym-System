@@ -1,9 +1,7 @@
 package com.jame.dev.gymApp.controller.service;
 
 import com.jame.dev.gymApp.aspects.annotations.NotNullObject;
-import com.jame.dev.gymApp.service.common.BaseCrudService;
-import com.jame.dev.gymApp.service.common.CRUDServiceServicePatch;
-import com.jame.dev.gymApp.service.common.CRUDServiceServicePut;
+import com.jame.dev.gymApp.service.common.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.NonNull;
@@ -15,14 +13,14 @@ import java.util.function.Function;
 @Validated
 public abstract class BaseControllerPatchAndPut<DTO_OUT, DTO_IN> extends
         BaseControllerCommon<DTO_OUT, DTO_IN> {
-   private final CRUDServiceServicePatch<DTO_OUT, DTO_IN> patchService;
-   private final CRUDServiceServicePut<DTO_OUT, DTO_IN> putService;
+   private final Patchable<DTO_OUT> patchService;
+   private final Putable<DTO_OUT, DTO_IN> putService;
 
    public BaseControllerPatchAndPut(
            BaseCrudService<DTO_OUT, DTO_IN> service,
            Function<DTO_OUT, Long> idExtractor,
-           CRUDServiceServicePatch<DTO_OUT, DTO_IN> patchService,
-           CRUDServiceServicePut<DTO_OUT, DTO_IN> putService) {
+           Patchable<DTO_OUT> patchService,
+           Putable<DTO_OUT, DTO_IN> putService) {
       super(service, idExtractor);
       this.patchService = patchService;
       this.putService = putService;

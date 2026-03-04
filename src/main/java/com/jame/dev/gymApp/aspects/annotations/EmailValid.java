@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.aspects.annotations;
 
 import jakarta.validation.Constraint;
+import jakarta.validation.OverridesAttribute;
 import jakarta.validation.Payload;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -15,9 +16,9 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = {})
 @NotNull(message = "Filed is null.")
 @NotBlank(message = "Filed is in blank.")
-@Email(message = "Email format invalid.",
-        regexp = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+@Email(regexp = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 public @interface EmailValid {
+   @OverridesAttribute(name = "message", constraint = Email.class)
    String message() default "Email format invalid.";
    Class<?>[] groups() default {};
    Class<? extends Payload>[] payload() default {};

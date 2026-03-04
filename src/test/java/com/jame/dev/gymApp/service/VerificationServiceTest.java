@@ -47,7 +47,7 @@ public class VerificationServiceTest {
       when(tokenGeneratorService.generateToken()).thenReturn(verificationEntity.getId());
       when(verificationRepository.save(any(VerificationEntity.class)))
               .thenAnswer(invocation -> invocation.getArgument(0));
-      VerificationEntity verificationAdded = service.save(new UserEntity());
+      VerificationEntity verificationAdded = service.save(1L);
 
       ArgumentCaptor<VerificationEntity> captor = ArgumentCaptor.forClass(VerificationEntity.class);
       verify(tokenGeneratorService).generateToken();

@@ -1,29 +1,27 @@
 package com.jame.dev.gymApp.controller.routes.app.admin;
 
-import com.jame.dev.gymApp.controller.service.BaseControllerPatchAndPut;
+import com.jame.dev.gymApp.aspects.annotations.Minimum;
+import com.jame.dev.gymApp.aspects.annotations.NotNullObject;
+import com.jame.dev.gymApp.controller.service.ControllerComplex;
+import com.jame.dev.gymApp.entity.SubscriptionEntity;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
 import com.jame.dev.gymApp.model.dto.out.SubscriptionDtoOutput;
-import com.jame.dev.gymApp.service.common.BaseCrudService;
-import com.jame.dev.gymApp.service.common.CRUDServiceServicePatch;
-import com.jame.dev.gymApp.service.common.CRUDServiceServicePut;
+import com.jame.dev.gymApp.service.in.SubscriptionService;
+import jakarta.validation.Valid;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/app/v1/administration/subs")
 @PreAuthorize("hasRole('ADMIN')")
-@Validated
 public class SubscriptionController extends
-        BaseControllerPatchAndPut<SubscriptionDtoOutput, SubscriptionDtoInput> {
-   public SubscriptionController(
-           final BaseCrudService<SubscriptionDtoOutput, SubscriptionDtoInput> service,
-           final CRUDServiceServicePatch<SubscriptionDtoOutput, SubscriptionDtoInput> patchService,
-           final CRUDServiceServicePut<SubscriptionDtoOutput, SubscriptionDtoInput> putService) {
-      super(service, SubscriptionDtoOutput::id, patchService, putService);
+        ControllerComplex<SubscriptionDtoOutput, SubscriptionDtoInput, SubscriptionEntity> {
+
+   public SubscriptionController(final SubscriptionService service) {
+      super(service, SubscriptionDtoOutput::id);
    }
 
    @GetMapping
@@ -35,40 +33,48 @@ public class SubscriptionController extends
 
    @GetMapping("/{id}")
    public ResponseEntity<@NonNull SubscriptionDtoOutput> getSubscription(
-           @PathVariable("id") final long id) {
+           @PathVariable("id") @Minimum final long id) {
       return super.getOne(id);
    }
 
    @PostMapping
    public ResponseEntity<@NonNull SubscriptionDtoOutput> postSubscription(
-           @RequestBody final SubscriptionDtoInput subscriptionDtoInput) {
+           @RequestBody @Valid @NotNullObject final SubscriptionDtoInput subscriptionDtoInput) {
       return super.create(subscriptionDtoInput);
    }
 
    @PutMapping("/{id}")
    public ResponseEntity<@NonNull SubscriptionDtoOutput> updateSubscription(
-           @PathVariable("id") final long id,
-           @RequestBody final SubscriptionDtoInput subscriptionDtoInput) {
+           @PathVariable("id")
+           @Minimum final long id,
+           @RequestBody
+           @Valid
+           @NotNullObject final SubscriptionDtoInput subscriptionDtoInput) {
       return super.update(id, subscriptionDtoInput);
    }
 
 
    @PutMapping("/{id}/renew")
    public ResponseEntity<@NonNull SubscriptionDtoOutput> renewSubscription(
-           @PathVariable("id") final long id,
-           @RequestBody final SubscriptionDtoInput subscriptionDtoInput) {
+           @PathVariable("id")
+           @Minimum final long id,
+           @RequestBody
+           @Valid
+           @NotNullObject final SubscriptionDtoInput subscriptionDtoInput) {
       return super.put(id, subscriptionDtoInput);
    }
 
    @PatchMapping("/{id}")
    public ResponseEntity<@NonNull SubscriptionDtoOutput> finalizeSubscription(
-           @PathVariable("id") final long id) {
+           @PathVariable("id")
+           @Minimum final long id) {
       return super.patch(id);
    }
 
    @DeleteMapping("/{id}")
    public ResponseEntity<Void> deleteSubscription(
-           @PathVariable("id") final long id) {
+           @PathVariable("id")
+           @Minimum final long id) {
       return super.delete(id);
    }
 }

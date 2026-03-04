@@ -147,12 +147,12 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
               .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
 
       if (!subscriptionEntity.isFinished()) {
-         throw new RenewSubscriptionException("Subscription unfinished, cannot renew yet.");
+         throw new SubscriptionUnfinishedException("Subscription unfinished, cannot renew yet.");
       }
 
       final String email = extractEmailFromSubscriptionCustomer(subscriptionEntity);
       if (!Objects.equals(email, input.customerEmail())) {
-         throw new RenewSubscriptionException("Customer doesn't match.");
+         throw new MissMatchException("Customer doesn't match.");
       }
       final PeriodEntity currentPeriod = subscriptionEntity.getSubscriptionPeriods().getLast();
       if (!canRenew(currentPeriod, subscriptionEntity)) {
