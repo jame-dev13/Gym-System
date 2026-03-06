@@ -2,13 +2,14 @@ package com.jame.dev.gymApp.controller.routes.app.admin;
 
 import com.jame.dev.gymApp.aspects.annotations.Minimum;
 import com.jame.dev.gymApp.aspects.annotations.NotNullObject;
-import com.jame.dev.gymApp.controller.security.VerifyAdmin;
+import com.jame.dev.gymApp.aspects.annotations.PublishVerifyAndNotifyUser;
 import com.jame.dev.gymApp.controller.service.BaseControllerCommon;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.service.in.UserService;
 import jakarta.validation.Valid;
 import lombok.NonNull;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,13 +19,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/app/v1/administration/users")
 @PreAuthorize("hasRole('ADMIN')")
 public class UserController extends BaseControllerCommon<UserDtoOutput, UserDtoInput> {
-   private final VerifyAdmin verifyAdmin;
+   private final ApplicationEventPublisher applicationEventPublisher;
 
    public UserController(
            final UserService service,
-           final VerifyAdmin verifyAdmin) {
+           final ApplicationEventPublisher applicationEventPublisher) {
       super(service, UserDtoOutput::id);
-      this.verifyAdmin = verifyAdmin;
+      this.applicationEventPublisher = applicationEventPublisher;
    }
 
    @GetMapping
@@ -41,11 +42,11 @@ public class UserController extends BaseControllerCommon<UserDtoOutput, UserDtoI
    }
 
    @PostMapping
+   @PublishVerifyAndNotifyUser
    public ResponseEntity<@NonNull UserDtoOutput> postUser(
-           @RequestBody @Valid @NotNullObject final UserDtoInput userDtoInput) {
-      var response = super.create(userDtoInput);
-      verifyAdmin.verifyAndApproveAdmin(userDtoInput);
-      return response;
+           @RequestBody @Valid
+           @NotNullObject final UserDtoInput userDtoInput) {
+      return super.create(userDtoInput);
    }
 
    @PutMapping("/{id}")

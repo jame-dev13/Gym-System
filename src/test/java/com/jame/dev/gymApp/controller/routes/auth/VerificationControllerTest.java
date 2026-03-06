@@ -1,145 +1,127 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jame.dev.gymApp.auth.filters.CustomAuthorizationFilter;
-import com.jame.dev.gymApp.auth.service.AuthService;
 import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
-import com.jame.dev.gymApp.model.dto.auth.ExpirationWindowDto;
+import com.jame.dev.gymApp.controller.advice.GlobalExceptionHandler;
+import com.jame.dev.gymApp.controller.routes.TestConfig;
+import com.jame.dev.gymApp.controller.routes.TestValidationConfig;
+import com.jame.dev.gymApp.exception.AlreadyVerifiedException;
+import com.jame.dev.gymApp.exception.VerificationAttemptFailedException;
+import com.jame.dev.gymApp.exception.VerificationNotFoundException;
 import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
+import com.jame.dev.gymApp.service.in.VerificationService;
+import com.jame.dev.gymApp.shared.enums.ErrorCodes;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.validation.autoconfigure.ValidationAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
-import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = VerificationController.class,
         excludeFilters = @ComponentScan.
                 Filter(type = FilterType.ASSIGNABLE_TYPE,
                 classes = {CustomAuthorizationFilter.class}))
 @AutoConfigureMockMvc(addFilters = false)
+@Import({GlobalExceptionHandler.class, TestConfig.class, TestValidationConfig.class})
+@ImportAutoConfiguration({ValidationAutoConfiguration.class})
+@FieldDefaults(level = AccessLevel.PRIVATE)
 class VerificationControllerTest {
 
    @Autowired
-   private MockMvc mockMvc;
+   MockMvc mockMvc;
 
    @Autowired
-   private VerificationController controller;
+   VerificationController verificationController;
+
+   @Autowired
+   ApiErrorResponseFactory apiErrorResponse;
 
    @MockitoBean
-   private ApiErrorResponseFactory responseFactory;
+   VerificationService verificationService;
 
-   @MockitoBean
-   private AuthService authService;
+   final String URI = "/auth/verify";
+   final VerificationDto verificationDto = new VerificationDto(
+           OffsetDateTime.now(), "verified@mail.com", true, "Verified"
+   );
 
-   private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-
-   @Test
-   @DisplayName("[PATCH]: Should verify the account.")
-   void verifyAccount() throws Exception {
-      final String email = "any@mail.com";
-      final String token = "ABC123";
-      final VerificationDto verificationDto = VerificationDto.builder()
-              .timestamp(OffsetDateTime.now())
-              .email(email)
-              .verified(true)
-              .msg("Verified")
-              .build();
-      when(authService.verify(anyString(), anyString())).thenReturn(Optional.of(verificationDto));
-
-      mockMvc.perform(patch("/auth/verify/{email}", "any@mail.com")
-                      .contentType(MediaType.APPLICATION_JSON)
-                      .accept(MediaType.APPLICATION_JSON)
-                      .content("""
-                                  {
-                                    "token": "any-token"
-                                  }
-                              """))
-              .andExpect(status().isOk())
-              .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-              .andExpect(jsonPath("$.email").value("any@mail.com"))
-              .andExpect(jsonPath("$.isVerified").value(true))
-              .andExpect(jsonPath("$.msg").value("Verified"))
-              .andExpect(jsonPath("$.timestamp").exists());
-
-      verify(authService, times(1)).verify(anyString(), anyString());
-      verifyNoMoreInteractions(authService);
+   static Stream<Arguments> verificationControllerExceptions() {
+      return Stream.of(
+              Arguments.of(VerificationNotFoundException.class, 404, ErrorCodes.NOT_FOUND.getCode()),
+              Arguments.of(AlreadyVerifiedException.class, 409, ErrorCodes.VALIDATION.getCode()),
+              Arguments.of(VerificationAttemptFailedException.class, 400, ErrorCodes.UPDATE.getCode())
+      );
    }
 
    @Test
-   @DisplayName("[POST]: Should Response to get more to time")
-   void getMoreTime() throws Exception {
-      boolean updated = true;
-      final ExpirationWindowDto expirationWindowDto = ExpirationWindowDto.builder()
-              .requestAt(Instant.now().atOffset(ZoneOffset.UTC))
-              .email("any@mail.com")
-              .updated(true)
-              .state((updated) ? "Time Updated" : "No changed")
-              .expiresAt(Instant.now().plus(10, ChronoUnit.MINUTES).atOffset(ZoneOffset.UTC))
-              .msg("Verification window time updated.")
-              .build();
-      when(authService.setNewExpiration(anyString()))
-              .thenReturn(expirationWindowDto);
+   @DisplayName("PATCH[200] OK: Account verified.")
+   void verificationSuccess() throws Exception {
+      given(verificationService.verify(anyString(), anyString()))
+              .willReturn(verificationDto);
 
-      mockMvc.perform(post("/auth/verify/get-more-exp-time")
-                      .contentType(MediaType.APPLICATION_JSON)
+      mockMvc.perform(patch(URI + '/' + verificationDto.email())
                       .accept(MediaType.APPLICATION_JSON)
+                      .contentType(MediaType.APPLICATION_JSON)
                       .content("""
                               {
-                                 "email": "any@mail.com"
+                                 "token": "ANY_TOKEN"
                               }
                               """))
               .andExpect(status().isOk())
-              .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-              .andExpect(jsonPath("$.updated").value(true));
-      verify(authService).setNewExpiration(anyString());
-      verifyNoMoreInteractions(authService);
+              .andExpect(jsonPath("$.*").exists())
+              .andExpect(jsonPath("$.isVerified").value(true));
+
+      then(verificationService).should(times(1)).verify(anyString(), anyString());
+      then(verificationService).shouldHaveNoMoreInteractions();
    }
 
-   @Test
-   @DisplayName("[POST]: Should Response to get more to time with updated in false.")
-   void shouldNotGetMoreTime() throws Exception {
-      boolean updated = false;
-      final ExpirationWindowDto expirationWindowDto = ExpirationWindowDto.builder()
-              .requestAt(Instant.now().atOffset(ZoneOffset.UTC))
-              .email("any@mail.com")
-              .updated(false)
-              .state((updated) ? "Time Updated" : "No changed")
-              .expiresAt(Instant.now().minus(10, ChronoUnit.MINUTES).atOffset(ZoneOffset.UTC))
-              .msg("No changed.")
-              .build();
-      when(authService.setNewExpiration(anyString()))
-              .thenReturn(expirationWindowDto);
+   @ParameterizedTest
+   @MethodSource({"verificationControllerExceptions"})
+   @DisplayName("PATCH[404 | 409 | 400].")
+   void notFoundAlreadyExistsOrAttemptFailed(
+           Class<? extends Throwable> ex,
+           int statusCode,
+           String code) throws Exception {
+      given(verificationService.verify(anyString(), anyString()))
+              .willThrow(ex);
 
-      mockMvc.perform(post("/auth/verify/get-more-exp-time")
-                      .contentType(MediaType.APPLICATION_JSON)
+      mockMvc.perform(patch(URI + '/' + verificationDto.email())
                       .accept(MediaType.APPLICATION_JSON)
+                      .contentType(MediaType.APPLICATION_JSON)
                       .content("""
                               {
-                                 "email": "any@mail.com"
+                                 "token": "ANY_TOKEN"
                               }
                               """))
-              .andExpect(status().isOk())
-              .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-              .andExpect(jsonPath("$.updated").value(false));
-      verify(authService).setNewExpiration(anyString());
-      verifyNoMoreInteractions(authService);
+              .andExpect(status().is(statusCode))
+              .andExpect(jsonPath("$.*").exists())
+              .andExpect(jsonPath("$.status").value(statusCode))
+              .andExpect(jsonPath("$.code").value(code));
+
+      then(verificationService).should().verify(anyString(), anyString());
+      then(verificationService).shouldHaveNoMoreInteractions();
    }
 }

@@ -17,14 +17,18 @@ import java.time.Instant;
 })
 public class VerificationEntity {
    @Id
-   @Column(nullable = false, length = 10, unique = true)
-   private String id;
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   @Setter(AccessLevel.NONE)
+   private Long id;
 
    @OneToOne(fetch = FetchType.LAZY, optional = false)
    @JoinColumn(name = "user_id")
    @NonNull
    @ToString.Exclude
    private UserEntity user;
+
+   @Column(name = "token", nullable = false)
+   private String token;
 
    @Column(name = "expires_at", nullable = false)
    private Instant expiration;

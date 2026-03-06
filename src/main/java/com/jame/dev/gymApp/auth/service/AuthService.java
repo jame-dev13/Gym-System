@@ -1,10 +1,10 @@
 package com.jame.dev.gymApp.auth.service;
 
-import com.jame.dev.gymApp.model.dto.auth.*;
+import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
+import com.jame.dev.gymApp.model.dto.auth.SignInDto;
+import com.jame.dev.gymApp.model.dto.auth.SignInOkDto;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
-import lombok.NonNull;
 
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public interface AuthService {
@@ -14,7 +14,4 @@ public interface AuthService {
 
    CookieResponseDto refresh(final String token);
 
-   Optional<VerificationDto> verify(final String email, final String code);
-
-   ExpirationWindowDto setNewExpiration(@NonNull final String email);
 }
