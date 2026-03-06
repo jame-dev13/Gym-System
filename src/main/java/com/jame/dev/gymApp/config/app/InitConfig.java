@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.config.app;
 
-import com.jame.dev.gymApp.entity.*;
+import com.jame.dev.gymApp.entity.MemberShipEntity;
+import com.jame.dev.gymApp.entity.PricingEntity;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
@@ -47,6 +48,7 @@ public class InitConfig {
    @Priority(1)
    public CommandLineRunner runnerInitUsersAndCustomers(final UserService userService,
                                                         final CustomerService customerService,
+                                                        final TokenGeneratorService tokenService,
                                                         final VerificationService verificationService) {
       return args -> {
          log.info("Runner InitUsersAndCustomers start execution.");
@@ -65,11 +67,10 @@ public class InitConfig {
                  .authProvider(AuthProvider.LOCAL)
                  .build();
          final UserDtoOutput adminSaved = userService.save(admin);
-         final VerificationEntity verificationAdmin = verificationService.save(adminSaved.id());
-         verificationService.verify(adminSaved.email(), verificationAdmin.getId());
+         saveAndVerifyUser(tokenService, verificationService, adminSaved.id());
+
          final UserDtoOutput userSaved = userService.save(user);
-         final VerificationEntity verificationUser = verificationService.save(userSaved.id());
-         verificationService.verify(userSaved.email(), verificationUser.getId());
+         saveAndVerifyUser(tokenService, verificationService, userSaved.id());
 
          final CustomerDtoInput customerDtoInput = new CustomerDtoInput(userSaved.email(), "1112223334");
          customerService.save(customerDtoInput);
@@ -112,6 +113,7 @@ public class InitConfig {
    @Priority(3)
    public CommandLineRunner runnerCreationOfUsersCustomersAndSubscriptions(
            final UserService userService,
+           final TokenGeneratorService tokenGeneratorService,
            final VerificationService verificationService,
            final CustomerService customerService,
            final SubscriptionService subscriptionService
@@ -123,7 +125,7 @@ public class InitConfig {
                     //Users
                     final UserDtoInput userDto = createUser(i + 1);
                     final UserDtoOutput userEntity = userService.save(userDto);
-                    saveAndVerifyUser(verificationService, userEntity.id());
+                    saveAndVerifyUser(tokenGeneratorService, verificationService, userEntity.id());
                     //Customers
                     final CustomerDtoInput customerDto = createCustomer(userEntity.email(), i + 1);
                     final CustomerDtoOutput customer = customerService.save(customerDto);
@@ -155,9 +157,12 @@ public class InitConfig {
       return new SubscriptionDtoInput(email, memberships[randomIdx]);
    }
 
-   private void saveAndVerifyUser(final VerificationService verificationService,
-                                  final long userId) {
-      final var userVerification = verificationService.save(userId);
-      verificationService.verify(userVerification.getUser().getEmail(), userVerification.getId());
+   private void saveAndVerifyUser(
+           final TokenGeneratorService tokenGeneratorService,
+           final VerificationService verificationService,
+           final long userId) {
+      final String rawToken = tokenGeneratorService.generateToken();
+      final var userVerification = verificationService.save(userId, rawToken);
+      verificationService.verify(userVerification.getUser().getEmail(), rawToken);
    }
 }

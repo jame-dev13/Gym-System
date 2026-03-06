@@ -8,6 +8,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
+@Deprecated
 public class CacheInvalidationListener {
    private final RedisCacheInvalidationService cacheInvalidationService;
 

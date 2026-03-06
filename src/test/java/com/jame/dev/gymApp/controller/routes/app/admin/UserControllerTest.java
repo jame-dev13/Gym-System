@@ -6,7 +6,6 @@ import com.jame.dev.gymApp.controller.advice.GlobalExceptionHandler;
 import com.jame.dev.gymApp.controller.routes.TestConfig;
 import com.jame.dev.gymApp.controller.routes.TestDataSource;
 import com.jame.dev.gymApp.controller.routes.TestValidationConfig;
-import com.jame.dev.gymApp.controller.security.VerifyAdmin;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.NoActiveException;
 import com.jame.dev.gymApp.exception.UserNotFoundException;
@@ -25,6 +24,7 @@ import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.validation.autoconfigure.ValidationAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
@@ -41,9 +41,9 @@ import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -77,7 +77,7 @@ public class UserControllerTest {
    private UserService userService;
 
    @MockitoBean
-   private VerifyAdmin verifyAdmin;
+   private ApplicationEventPublisher applicationEventPublisher;
 
    private final String URI_TEMPLATE = "/app/v1/administration/users";
    private final UserDtoOutput userDto = new UserDtoOutput(
@@ -188,14 +188,16 @@ public class UserControllerTest {
       void postUser() throws Exception {
          given(userService.save(any(UserDtoInput.class)))
                  .willReturn(userDto);
+
          mockMvc.perform(post(URI_TEMPLATE)
                          .contentType(MediaType.APPLICATION_JSON)
                          .content(payload))
                  .andExpect(status().isCreated())
                  .andExpect(jsonPath("$.*").exists())
                  .andExpect(jsonPath("$.id").isNotEmpty());
+
          then(userService).should(times(1)).save(any(UserDtoInput.class));
-         then(verifyAdmin).should(times(1)).verifyAndApproveAdmin(any(UserDtoInput.class));
+         verifyNoMoreInteractions(userService, applicationEventPublisher);
       }
 
       @Test
@@ -211,7 +213,7 @@ public class UserControllerTest {
                  .andExpect(jsonPath("$.status").value(409))
                  .andExpect(jsonPath("$.code").value("SAVE_OPERATION"));
          then(userService).should(times(1)).save(any(UserDtoInput.class));
-         then(verifyAdmin).shouldHaveNoInteractions();
+         then(applicationEventPublisher).shouldHaveNoInteractions();
       }
 
       @Test
@@ -227,7 +229,7 @@ public class UserControllerTest {
                  .andExpect(jsonPath("$.status").value(409))
                  .andExpect(jsonPath("$.code").value("ACCESS_OPERATION"));
          then(userService).should(times(1)).save(any(UserDtoInput.class));
-         then(verifyAdmin).shouldHaveNoInteractions();
+         then(applicationEventPublisher).shouldHaveNoInteractions();
       }
 
       @ParameterizedTest
@@ -253,7 +255,7 @@ public class UserControllerTest {
                  .andExpect(jsonPath("$.status").value(400))
                  .andExpect(jsonPath("$.code").value(codeExpected));
          then(userService).shouldHaveNoInteractions();
-         then(verifyAdmin).shouldHaveNoInteractions();
+         then(applicationEventPublisher).shouldHaveNoInteractions();
       }
 
       @ParameterizedTest
@@ -272,7 +274,7 @@ public class UserControllerTest {
                  .andExpect(jsonPath("$.status").value(400))
                  .andExpect(jsonPath("$.code").value(codeExpected));
          then(userService).shouldHaveNoInteractions();
-         then(verifyAdmin).shouldHaveNoInteractions();
+         then(applicationEventPublisher).shouldHaveNoInteractions();
       }
    }
 

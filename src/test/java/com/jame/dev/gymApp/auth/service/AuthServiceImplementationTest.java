@@ -11,7 +11,6 @@ import com.jame.dev.gymApp.messages.service.EmailService;
 import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInOkDto;
-import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.model.messages.EmailDetails;
@@ -34,9 +33,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -76,12 +72,7 @@ public class AuthServiceImplementationTest {
            .provider(AuthProvider.LOCAL)
            .roles(Set.of(new RoleEntity(1, Role.USER)))
            .build();
-   private final VerificationEntity verification = VerificationEntity.builder()
-           .id("123ABC")
-           .user(user)
-           .expiration(Instant.now().plus(10, ChronoUnit.MINUTES))
-           .verified(false)
-           .build();
+   private final VerificationEntity verification = new VerificationEntity();
    @Captor
    private ArgumentCaptor<UserDtoInput> dtoCaptor;
    @Captor
@@ -110,7 +101,7 @@ public class AuthServiceImplementationTest {
       when(userService.save(any(UserDtoInput.class))).thenReturn(new UserDtoOutput(
               1L, "", "", Set.of(Role.USER)
       ));
-      when(verificationService.save(anyLong())).thenReturn(verification);
+      when(verificationService.save(anyLong(), "")).thenReturn(verification);
 
       when(emailService.sendSimpleEmail(any(EmailDetails.class)))
               .thenReturn(CompletableFuture.completedFuture(true));
@@ -118,7 +109,7 @@ public class AuthServiceImplementationTest {
       assertDoesNotThrow(() -> service.signUp(dto), "Should not throw any Exception.");
 
       verify(userService, times(1)).save(dtoCaptor.capture());
-      verify(verificationService, times(1)).save(1L);
+      verify(verificationService, times(1)).save(1L, "");
       verify(emailService, atLeastOnce()).sendSimpleEmail(any(EmailDetails.class));
       verifyNoMoreInteractions(userService, verificationService, emailService);
    }
@@ -201,22 +192,4 @@ public class AuthServiceImplementationTest {
       assertNotNull(response, "Should not be null.");
    }
 
-   @Test
-   @DisplayName("Should verify the account.")
-   void verification() {
-      final VerificationDto dto = VerificationDto.builder()
-              .timestamp(OffsetDateTime.now())
-              .email("mail@mail.com")
-              .verified(true)
-              .msg("Verification succeed")
-              .build();
-      when(verificationService.verify(anyString(), anyString()))
-              .thenReturn(dto);
-      final Optional<VerificationDto> optVerification = service.verify(dto.email(), "ABD123");
-
-      verify(verificationService).verify(emailCaptor.capture(), anyString());
-      verifyNoMoreInteractions(verificationService);
-
-      assertTrue(optVerification.isPresent(), "Optional value should be present.");
-   }
 }

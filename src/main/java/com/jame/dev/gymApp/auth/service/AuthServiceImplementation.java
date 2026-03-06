@@ -6,18 +6,17 @@ import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
 import com.jame.dev.gymApp.exception.*;
 import com.jame.dev.gymApp.factories.AuthResponsesFactory;
-import com.jame.dev.gymApp.factories.EmailDetailsFactory;
-import com.jame.dev.gymApp.messages.service.EmailService;
-import com.jame.dev.gymApp.messages.service.HtmlTemplates;
-import com.jame.dev.gymApp.model.dto.auth.*;
+import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
+import com.jame.dev.gymApp.model.dto.auth.SignInDto;
+import com.jame.dev.gymApp.model.dto.auth.SignInOkDto;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
-import com.jame.dev.gymApp.model.messages.EmailDetails;
+import com.jame.dev.gymApp.service.in.TokenGeneratorService;
 import com.jame.dev.gymApp.service.in.UserService;
+import com.jame.dev.gymApp.service.in.VerificationSenderService;
 import com.jame.dev.gymApp.service.in.VerificationService;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import com.jame.dev.gymApp.shared.enums.Role;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,36 +38,26 @@ public class AuthServiceImplementation implements AuthService {
    private final AuthenticationManager authenticationManager;
    private final BlacklistService blacklistService;
    private final VerificationService verificationService;
-   private final EmailService emailService;
+   private final TokenGeneratorService tokenGeneratorService;
+   private final VerificationSenderService verificationSenderService;
    private final AuthResponsesFactory authFactory;
 
    @Override
    public void signUp(final UserDtoInput dto) {
       if (dto.authProvider() != AuthProvider.LOCAL) {
-         throw new AuthProviderNotAllowedException("Non LOCAL provider present: " + dto.authProvider());
+         throw new AuthProviderNotAllowedException("Non LOCAL provider present");
       }
-      final UserDtoInput dtoValid = new UserDtoInput(
-              dto.name(), dto.email(),
-              dto.password(),
-              AuthProvider.LOCAL, Set.of(Role.USER)
-      );
-      final UserDtoOutput user = userService.save(dtoValid);
-      if (Objects.isNull(user)) {
-         throw new CantSaveUserException("Operation failed.");
-      }
-      final VerificationEntity verification = verificationService.save(user.id());
-      if (verification == null) {
+
+      final UserDtoOutput user = userService.save(wrapDto(dto));
+
+      final String rawToken = tokenGeneratorService.generateToken();
+      final VerificationEntity verification = verificationService.save(user.id(), rawToken);
+
+      if (Objects.isNull(verification)) {
          throw new CantSaveVerifcationEntityException("Can't save the verification.");
       }
-      final EmailDetails emailDetails = EmailDetailsFactory.createDetailsFrom(
-              user.email(),
-              "Verification Code",
-              HtmlTemplates.verificationTemplate()
-                      .replace("{{recipient}}", user.email())
-                      .replace("{{token}}", verification.getId()));
-      emailService.sendSimpleEmail(emailDetails)
-              .thenAccept(sent ->
-                 log.warn("{}", (sent) ? "Mail message sent": "Error try to send the mail."));
+
+      verificationSenderService.sendVerificationEmail(user.email(), rawToken);
    }
 
    @Override
@@ -78,7 +67,7 @@ public class AuthServiceImplementation implements AuthService {
       }
 
       if (!verificationService.isVerified(dto.email())) {
-         throw new UserNotVerifiedException("%s hadn't verified his account yet.".formatted(dto.email()));
+         throw new UserNotVerifiedException("this account is not verified.");
       }
 
       final UsernamePasswordAuthenticationToken token =
@@ -99,19 +88,19 @@ public class AuthServiceImplementation implements AuthService {
       return authFactory.createRefreshCookieResponseFrom(token);
    }
 
-   @Override
-   public Optional<VerificationDto> verify(final String email, final String code) {
-      return Optional.of(verificationService.verify(email, code));
-   }
-
-   @Override
-   public ExpirationWindowDto setNewExpiration(@NonNull String email) {
-      return verificationService.getMoreExpTime(email);
-   }
-
    private boolean isLocalProvider(SignInDto dto) {
       final UserEntity entityUser = userService.getUserByEmail(dto.email())
               .orElseThrow(() -> new UserNotFoundException("No user with email: " + dto.email()));
       return entityUser.getProvider() == AuthProvider.LOCAL;
+   }
+
+   private UserDtoInput wrapDto(final UserDtoInput input) {
+      return UserDtoInput.builder()
+              .name(input.name())
+              .email(input.email())
+              .password(input.password())
+              .authProvider(AuthProvider.LOCAL)
+              .roles(Set.of(Role.USER))
+              .build();
    }
 }

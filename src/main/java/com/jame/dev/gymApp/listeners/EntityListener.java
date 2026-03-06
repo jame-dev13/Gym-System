@@ -5,7 +5,7 @@ import com.jame.dev.gymApp.utils.BeanUtils;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
 import jakarta.persistence.PostUpdate;
-
+@Deprecated
 public class EntityListener {
 
    @PostPersist

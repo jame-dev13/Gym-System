@@ -2,147 +2,150 @@ package com.jame.dev.gymApp.service;
 
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
-import com.jame.dev.gymApp.model.dto.auth.ExpirationWindowDto;
+import com.jame.dev.gymApp.exception.VerificationAttemptFailedException;
+import com.jame.dev.gymApp.factories.VerificationFactory;
 import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
+import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.repository.VerificationRepository;
-import com.jame.dev.gymApp.service.in.TokenGeneratorService;
 import com.jame.dev.gymApp.service.out.VerificationServiceImplementation;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class VerificationServiceTest {
    @Mock
-   private VerificationRepository verificationRepository;
-
+   private UserRepository userRepository;
    @Mock
-   private TokenGeneratorService tokenGeneratorService;
+   private PasswordEncoder passwordEncoder;
+   @Mock
+   private VerificationRepository verificationRepository;
+   @Mock
+   private VerificationFactory verificationFactory;
 
    @InjectMocks
    private VerificationServiceImplementation service;
 
-   private final VerificationEntity verificationEntity =
-           VerificationEntity.builder()
-                   .id("ABC123")
-                   .user(new UserEntity())
-                   .expiration(Instant.now().plus(10, ChronoUnit.MINUTES))
-                   .verified(false)
-                   .build();
+   private final VerificationEntity verificationEntity = new VerificationEntity();
+   private final UserEntity user = new UserEntity();
+   private final VerificationDto verificationDto = new VerificationDto(
+           OffsetDateTime.now(), "mail@verified.com", true, "verified"
+   );
 
    @Test
    @DisplayName("Save VerificationEntity")
    void save() {
-      when(tokenGeneratorService.generateToken()).thenReturn(verificationEntity.getId());
-      when(verificationRepository.save(any(VerificationEntity.class)))
-              .thenAnswer(invocation -> invocation.getArgument(0));
-      VerificationEntity verificationAdded = service.save(1L);
+      given(userRepository.findById(anyLong()))
+              .willReturn(Optional.of(user));
+      given(passwordEncoder.encode(anyString())).willReturn("tokenHashed");
+      given(verificationRepository.saveAndFlush(any()))
+              .willReturn(verificationEntity);
 
-      ArgumentCaptor<VerificationEntity> captor = ArgumentCaptor.forClass(VerificationEntity.class);
-      verify(tokenGeneratorService).generateToken();
-      verify(verificationRepository).save(captor.capture());
+      final var result = service.save(1L, "rawToken");
 
-      VerificationEntity verificationSaved = captor.getValue();
+      assertNotNull(result);
 
-      assertAll("Not null, objects should be equals and not verified.",
-              () -> assertNotNull(verificationSaved, "Should not be null."),
-              () -> assertSame(verificationAdded, verificationSaved, "Should be the same object."),
-              () -> assertEquals(verificationAdded, verificationSaved, "Objects should be equals."),
-              () -> assertFalse(verificationSaved.isVerified(), "Object recently saved should not be verified.")
-      );
+      then(userRepository).should(times(1)).findById(anyLong());
+      then(passwordEncoder).should(times(1)).encode(anyString());
+      then(verificationRepository).should(times(1)).saveAndFlush(any());
+
+      verifyNoMoreInteractions(userRepository, passwordEncoder, verificationRepository);
    }
-
 
    @Test
    @DisplayName("Success verification")
-   void verification() {
-      when(verificationRepository.findByUser_Email(anyString()))
-              .thenReturn(Optional.of(verificationEntity));
-      when(verificationRepository.save(any(VerificationEntity.class)))
-              .thenReturn(verificationEntity);
+   void verify() {
+      String email = "mail@verified.com";
+      VerificationEntity verification = mock(VerificationEntity.class);
 
-      final VerificationDto verified = service.verify("some@mail.com", "ABC123");
-      verificationEntity.setVerified(true);
+      given(verification.getToken()).willReturn("tokenHashed");
+      given(verification.getExpiration()).willReturn(Instant.now().plus(10, ChronoUnit.MINUTES));
 
-      assertTrue(verificationEntity.isVerified(), "Should be verified.");
-      assertNotNull(verified, "Verified object should not be null.");
+      given(verificationRepository.findByUser_Email(email))
+              .willReturn(Optional.of(verification));
+      given(passwordEncoder.matches(anyString(), anyString())).willReturn(true);
+      given(verificationRepository.saveAndFlush(any())).willReturn(verification);
+      given(verificationFactory.createDtoFrom(any())).willReturn(verificationDto);
 
-      verify(verificationRepository).findByUser_Email(anyString());
-      verify(verificationRepository).save(any(VerificationEntity.class));
+      var result = assertDoesNotThrow(() -> service.verify(email, "rawToken"));
+
+      assertNotNull(result);
+
+      then(verificationRepository).should().findByUser_Email(anyString());
+      then(verificationRepository).should().saveAndFlush(any());
+      then(verificationFactory).should().createDtoFrom(any());
+      verifyNoMoreInteractions(userRepository, verificationRepository, verificationFactory);
+   }
+
+   @Test
+   @DisplayName("Verification attempt failed")
+   void verifyFails() {
+      VerificationEntity verification = mock(VerificationEntity.class);
+
+      given(verification.getToken()).willReturn("tokenHashed");
+      given(verification.getExpiration()).willReturn(Instant.now().plus(10, ChronoUnit.MINUTES));
+      given(verificationRepository.findByUser_Email(anyString()))
+              .willReturn(Optional.of(verification));
+      given(passwordEncoder.matches(anyString(), anyString()))
+              .willReturn(false);
+      assertThrowsExactly(
+              VerificationAttemptFailedException.class,
+              () -> service.verify("email@mail.com", "rawToken")
+      );
+
+      then(verificationRepository).should(times(1)).findByUser_Email(anyString());
+      then(passwordEncoder).should(times(1)).matches(anyString(), anyString());
+      verifyNoMoreInteractions(verificationRepository, passwordEncoder);
+      verifyNoInteractions(userRepository, verificationFactory);
+   }
+
+   @Test
+   @DisplayName("Is Verified")
+   void isVerified() {
+      given(verificationRepository.existsByUser_EmailAndVerifiedTrue(anyString()))
+              .willReturn(true);
+
+      assertTrue(service.isVerified("verified@verfied.com"));
+
+      then(verificationRepository).should(times(1))
+              .existsByUser_EmailAndVerifiedTrue(anyString());
       verifyNoMoreInteractions(verificationRepository);
+      verifyNoInteractions(userRepository, passwordEncoder, verificationFactory);
    }
 
-   @Test
-   @DisplayName("Remove only unverified records")
-   void removeUnverified() {
-      final String token = verificationEntity.getId();
-      when(verificationRepository.findById(token))
-              .thenReturn(Optional.of(verificationEntity));
+//      service.delete(token);
+//
+//      verify(verificationRepository).findById(token);
+//      verify(verificationRepository).deleteById(token);
+//   }
 
-      assertFalse(verificationEntity.isVerified(), "Should not be verified");
-
-      service.delete(token);
-
-      verify(verificationRepository).findById(token);
-      verify(verificationRepository).deleteById(token);
-   }
-
-   @Test
-   @DisplayName("Not remove verified records")
-   void notRemoveVerified() {
-      final String token = verificationEntity.getId();
-      verificationEntity.setVerified(true);
-
-      when(verificationRepository.findById(token))
-              .thenReturn(Optional.of(verificationEntity));
-      service.delete(token);
-
-      assertTrue(verificationEntity.isVerified(), "Should be verified.");
-
-      verify(verificationRepository).findById(token);
-      verify(verificationRepository, never()).deleteById(token);
-   }
-
-   @Test
-   @DisplayName("Should update the expiration time")
-   void getMoreExpTime() {
-      final VerificationEntity entity = new VerificationEntity();
-      entity.setExpiration(Instant.now().minus(10, ChronoUnit.MINUTES));
-
-      when(verificationRepository.findByUser_Email(anyString()))
-              .thenReturn(Optional.of(entity));
-
-      final ExpirationWindowDto dto = service.getMoreExpTime("any@email.com");
-
-      assertNotNull(dto, "ExpirationWindowDto shouldn't be null.");
-      assertTrue(dto.updated(), "The updated property should be true.");
-
-      verify(verificationRepository).findByUser_Email(anyString());
-      verifyNoMoreInteractions(verificationRepository);
-   }
-
-   @Test
-   @DisplayName("Should not update expiration time")
-   void notGetMoreExpTime() {
-      final VerificationEntity entity = new VerificationEntity();
-      entity.setExpiration(Instant.now().plus(10, ChronoUnit.MINUTES));
-      when(verificationRepository.findByUser_Email(anyString()))
-              .thenReturn(Optional.of(entity));
-
-      final ExpirationWindowDto dto = service.getMoreExpTime("any@mail.com");
-
-      assertNotNull(dto, "ExpirationWindowDto shouldn't be null.");
-      assertFalse(dto.updated(), "The updated property should be false.");
-   }
+//   @Test
+//   @DisplayName("Not remove verified records")
+//   void notRemoveVerified() {
+//      final String token = verificationEntity.getId();
+//      verificationEntity.setVerified(true);
+//
+//      when(verificationRepository.findById(token))
+//              .thenReturn(Optional.of(verificationEntity));
+//      service.delete(token);
+//
+//      assertTrue(verificationEntity.isVerified(), "Should be verified.");
+//
+//      verify(verificationRepository).findById(token);
+//      verify(verificationRepository, never()).deleteById(token);
+//   }
 }

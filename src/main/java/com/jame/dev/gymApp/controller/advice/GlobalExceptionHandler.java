@@ -284,4 +284,31 @@ public class GlobalExceptionHandler {
       return responseFactory.buildResponse(new InputError(
               ex, request, HttpStatus.CONFLICT, ErrorCodes.UPDATE));
    }
+
+   @ExceptionHandler(VerificationAttemptFailedException.class)
+   public ResponseEntity<ApiErrorResponse> handleVerificationAttemptFailedException(
+           VerificationAttemptFailedException ex,
+           HttpServletRequest request
+   ) {
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.UPDATE));
+   }
+
+   @ExceptionHandler(AlreadyVerifiedException.class)
+   public ResponseEntity<ApiErrorResponse> handleAlreadyVerifiedException(
+           AlreadyVerifiedException ex,
+           HttpServletRequest request
+   ) {
+      return responseFactory.buildResponse(new InputError(
+              ex, request, HttpStatus.CONFLICT, ErrorCodes.VALIDATION));
+   }
+
+   @ExceptionHandler(WindowTimeException.class)
+   public ResponseEntity<ApiErrorResponse> handleWindowVerifiedException(
+           WindowTimeException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+              .buildResponse(new InputError(
+                      ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.ACCESS));
+   }
 }

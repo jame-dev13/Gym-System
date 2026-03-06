@@ -77,7 +77,7 @@ public class AuthServiceSignUpTest {
 
       given(mockInput.authProvider()).willReturn(AuthProvider.LOCAL);
       given(userService.save(any(UserDtoInput.class))).willReturn(user);
-      given(verificationService.save(anyLong())).willReturn(new VerificationEntity());
+      given(verificationService.save(anyLong(), "")).willReturn(new VerificationEntity());
       given(verificationService.verify(anyString(), anyString())).willReturn(verification);
       given(emailService.sendSimpleEmail(any(EmailDetails.class)))
               .willReturn(CompletableFuture.completedFuture(true));
@@ -85,7 +85,7 @@ public class AuthServiceSignUpTest {
       service.signUp(mockInput);
 
       then(userService).should(times(1)).save(mockInput);
-      then(verificationService).should(times(1)).save(anyLong());
+      then(verificationService).should(times(1)).save(anyLong(), "");
       then(verificationService).should(times(1)).verify(anyString(), anyString());
       then(emailService).should(times(1)).sendSimpleEmail(any(EmailDetails.class));
       verifyNoMoreInteractions(userService, verificationService, emailService);
