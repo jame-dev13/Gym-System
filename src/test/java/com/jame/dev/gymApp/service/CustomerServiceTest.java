@@ -125,7 +125,7 @@ public class CustomerServiceTest {
    void saveCustomer() {
       CustomerDtoOutput output =  mock(CustomerDtoOutput.class);
       when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
-      when(repo.findByUserId(1L)).thenReturn(Optional.empty());
+      when(repo.findDeactivatedByUserId(1L)).thenReturn(Optional.empty());
       when(customerFactory.createFromInput(any())).thenReturn(mockCustomer);
       when(repo.saveAndFlush(mockCustomer))
               .thenReturn(mockCustomer);
@@ -136,7 +136,7 @@ public class CustomerServiceTest {
       assertNotNull(customerAdded, "Result should not be null.");
 
       verify(userRepo, atMostOnce()).findByEmail(anyString());
-      verify(repo, atMostOnce()).findByUserId(1L);
+      verify(repo, atMostOnce()).findDeactivatedByUserId(1L);
       verify(customerFactory, atMostOnce()).createFromInput(any());
       verify(repo, atMostOnce()).saveAndFlush(mockCustomer);
       verify(customerFactory, atMostOnce()).createFromEntity(mockCustomer);
@@ -147,12 +147,12 @@ public class CustomerServiceTest {
    @DisplayName("Already exists check works")
    void alreadyExistsCheck() {
       when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
-      when(repo.findByUserId(1L)).thenReturn(Optional.of(mockCustomer));
+      when(repo.findDeactivatedByUserId(1L)).thenReturn(Optional.of(mockCustomer));
 
       assertThrows(AlreadyExistsException.class, () -> service.save(mockDto));
 
       verify(userRepo, atMostOnce()).findByEmail(anyString());
-      verify(repo, atMostOnce()).findByUserId(1L);
+      verify(repo, atMostOnce()).findDeactivatedByUserId(1L);
    }
 
    @Test
@@ -174,12 +174,12 @@ public class CustomerServiceTest {
       CustomerEntity customer = new CustomerEntity();
       customer.setActive(false);
       when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
-      when(repo.findByUserId(1L)).thenReturn(Optional.of(customer));
+      when(repo.findDeactivatedByUserId(1L)).thenReturn(Optional.of(customer));
 
       assertThrows(NoActiveException.class, () -> service.save(mockDto));
 
       verify(userRepo, atMostOnce()).findByEmail(anyString());
-      verify(repo, atMostOnce()).findByUserId(1L);
+      verify(repo, atMostOnce()).findDeactivatedByUserId(1L);
    }
 
    @Test
