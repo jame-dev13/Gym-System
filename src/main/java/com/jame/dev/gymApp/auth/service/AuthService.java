@@ -13,5 +13,4 @@ public interface AuthService {
    SignInOkDto signIn(final SignInDto dto);
 
    CookieResponseDto refresh(final String token);
-
 }

@@ -11,12 +11,16 @@ public interface CustomerRepository extends CustomJpaRepository<CustomerEntity, 
    @Query(nativeQuery = true, value = """
            SELECT c.* FROM customers c JOIN users u ON u.id = c.user_id WHERE u.email = :userEmail
            """)
-   Optional<CustomerEntity> findByUser_Email(@Param("userEmail") final String email);
+   Optional<CustomerEntity> findDeactivatedByUser_email(@Param("userEmail") final String userEmail);
+
+   Optional<CustomerEntity> findByUser_Email(final String email);
 
    @Query(nativeQuery = true, value = """
            SELECT c.* FROM customers c WHERE c.user_id = :userId
            """)
-   Optional<CustomerEntity> findByUserId(@Param("userId") final long userId);
+   Optional<CustomerEntity> findDeactivatedByUserId(@Param("userId") final long userId);
+
+   Optional<CustomerEntity> findByUser_Id(final long id);
 
    boolean existsByIdAndUser_EmailAndActiveTrue(long id, String email);
 }

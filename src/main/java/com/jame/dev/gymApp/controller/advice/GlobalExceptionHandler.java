@@ -152,7 +152,7 @@ public class GlobalExceptionHandler {
            UserNotVerifiedException ex,
            HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.FORBIDDEN, ErrorCodes.ACCESS_DENIED));
+              ex, request, HttpStatus.FORBIDDEN, ErrorCodes.VERIFICATION));
    }
 
    @ExceptionHandler(IllegalArgumentException.class)
@@ -311,4 +311,15 @@ public class GlobalExceptionHandler {
               .buildResponse(new InputError(
                       ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.ACCESS));
    }
+
+
+   @ExceptionHandler(AccountNotFoundException.class)
+   public ResponseEntity<ApiErrorResponse> handleWindowVerifiedException(
+           AccountNotFoundException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+              .buildResponse(new InputError(
+                      ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
+   }
+
 }

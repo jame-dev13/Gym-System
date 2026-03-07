@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -62,8 +63,23 @@ public class VerificationServiceImplementation implements VerificationService {
    }
 
    @Override
+   @Transactional
+   public void update(String email, String rawToken) {
+      final VerificationEntity verificationEntity = verificationRepository.findDeactivatedByUser_Email(email)
+              .orElseThrow(() -> new VerificationNotFoundException("Verification not found."));
+      verificationEntity.setToken(passwordEncoder.encode(rawToken));
+      verificationEntity.setExpiration(Instant.now().plus(10, ChronoUnit.MINUTES));
+      verificationRepository.saveAndFlush(verificationEntity);
+   }
+
+   @Override
    public boolean isVerified(@EmailValid String email) {
       return verificationRepository.existsByUser_EmailAndVerifiedTrue(email);
+   }
+
+   @Override
+   public boolean checkVerifiedDeactivated(String email) {
+      return verificationRepository.existsDeactivatedByUser_Email(email);
    }
 
 //   @Override

@@ -98,7 +98,7 @@ public class CustomerServiceImplementation implements CustomerService {
          throw new NoActiveException("This user's account is deactivated.");
       }
 
-      repo.findByUserId(user.getId()).ifPresent(customer -> {
+      repo.findDeactivatedByUserId(user.getId()).ifPresent(customer -> {
          if (!customer.isActive()) {
             throw new NoActiveException("Account is deactivated.");
          }

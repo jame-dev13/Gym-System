@@ -62,13 +62,17 @@ public class AuthServiceImplementation implements AuthService {
 
    @Override
    public SignInOkDto signIn(SignInDto dto) {
-      if (!isLocalProvider(dto)) {
-         throw new NonLocalAuthenticationAllowedException("This should be authenticated by the local provider.");
-      }
+      final UserEntity user = userService.getUserByEmail(dto.email())
+              .orElseThrow(() -> new UserNotFoundException("User doesn't exists"));
 
-      if (!verificationService.isVerified(dto.email())) {
+      if(!user.isActive()) throw new NoActiveException("This Account is deactivated.");
+
+      if (!verificationService.checkVerifiedDeactivated(user.getEmail()))
          throw new UserNotVerifiedException("this account is not verified.");
-      }
+
+      if (user.getProvider() != AuthProvider.LOCAL)
+         throw new NonLocalAuthenticationAllowedException("This should be authenticated by the local provider.");
+
 
       final UsernamePasswordAuthenticationToken token =
               new UsernamePasswordAuthenticationToken(dto.email(), dto.password());
@@ -86,12 +90,6 @@ public class AuthServiceImplementation implements AuthService {
    public CookieResponseDto refresh(@NotEmptyNull final String token) {
       blacklistService.blacklistToken(token);
       return authFactory.createRefreshCookieResponseFrom(token);
-   }
-
-   private boolean isLocalProvider(SignInDto dto) {
-      final UserEntity entityUser = userService.getUserByEmail(dto.email())
-              .orElseThrow(() -> new UserNotFoundException("No user with email: " + dto.email()));
-      return entityUser.getProvider() == AuthProvider.LOCAL;
    }
 
    private UserDtoInput wrapDto(final UserDtoInput input) {
