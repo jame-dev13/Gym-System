@@ -48,7 +48,7 @@ public final class HtmlTemplates {
            </body>
            </html>
            """
-              .replace("{{subject}}", subject)
+              .replace("{{recipient}}", subject)
               .replace("{{token}}", rawToken);
    }
 
@@ -213,4 +213,55 @@ public final class HtmlTemplates {
               """
               .replace("{{email}}", email).replace("{{password}}", password);
    }
+
+   public static String recoveryTemplate(final String subject, final String rawToken) {
+      return """
+           <!DOCTYPE html>
+           <html lang="es">
+           <head>
+               <meta charset="UTF-8" />
+               <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+               <title>Recovery Code</title>
+           </head>
+           <body style="margin:0;padding:0;background-color:#f5f5f5;font-family:Arial,sans-serif;">
+           
+               <table align="center" width="100%%" cellpadding="0" cellspacing="0"
+                      style="max-width:600px;margin:auto;background:#ffffff;border-radius:8px;
+                             padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+           
+                   <tr>
+                       <td style="text-align:center;padding:20px 0;">
+                           <h2 style="color:#333;margin:0;">Recovery Code</h2>
+                       </td>
+                   </tr>
+           
+                   <tr>
+                       <td style="color:#555;font-size:16px;line-height:1.6;padding:10px 20px;">
+                           <p>Hello <strong>{{recipient}}</strong>,</p>
+           
+                           <p>To continue with your re-activation process, enter the following code in the application dialog:</p>
+           
+                           <p style="font-size:32px;color:#007bff;font-weight:bold;text-align:center;margin:30px 0;">
+                               {{token}}
+                           </p>
+           
+                           <p>The code is valid for the next <strong>10 minutes</strong>.If you don't requested it, just ignore this message.</p>
+                       </td>
+                   </tr>
+           
+                   <tr>
+                       <td style="text-align:center;color:#999;font-size:12px;padding-top:20px;">
+                           ©GymApp. All rights reserved.
+                       </td>
+                   </tr>
+           
+               </table>
+           
+           </body>
+           </html>
+           """
+              .replace("{{recipient}}", subject)
+              .replace("{{token}}", rawToken);
+   }
+
 }

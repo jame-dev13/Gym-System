@@ -21,7 +21,10 @@ public class VerificationEntity {
    @Setter(AccessLevel.NONE)
    private Long id;
 
-   @OneToOne(fetch = FetchType.LAZY, optional = false)
+   @OneToOne(
+           fetch = FetchType.LAZY,
+           optional = false,
+           cascade = {CascadeType.REFRESH, CascadeType.MERGE})
    @JoinColumn(name = "user_id")
    @NonNull
    @ToString.Exclude
