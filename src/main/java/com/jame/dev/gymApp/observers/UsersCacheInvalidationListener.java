@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Deprecated
 public class UsersCacheInvalidationListener {
    private final RedisCacheInvalidationService cacheInvalidationService;
 

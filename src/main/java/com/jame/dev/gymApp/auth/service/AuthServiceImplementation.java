@@ -1,20 +1,17 @@
 package com.jame.dev.gymApp.auth.service;
 
+import com.jame.dev.gymApp.aspects.annotations.CheckSignIn;
 import com.jame.dev.gymApp.aspects.annotations.NotEmptyNull;
 import com.jame.dev.gymApp.cache.service.BlacklistService;
-import com.jame.dev.gymApp.entity.UserEntity;
-import com.jame.dev.gymApp.entity.VerificationEntity;
-import com.jame.dev.gymApp.exception.*;
+import com.jame.dev.gymApp.exception.AuthProviderNotAllowedException;
+import com.jame.dev.gymApp.exception.AuthenticationAttemptFailureException;
 import com.jame.dev.gymApp.factories.AuthResponsesFactory;
 import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInOkDto;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
-import com.jame.dev.gymApp.service.in.TokenGeneratorService;
 import com.jame.dev.gymApp.service.in.UserService;
-import com.jame.dev.gymApp.service.in.VerificationSenderService;
-import com.jame.dev.gymApp.service.in.VerificationService;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import com.jame.dev.gymApp.shared.enums.Role;
 import lombok.RequiredArgsConstructor;
@@ -33,13 +30,9 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthServiceImplementation implements AuthService {
-
    private final UserService userService;
    private final AuthenticationManager authenticationManager;
    private final BlacklistService blacklistService;
-   private final VerificationService verificationService;
-   private final TokenGeneratorService tokenGeneratorService;
-   private final VerificationSenderService verificationSenderService;
    private final AuthResponsesFactory authFactory;
 
    @Override
@@ -47,33 +40,13 @@ public class AuthServiceImplementation implements AuthService {
       if (dto.authProvider() != AuthProvider.LOCAL) {
          throw new AuthProviderNotAllowedException("Non LOCAL provider present");
       }
-
-      final UserDtoOutput user = userService.save(wrapDto(dto));
-
-      final String rawToken = tokenGeneratorService.generateToken();
-      final VerificationEntity verification = verificationService.save(user.id(), rawToken);
-
-      if (Objects.isNull(verification)) {
-         throw new CantSaveVerifcationEntityException("Can't save the verification.");
-      }
-
-      verificationSenderService.sendVerificationEmail(user.email(), rawToken);
+      final UserDtoOutput userDtoOutput = userService.save(wrapDto(dto));
+      Objects.requireNonNull(userDtoOutput, "Dto object is null.");
    }
 
    @Override
+   @CheckSignIn
    public SignInOkDto signIn(SignInDto dto) {
-      final UserEntity user = userService.getUserByEmail(dto.email())
-              .orElseThrow(() -> new UserNotFoundException("User doesn't exists"));
-
-      if(!user.isActive()) throw new NoActiveException("This Account is deactivated.");
-
-      if (!verificationService.checkVerifiedDeactivated(user.getEmail()))
-         throw new UserNotVerifiedException("this account is not verified.");
-
-      if (user.getProvider() != AuthProvider.LOCAL)
-         throw new NonLocalAuthenticationAllowedException("This should be authenticated by the local provider.");
-
-
       final UsernamePasswordAuthenticationToken token =
               new UsernamePasswordAuthenticationToken(dto.email(), dto.password());
 

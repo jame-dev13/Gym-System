@@ -28,7 +28,7 @@ public class RecoveryAccountController {
       return ResponseEntity.accepted().build();
    }
 
-   @PostMapping("/re-activate")
+   @PostMapping("/activate")
    public ResponseEntity<Void> reActivateAccount(
            @RequestBody
            @Valid
@@ -41,7 +41,7 @@ public class RecoveryAccountController {
       return ResponseEntity.ok().build();
    }
 
-   @PostMapping("/re-activate-customer")
+   @PostMapping("/activate-customer")
    public ResponseEntity<Void> reActivateCustomerAccount(
            @RequestBody
            @Valid

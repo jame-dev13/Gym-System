@@ -86,7 +86,7 @@ public class RecoveryAccountControllerTest {
    void reactivateAccount() throws Exception {
       willDoNothing().given(accountRecoveryService).reActivateUserAccount(anyString(), anyString());
 
-      mockMvc.perform(post(URI + '/' + "re-activate")
+      mockMvc.perform(post(URI + "/activate")
                       .accept(MediaType.APPLICATION_JSON)
                       .contentType(MediaType.APPLICATION_JSON)
                       .content("""
@@ -107,7 +107,7 @@ public class RecoveryAccountControllerTest {
    void reactivateCustomersAccount() throws Exception {
       willDoNothing().given(accountRecoveryService).reactivateCustomerAccount(anyString(), anyString());
 
-      mockMvc.perform(post(URI + '/' + "re-activate-customer")
+      mockMvc.perform(post(URI + "/activate-customer")
                       .accept(MediaType.APPLICATION_JSON)
                       .contentType(MediaType.APPLICATION_JSON)
                       .content("""

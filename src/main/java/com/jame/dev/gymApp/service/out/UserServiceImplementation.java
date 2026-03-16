@@ -56,9 +56,9 @@ public class UserServiceImplementation implements UserService {
    public UserDtoOutput save(UserDtoInput input) {
       repo.findByEmail(input.email()).ifPresent(user -> {
          if (!user.isActive()) {
-            throw new NoActiveException("User exists but isn't active.");
+            throw new NoActiveException("This address is deactivated.");
          }
-         throw new AlreadyExistsException("User already exists.");
+         throw new AlreadyExistsException("This account it's used by other user.");
       });
 
       final UserEntity userCreated = userFactory.createFromInput(input);

@@ -5,10 +5,8 @@ import com.jame.dev.gymApp.model.dto.auth.SignInDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInOkDto;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 
-import java.util.concurrent.ExecutionException;
-
 public interface AuthService {
-   void signUp(final UserDtoInput dto) throws ExecutionException, InterruptedException;
+   void signUp(final UserDtoInput dto);
 
    SignInOkDto signIn(final SignInDto dto);
 

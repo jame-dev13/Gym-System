@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
+import com.jame.dev.gymApp.aspects.annotations.PublishVerify;
 import com.jame.dev.gymApp.auth.service.AuthService;
 import com.jame.dev.gymApp.config.web.CookieHelper;
 import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
@@ -16,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RestController
@@ -28,8 +28,9 @@ public class AuthController {
    private final CookieHelper cookieHelper;
 
    @PostMapping("/signUp")
-   public ResponseEntity<Void> signUp(@Valid @RequestBody final UserDtoInput dto) throws ExecutionException, InterruptedException {
-      authService.signUp(dto);
+   @PublishVerify
+   public ResponseEntity<Void> signUp(@Valid @RequestBody final UserDtoInput user) {
+      authService.signUp(user);
       return ResponseEntity.status(HttpStatus.CREATED).build();
    }
 

@@ -27,7 +27,6 @@ public class VerificationEntity {
            cascade = {CascadeType.REFRESH, CascadeType.MERGE})
    @JoinColumn(name = "user_id")
    @NonNull
-   @ToString.Exclude
    private UserEntity user;
 
    @Column(name = "token", nullable = false)
