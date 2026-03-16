@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.auth.service;
 
 import com.jame.dev.gymApp.entity.UserEntity;
+import com.jame.dev.gymApp.exception.NoActiveException;
 import com.jame.dev.gymApp.exception.UserEntityNotFoundException;
 import com.jame.dev.gymApp.mapper.RoleMapper;
 import com.jame.dev.gymApp.service.in.UserService;
@@ -26,7 +27,10 @@ public class UserDetailsServiceImplementation implements UserDetailsService {
    public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
       final UserEntity userEntity = service.getUserByEmail(username)
               .orElseThrow(() -> new UserEntityNotFoundException("User Not Found."));
-      Collection<GrantedAuthority> authorities =
+      if(!userEntity.isActive()) {
+         throw new NoActiveException("This account is deactivated.");
+      }
+      final Collection<GrantedAuthority> authorities =
               roleMapper.entityToGrantedAuthorities(userEntity.getRoles());
       return User.builder()
               .username(userEntity.getEmail())

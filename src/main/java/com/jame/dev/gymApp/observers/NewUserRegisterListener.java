@@ -1,17 +1,22 @@
-package com.jame.dev.gymApp.observers;
+ package com.jame.dev.gymApp.observers;
 
+import com.jame.dev.gymApp.entity.VerificationEntity;
+import com.jame.dev.gymApp.exception.CantSaveVerifcationEntityException;
 import com.jame.dev.gymApp.messages.service.EmailService;
 import com.jame.dev.gymApp.messages.service.HtmlTemplates;
 import com.jame.dev.gymApp.model.listeners.UserNotifiable;
 import com.jame.dev.gymApp.model.messages.EmailDetails;
 import com.jame.dev.gymApp.service.in.TokenGeneratorService;
 import com.jame.dev.gymApp.service.in.UserService;
+import com.jame.dev.gymApp.service.in.VerificationSenderService;
 import com.jame.dev.gymApp.service.in.VerificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -21,6 +26,23 @@ public class NewUserRegisterListener {
    private final UserService userService;
    private final VerificationService verificationService;
    private final TokenGeneratorService tokenGeneratorService;
+   private final VerificationSenderService verificationSenderService;
+
+   @EventListener
+   @Async
+   public void verifySignUpUser(final String subject) {
+      userService.getUserByEmail(subject)
+              .ifPresent(user -> {
+                 final String rawToken = tokenGeneratorService.generateToken();
+                 final VerificationEntity verification = verificationService.save(user.getId(), rawToken);
+
+                 if (Objects.isNull(verification)) {
+                    throw new CantSaveVerifcationEntityException("Can't save the verification.");
+                 }
+
+                 verificationSenderService.sendVerificationEmail(user.getEmail(), rawToken);
+              });
+   }
 
    @EventListener
    @Async

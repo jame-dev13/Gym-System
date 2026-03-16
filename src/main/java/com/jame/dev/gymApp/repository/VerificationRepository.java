@@ -17,7 +17,7 @@ public interface VerificationRepository extends JpaRepository<@NonNull Verificat
            value = """
                    SELECT t.* FROM tokens t
                    INNER JOIN users u ON u.id = t.user_id
-                   WHERE u.email = :email
+                   WHERE u.email = :email AND u.active = false
                    """
    )
    Optional<VerificationEntity> findDeactivatedByUser_Email(@Param("email") @EmailValid final String email);

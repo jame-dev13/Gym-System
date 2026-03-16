@@ -314,7 +314,7 @@ public class GlobalExceptionHandler {
 
 
    @ExceptionHandler(AccountNotFoundException.class)
-   public ResponseEntity<ApiErrorResponse> handleWindowVerifiedException(
+   public ResponseEntity<ApiErrorResponse> handleAccountNotFoundException(
            AccountNotFoundException ex, HttpServletRequest request
    ) {
       return responseFactory
@@ -322,4 +322,12 @@ public class GlobalExceptionHandler {
                       ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 
+   @ExceptionHandler(AuthProviderNotAllowedException.class)
+   public ResponseEntity<ApiErrorResponse> handleAuthProviderNotAllowedException(
+           AuthProviderNotAllowedException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+              .buildResponse(new InputError(
+                      ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION));
+   }
 }
