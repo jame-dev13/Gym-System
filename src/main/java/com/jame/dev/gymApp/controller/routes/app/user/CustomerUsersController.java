@@ -44,7 +44,7 @@ public class CustomerUsersController extends ControllerIdentifiable<CustomerEnti
       return super.getByEmail(email);
    }
 
-   @PreAuthorize("@customerSecurity.isOwner(#id, authentication) and @authorize.checkIdentity(#input)")
+   @PreAuthorize("@customerSecurity.isOwner(#id, authentication)")
    @PutMapping("/{id}")
    public ResponseEntity<CustomerDtoOutput> updateInfoContact(
            @PathVariable("id") final Long id,

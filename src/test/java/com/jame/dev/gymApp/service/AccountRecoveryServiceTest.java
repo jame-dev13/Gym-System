@@ -1,11 +1,15 @@
 package com.jame.dev.gymApp.service;
 
 import com.jame.dev.gymApp.entity.CustomerEntity;
+import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
 import com.jame.dev.gymApp.exception.VerificationAttemptFailedException;
 import com.jame.dev.gymApp.exception.VerificationNotFoundException;
+import com.jame.dev.gymApp.mapper.RoleMapper;
 import com.jame.dev.gymApp.repository.CustomerRepository;
+import com.jame.dev.gymApp.repository.RoleRepository;
+import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.repository.VerificationRepository;
 import com.jame.dev.gymApp.service.out.AccountRecoveryServiceImplementation;
 import lombok.AccessLevel;
@@ -19,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,7 +39,13 @@ public class AccountRecoveryServiceTest {
    @Mock
    PasswordEncoder passwordEncoder;
    @Mock
+   UserRepository userRepository;
+   @Mock
    CustomerRepository customerRepository;
+   @Mock
+   RoleMapper roleMapper;
+   @Mock
+   RoleRepository roleRepository;
 
    @InjectMocks
    AccountRecoveryServiceImplementation accountRecoveryService;
@@ -43,20 +54,25 @@ public class AccountRecoveryServiceTest {
    @DisplayName("Should reactivate the account.")
    void reactivateUserAccount() {
       VerificationEntity verificationEntity = mock(VerificationEntity.class);
+      UserEntity userEntity = mock(UserEntity.class);
+      RoleEntity roleEntity = mock(RoleEntity.class);
 
-      given(verificationEntity.getToken()).willReturn("ABC123");
-      given(verificationEntity.getUser()).willReturn(new UserEntity());
       given(verificationRepository.findDeactivatedByUser_Email(anyString()))
               .willReturn(Optional.of(verificationEntity));
       given(passwordEncoder.matches(anyString(), any())).willReturn(true);
-
+      given(userRepository.findByEmail(anyString()))
+              .willReturn(Optional.of(userEntity));
+      given(roleMapper.toEntitySet(any(), any()))
+              .willReturn(Set.of(roleEntity));
       assertDoesNotThrow(
               () -> accountRecoveryService.reActivateUserAccount("any@mail.com", "ABC123")
       );
 
       then(verificationRepository).should(times(1)).findDeactivatedByUser_Email(anyString());
-      then(passwordEncoder).should(times(1)).matches(anyString(), anyString());
-      verifyNoMoreInteractions(verificationRepository, passwordEncoder);
+      then(passwordEncoder).should(times(1)).matches(anyString(), any());
+      then(userRepository).should(times(1)).findByEmail(anyString());
+      then(roleMapper).should(times(1)).toEntitySet(any(), any());
+      verifyNoMoreInteractions(verificationRepository, passwordEncoder, userRepository, roleMapper);
    }
 
    @Test
@@ -67,9 +83,6 @@ public class AccountRecoveryServiceTest {
 
       String email = "any@mail.com";
 
-      given(verificationEntity.getToken()).willReturn("ABC123");
-      given(verificationEntity.getUser()).willReturn(user);
-      given(user.getEmail()).willReturn(email);
       given(verificationRepository.findDeactivatedByUser_Email(anyString()))
               .willReturn(Optional.of(verificationEntity));
       given(passwordEncoder.matches(anyString(), any())).willReturn(true);
@@ -81,7 +94,7 @@ public class AccountRecoveryServiceTest {
       );
 
       then(verificationRepository).should(times(1)).findDeactivatedByUser_Email(anyString());
-      then(passwordEncoder).should(times(1)).matches(anyString(), anyString());
+      then(passwordEncoder).should(times(1)).matches(anyString(), any());
       then(customerRepository).should(times(1)).findDeactivatedByUser_email(anyString());
       verifyNoMoreInteractions(verificationRepository, passwordEncoder);
    }

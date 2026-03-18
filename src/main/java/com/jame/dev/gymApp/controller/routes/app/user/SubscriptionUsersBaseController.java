@@ -47,7 +47,7 @@ public class SubscriptionUsersBaseController extends ControllerPutPatchIdentifia
       return super.create(input);
    }
 
-   @PreAuthorize("@subscriptionSecurity.isOwner(#id, authentication) and @authorize.checkIdentity(#input)")
+   @PreAuthorize("@subscriptionSecurity.isOwner(#id, authentication)")
    @PutMapping("/{id}")
    public ResponseEntity<SubscriptionDtoOutput> renew(
            @PathVariable("id") final long id,
