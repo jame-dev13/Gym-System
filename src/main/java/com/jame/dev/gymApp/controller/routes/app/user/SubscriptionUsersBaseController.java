@@ -1,18 +1,27 @@
 package com.jame.dev.gymApp.controller.routes.app.user;
 
+import com.jame.dev.gymApp.aspects.annotations.EmailValid;
+import com.jame.dev.gymApp.aspects.annotations.Minimum;
+import com.jame.dev.gymApp.aspects.annotations.NotNullObject;
 import com.jame.dev.gymApp.controller.service.ControllerPutPatchIdentifiable;
 import com.jame.dev.gymApp.entity.SubscriptionEntity;
 import com.jame.dev.gymApp.mapper.BaseMapper;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
 import com.jame.dev.gymApp.model.dto.out.SubscriptionDtoOutput;
-import com.jame.dev.gymApp.service.common.*;
+import com.jame.dev.gymApp.service.common.BaseCrudService;
+import com.jame.dev.gymApp.service.common.EmailIdentifiable;
+import com.jame.dev.gymApp.service.common.Patchable;
+import com.jame.dev.gymApp.service.common.Putable;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/app/v1/subscriptions")
 @PreAuthorize("hasRole('USER')")
+@Validated
 public class SubscriptionUsersBaseController extends ControllerPutPatchIdentifiable<
         SubscriptionEntity, SubscriptionDtoOutput, SubscriptionDtoInput> {
 
@@ -29,6 +38,7 @@ public class SubscriptionUsersBaseController extends ControllerPutPatchIdentifia
    @GetMapping("/{id}")
    public ResponseEntity<SubscriptionDtoOutput> getSub(
            @PathVariable("id")
+           @Minimum
            final long id) {
       return super.getOne(id);
    }
@@ -37,21 +47,28 @@ public class SubscriptionUsersBaseController extends ControllerPutPatchIdentifia
    @GetMapping("/customer/{email}")
    public ResponseEntity<SubscriptionDtoOutput> getSubByEmail(
            @PathVariable("email")
+           @EmailValid
            final String email) {
       return super.getByEmail(email);
    }
 
+   @PreAuthorize("@subscriptionSecurity.isOwner(#input, authentication)")
    @PostMapping
    public ResponseEntity<SubscriptionDtoOutput> subscribe(
-           @RequestBody final SubscriptionDtoInput input) {
+           @Valid
+           @RequestBody
+           @NotNullObject final SubscriptionDtoInput input) {
       return super.create(input);
    }
 
    @PreAuthorize("@subscriptionSecurity.isOwner(#id, authentication)")
    @PutMapping("/{id}")
    public ResponseEntity<SubscriptionDtoOutput> renew(
-           @PathVariable("id") final long id,
-           @RequestBody final SubscriptionDtoInput input
+           @PathVariable("id")
+           @Minimum final long id,
+           @Valid
+           @RequestBody
+           @NotNullObject final SubscriptionDtoInput input
    ) {
       return super.put(id, input);
    }
@@ -59,7 +76,8 @@ public class SubscriptionUsersBaseController extends ControllerPutPatchIdentifia
    @PreAuthorize("@subscriptionSecurity.isOwner(#id, authentication)")
    @PatchMapping("/{id}")
    public ResponseEntity<SubscriptionDtoOutput> finalizeSubscription(
-           @PathVariable("id") final long id) {
+           @PathVariable("id")
+           @Minimum final long id) {
       return super.patch(id);
    }
 }

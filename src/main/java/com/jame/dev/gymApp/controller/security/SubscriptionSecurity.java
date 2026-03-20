@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.controller.security;
 
+import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
 import com.jame.dev.gymApp.oauth2.model.CustomOAuth2User;
 import com.jame.dev.gymApp.service.common.SubscriptionOwnershipService;
 import com.jame.dev.gymApp.service.in.SubscriptionService;
@@ -27,10 +28,17 @@ public class SubscriptionSecurity implements SubscriptionOwnershipService {
    @Override
    public boolean isOwner(String email, @NonNull Authentication authentication) {
       final String authName = getAuthName(authentication);
-      log.info("{}", authName);
       if(authName == null || authName.isBlank())
          return false;
       return email.equals(authName);
+   }
+
+   @Override
+   public boolean isOwner(SubscriptionDtoInput input, @NonNull Authentication authentication) {
+      final String authName = getAuthName(authentication);
+      if(authName == null || authName.isBlank())
+         return false;
+      return input.customerEmail().equals(authName);
    }
 
    private String getAuthName(@NonNull final Authentication authentication) {

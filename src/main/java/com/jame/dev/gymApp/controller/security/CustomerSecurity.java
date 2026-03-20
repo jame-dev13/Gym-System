@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.controller.security;
 
+import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.oauth2.model.CustomOAuth2User;
 import com.jame.dev.gymApp.service.common.CustomerOwnershipService;
 import com.jame.dev.gymApp.service.in.CustomerService;
@@ -31,6 +32,14 @@ public class CustomerSecurity implements CustomerOwnershipService {
       if(authName == null || authName.isBlank())
          return false;
       return email.equals(authName);
+   }
+
+   @Override
+   public boolean isOwner(CustomerDtoInput input, @org.jspecify.annotations.NonNull Authentication authentication) {
+      final String authName = getAuthName(authentication);
+      if(authName == null || authName.isBlank())
+         return false;
+      return input.email().equals(authName);
    }
 
    private String getAuthName(@NonNull final Authentication authentication) {
