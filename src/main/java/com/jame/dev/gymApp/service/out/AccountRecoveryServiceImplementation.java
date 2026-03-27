@@ -1,6 +1,8 @@
 package com.jame.dev.gymApp.service.out;
 
+import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
+import com.jame.dev.gymApp.exception.UserEntityNotFoundException;
 import com.jame.dev.gymApp.exception.VerificationAttemptFailedException;
 import com.jame.dev.gymApp.exception.VerificationNotFoundException;
 import com.jame.dev.gymApp.mapper.RoleMapper;
@@ -45,26 +47,28 @@ public class AccountRecoveryServiceImplementation implements AccountRecoveryServ
    @Transactional
    public void reActivateUserAccount(String userEmail, String token) {
       final VerificationEntity VE = getVerificationEntity(userEmail, token);
-      userRepository.findByEmail(userEmail)
-              .ifPresent(u -> {
-                 u.setActive(true);
-                 u.setUpdatedAt(Instant.now());
-                 u.setRoles(roleMapper.toEntitySet(Set.of(Role.USER), roleRepository));
-                 VE.setUser(u);
-              });
-   }
+      final UserEntity user = userRepository.findByEmail(userEmail)
+              .orElseThrow(() -> new UserEntityNotFoundException("User not found."));
 
-   @Override
-   @Transactional
-   public void reactivateCustomerAccount(String userEmail, String token) {
-      final VerificationEntity VE = getVerificationEntity(userEmail, token);
+      if (!user.isActive()) {
+         user.setActive(true);
+         user.setUpdatedAt(Instant.now());
+         user.setRoles(roleMapper.toEntitySet(Set.of(Role.USER), roleRepository));
+      }
 
-      customerRepository.findDeactivatedByUser_email(userEmail)
-              .ifPresent(CE -> {
-                 CE.setActive(true);
-                 CE.setUpdatedAt(Instant.now());
-                 VE.setUser(CE.getUser());
-              });
+      final long userId = user.getId();
+
+      if(customerRepository.existsDeactivatedByUserId(userId)) {
+         customerRepository.findDeactivatedByUserId(userId)
+                 .ifPresent(c -> {
+                    if (!c.isActive()) {
+                       c.setActive(true);
+                       c.setUpdatedAt(Instant.now());
+                       c.setUser(user);
+                    }
+                 });
+      }
+      VE.setUser(user);
    }
 
    @Override

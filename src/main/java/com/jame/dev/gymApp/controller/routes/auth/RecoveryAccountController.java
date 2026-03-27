@@ -41,16 +41,4 @@ public class RecoveryAccountController {
       return ResponseEntity.ok().build();
    }
 
-   @PostMapping("/activate-customer")
-   public ResponseEntity<Void> reActivateCustomerAccount(
-           @RequestBody
-           @Valid
-           @NotNullObject final RecoveryAccountDto recoveryAccountDto
-   ) {
-      accountRecoveryService.reactivateCustomerAccount(
-              recoveryAccountDto.email(),
-              recoveryAccountDto.token()
-      );
-      return ResponseEntity.ok().build();
-   }
 }
