@@ -44,6 +44,12 @@ public interface RoleMapper {
               .collect(Collectors.toSet());
    }
 
+   default Set<Role> toRoleSet(Set<RoleEntity> roles) {
+      return roles.stream()
+              .map(RoleEntity::getRole)
+              .collect(Collectors.toSet());
+   }
+
    default RoleEntity toEntity(Role role, RoleRepository roleRepository){
       if(role == null) return null;
       return roleRepository.findByRole(role)

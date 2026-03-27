@@ -67,7 +67,7 @@ public class RecoveryAccountControllerTest {
    @Test
    @DisplayName("POST[202] Created: Should publish the event")
    void publishEvent() throws Exception {
-      mockMvc.perform(post(URI + '/' + "recover")
+      mockMvc.perform(post(URI + "/recover")
                       .accept(MediaType.APPLICATION_JSON)
                       .contentType(MediaType.APPLICATION_JSON)
                       .content("""
@@ -102,27 +102,6 @@ public class RecoveryAccountControllerTest {
       verifyNoMoreInteractions(accountRecoveryService);
    }
 
-   @Test
-   @DisplayName("POST[200] Ok: Reactivate Customer's account")
-   void reactivateCustomersAccount() throws Exception {
-      willDoNothing().given(accountRecoveryService).reactivateCustomerAccount(anyString(), anyString());
-
-      mockMvc.perform(post(URI + "/activate-customer")
-                      .accept(MediaType.APPLICATION_JSON)
-                      .contentType(MediaType.APPLICATION_JSON)
-                      .content("""
-                              {
-                                 "email": "email@mail.com",
-                                 "token": "token"
-                              }
-                              """)
-              )
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.*").doesNotExist());
-      then(accountRecoveryService).should(times(1)).reactivateCustomerAccount(anyString(), anyString());
-      verifyNoMoreInteractions(accountRecoveryService);
-   }
-
    @ParameterizedTest
    @CsvSource(
            useHeadersInDisplayName = true,
@@ -131,7 +110,7 @@ public class RecoveryAccountControllerTest {
            emptyValue = "EMPTY")
    @DisplayName("POST[400] Bad Request due to constraint validations.")
    void endpointForReActivateThrows(String email, String codeError) throws Exception {
-      mockMvc.perform(post(URI + '/' + "re-activate")
+      mockMvc.perform(post(URI + "/activate")
                       .accept(MediaType.APPLICATION_JSON)
                       .contentType(MediaType.APPLICATION_JSON)
                       .content("""

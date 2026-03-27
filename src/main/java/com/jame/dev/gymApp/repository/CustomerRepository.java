@@ -21,4 +21,11 @@ public interface CustomerRepository extends CustomJpaRepository<CustomerEntity, 
    Optional<CustomerEntity> findDeactivatedByUserId(@Param("userId") final long userId);
 
    boolean existsByIdAndUser_EmailAndActiveTrue(long id, String email);
+
+   @Query(nativeQuery = true, value = """
+           SELECT EXISTS(
+                    SELECT 1 FROM customers c
+                    WHERE c.user_id = :userId)
+           """)
+   boolean existsDeactivatedByUserId(@Param("userId") final long userId);
 }

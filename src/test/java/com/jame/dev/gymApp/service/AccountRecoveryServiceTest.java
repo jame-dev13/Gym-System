@@ -51,10 +51,11 @@ public class AccountRecoveryServiceTest {
    AccountRecoveryServiceImplementation accountRecoveryService;
 
    @Test
-   @DisplayName("Should reactivate the account.")
-   void reactivateUserAccount() {
+   @DisplayName("Should reactivate the account of customer and user type.")
+   void reactivateBothAccounts() {
       VerificationEntity verificationEntity = mock(VerificationEntity.class);
       UserEntity userEntity = mock(UserEntity.class);
+      CustomerEntity customerEntity = mock(CustomerEntity.class);
       RoleEntity roleEntity = mock(RoleEntity.class);
 
       given(verificationRepository.findDeactivatedByUser_Email(anyString()))
@@ -64,6 +65,9 @@ public class AccountRecoveryServiceTest {
               .willReturn(Optional.of(userEntity));
       given(roleMapper.toEntitySet(any(), any()))
               .willReturn(Set.of(roleEntity));
+      given(customerRepository.existsDeactivatedByUserId(anyLong())).willReturn(true);
+      given(customerRepository.findDeactivatedByUserId(anyLong()))
+              .willReturn(Optional.of(customerEntity));
       assertDoesNotThrow(
               () -> accountRecoveryService.reActivateUserAccount("any@mail.com", "ABC123")
       );
@@ -72,12 +76,14 @@ public class AccountRecoveryServiceTest {
       then(passwordEncoder).should(times(1)).matches(anyString(), any());
       then(userRepository).should(times(1)).findByEmail(anyString());
       then(roleMapper).should(times(1)).toEntitySet(any(), any());
-      verifyNoMoreInteractions(verificationRepository, passwordEncoder, userRepository, roleMapper);
+      then(customerRepository).should(times(1)).existsDeactivatedByUserId(anyLong());
+      then(customerRepository).should(times(1)).findDeactivatedByUserId(anyLong());
+      verifyNoMoreInteractions(verificationRepository, passwordEncoder, userRepository, roleMapper, customerRepository);
    }
 
    @Test
-   @DisplayName("Should reactivate the customer's account.")
-   void reactivateCustomerAccount() {
+   @DisplayName("Should reactivate only the user account.")
+   void reactivateUserAccount() {
       VerificationEntity verificationEntity = mock(VerificationEntity.class);
       UserEntity user = mock(UserEntity.class);
 
@@ -86,19 +92,50 @@ public class AccountRecoveryServiceTest {
       given(verificationRepository.findDeactivatedByUser_Email(anyString()))
               .willReturn(Optional.of(verificationEntity));
       given(passwordEncoder.matches(anyString(), any())).willReturn(true);
-      given(customerRepository.findDeactivatedByUser_email(anyString()))
-              .willReturn(Optional.of(new CustomerEntity()));
+      given(userRepository.findByEmail(anyString()))
+              .willReturn(Optional.of(user));
+      given(customerRepository.existsDeactivatedByUserId(anyLong())).willReturn(false);
 
       assertDoesNotThrow(
-              () -> accountRecoveryService.reactivateCustomerAccount(email, "ABC123")
+              () -> accountRecoveryService.reActivateUserAccount(email, "ABC123")
       );
 
       then(verificationRepository).should(times(1)).findDeactivatedByUser_Email(anyString());
       then(passwordEncoder).should(times(1)).matches(anyString(), any());
-      then(customerRepository).should(times(1)).findDeactivatedByUser_email(anyString());
-      verifyNoMoreInteractions(verificationRepository, passwordEncoder);
+      then(userRepository).should(times(1)).findByEmail(anyString());
+      then(customerRepository).should(times(1)).existsDeactivatedByUserId(anyLong());
+      verifyNoMoreInteractions(verificationRepository, passwordEncoder, userRepository, customerRepository);
    }
 
+   @Test
+   @DisplayName("Should reactivate only the customer account.")
+   void reactivateCustomerAccount() {
+      VerificationEntity verificationEntity = mock(VerificationEntity.class);
+      UserEntity user = mock(UserEntity.class);
+      CustomerEntity customer = mock(CustomerEntity.class);
+
+      given(verificationRepository.findDeactivatedByUser_Email(anyString()))
+              .willReturn(Optional.of(verificationEntity));
+      given(passwordEncoder.matches(anyString(), any()))
+              .willReturn(true);
+      given(userRepository.findByEmail(anyString()))
+              .willReturn(Optional.of(user));
+      given(user.isActive()).willReturn(true);
+      given(customerRepository.existsDeactivatedByUserId(anyLong()))
+              .willReturn(true);
+      given(customerRepository.findDeactivatedByUserId(anyLong()))
+              .willReturn(Optional.of(customer));
+
+      assertDoesNotThrow(() -> accountRecoveryService.reActivateUserAccount("any@mail.com", "TOKEN"));
+
+      then(verificationRepository).should(times(1)).findDeactivatedByUser_Email(anyString());
+      then(passwordEncoder).should(times(1)).matches(anyString(), any());
+      then(userRepository).should(times(1)).findByEmail(anyString());
+      then(customerRepository).should(times(1)).existsDeactivatedByUserId(anyLong());
+      then(customerRepository).should(times(1)).findDeactivatedByUserId(anyLong());
+
+      verifyNoMoreInteractions(userRepository, customerRepository);
+   }
 
    @Test
    @DisplayName("Should validate if the account exists.")

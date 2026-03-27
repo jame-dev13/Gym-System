@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.oauth2.service;
 
+import com.jame.dev.gymApp.aspects.annotations.VerifyOauthUser;
 import com.jame.dev.gymApp.mapper.RoleMapper;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -32,6 +32,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
    private final RoleMapper roleMapper;
 
    @Override
+   @VerifyOauthUser
    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
       final OAuth2User oAuth2User = super.loadUser(userRequest);
       final AuthenticatedUser authenticatedUser = registerUser(oAuth2User);
@@ -48,12 +49,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                       u.getId(),
                       u.getName(),
                       u.getEmail(),
-                      u.getRoles()
-                              .stream()
-                              .map(roleMapper::toDto)
-                              .collect(Collectors.toSet())
+                      roleMapper.toRoleSet(u.getRoles())
               ))
-              .orElseGet(() -> registerUser(oAuth2User, email));
+              .orElseGet(() -> saveUser(oAuth2User, email));
       return AuthenticatedUser.builder()
               .id(user.id())
               .name(user.name())
@@ -62,7 +60,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
               .build();
    }
 
-   private @NonNull UserDtoOutput registerUser(final OAuth2User oAuth2User, final String email) {
+   private @NonNull UserDtoOutput saveUser(final OAuth2User oAuth2User, final String email) {
       final UserDtoInput userDtoInput = UserDtoInput.builder()
               .name(oAuth2User.getAttribute("name"))
               .email(email)
