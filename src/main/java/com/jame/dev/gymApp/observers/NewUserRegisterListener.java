@@ -52,11 +52,11 @@ public class NewUserRegisterListener {
               .ifPresent(u -> {
                  final var rawToken = tokenGeneratorService.generateToken();
                  final var verificationEntity = verificationService.save(u.getId(), rawToken);
-                 final var verificationDto = verificationService.verify(
+                 verificationService.verify(
                          verificationEntity.getUser().getEmail(),
                          rawToken
                  );
-                 final var subject = verificationDto.email();
+                 final var subject = verificationEntity.getUser().getEmail();
                  final var emailDetails = new EmailDetails(
                          subject,
                          HtmlTemplates.adminTemplate(

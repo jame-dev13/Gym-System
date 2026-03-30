@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.service.out;
 
-import com.jame.dev.gymApp.aspects.annotations.EmailValid;
+import com.jame.dev.gymApp.aspects.annotations.constraints.EmailValid;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.entity.VerificationEntity;
 import com.jame.dev.gymApp.exception.AlreadyVerifiedException;
@@ -8,7 +8,6 @@ import com.jame.dev.gymApp.exception.UserEntityNotFoundException;
 import com.jame.dev.gymApp.exception.VerificationAttemptFailedException;
 import com.jame.dev.gymApp.exception.VerificationNotFoundException;
 import com.jame.dev.gymApp.factories.VerificationFactory;
-import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.repository.VerificationRepository;
 import com.jame.dev.gymApp.service.in.VerificationService;
@@ -39,7 +38,7 @@ public class VerificationServiceImplementation implements VerificationService {
 
    @Override
    @Transactional
-   public VerificationDto verify(final String email, final String token) {
+   public void verify(final String email, final String token) {
       final VerificationEntity verification = verificationRepository.findByUser_Email(email)
               .orElseThrow(() -> new VerificationNotFoundException("Verification not found: " + email));
 
@@ -58,8 +57,7 @@ public class VerificationServiceImplementation implements VerificationService {
       }
 
       verification.setVerified(true);
-      final VerificationEntity verificationEntity = verificationRepository.saveAndFlush(verification);
-      return verificationFactory.createDtoFrom(verificationEntity);
+      verificationRepository.saveAndFlush(verification);
    }
 
    @Override

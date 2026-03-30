@@ -2,11 +2,13 @@ package com.jame.dev.gymApp.factories;
 
 import com.jame.dev.gymApp.entity.PeriodEntity;
 import com.jame.dev.gymApp.entity.PricingEntity;
+import com.jame.dev.gymApp.entity.SubscriptionEntity;
 import com.jame.dev.gymApp.shared.enums.Period;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,5 +27,19 @@ public class PeriodFactory {
    public List<PeriodEntity> createPeriodsFrom(
            final PricingEntity pricing, final LocalDate startDate) {
       return List.of(createPeriodFrom(pricing, startDate));
+   }
+
+   public List<PeriodEntity> createNewPeriodsFrom(
+           final SubscriptionEntity subscriptionEntity,
+           final PeriodEntity periodEntity) {
+      final var periodList = subscriptionEntity.getSubscriptionPeriods();
+      periodList.addLast(periodEntity);
+      return periodList;
+   }
+
+   public LocalDate createNewStartDateFrom(final LocalDate endPeriod) {
+      final LocalDate now = LocalDate.now();
+      final long daysDiff = ChronoUnit.DAYS.between(endPeriod, now);
+      return (daysDiff <= 0) ? now : now.plusDays(daysDiff);
    }
 }

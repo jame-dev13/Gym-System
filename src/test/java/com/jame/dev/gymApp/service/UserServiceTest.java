@@ -4,7 +4,7 @@ import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.NoActiveException;
-import com.jame.dev.gymApp.factories.in.Factory;
+import com.jame.dev.gymApp.factories.in.UserFactory;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.PageDto;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
@@ -12,7 +12,7 @@ import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.out.UserServiceImplementation;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import com.jame.dev.gymApp.shared.enums.Role;
-import com.jame.dev.gymApp.updaters.UserUpdater;
+import com.jame.dev.gymApp.updaters.in.UserUpdater;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +41,7 @@ public class UserServiceTest {
    @Mock
    private UserRepository repo;
    @Mock
-   private Factory<UserEntity, UserDtoOutput, UserDtoInput> userFactory;
+   private UserFactory userFactory;
    @Mock
    private UserUpdater userUpdater;
 
@@ -88,15 +88,18 @@ public class UserServiceTest {
    @Test
    @DisplayName("Should get user by id.")
    void getUserById() {
+      UserDtoOutput output = mock();
       when(repo.findById(anyLong())).thenReturn(Optional.of(mockUser));
-
-      final var result = service.getById(1L);
+      when(userFactory.createFromEntity(any(UserEntity.class)))
+              .thenReturn(output);
+      final var result = assertDoesNotThrow(() -> service.getById(1L));
 
       assertTrue(result.isPresent(), "Result optional should be present.");
       assertNotNull(result.get(), "Result should not be null");
 
       verify(repo, atLeastOnce()).findById(anyLong());
-      verifyNoMoreInteractions(repo);
+      verify(userFactory, atLeastOnce()).createFromEntity(any());
+      verifyNoMoreInteractions(repo, userFactory);
    }
 
    @Test
@@ -135,7 +138,7 @@ public class UserServiceTest {
 
    @Test
    @DisplayName("User is deactivated")
-   void userDeactivated(){
+   void userDeactivated() {
       UserEntity inactiveUser = new UserEntity();
       inactiveUser.setActive(false);
       when(repo.findByEmail(mockDto.email())).thenReturn(Optional.of(inactiveUser));
@@ -160,22 +163,26 @@ public class UserServiceTest {
    void updateUser() {
       UserDtoOutput output = mock(UserDtoOutput.class);
 
-      UserEntity user = new UserEntity();
+      UserEntity user = mock();
       user.setUpdatedAt(Instant.now());
 
-      when(repo.findById(1L)).thenReturn(Optional.of(mockUser));
-      when(repo.saveAndFlush(user)).thenReturn(user);
-      when(userFactory.createFromEntity(mockUser)).thenReturn(output);
+      when(repo.findById(anyLong())).
+              thenReturn(Optional.of(mockUser));
+      doNothing().when(userUpdater).apply(any(UserEntity.class), any(UserDtoInput.class));
+      when(repo.saveAndFlush(any(UserEntity.class)))
+              .thenReturn(new UserEntity());
+      when(userFactory.createFromEntity(any(UserEntity.class)))
+              .thenReturn(output);
 
-      final var result = service.update(1L, mockDto);
+      var result = assertDoesNotThrow(() -> service.update(1L, mockDto));
 
       assertNotNull(result, "User should not be null");
 
       verify(repo, atMostOnce()).findById(anyLong());
-      verify(userUpdater, atMostOnce()).apply(mockUser, mockDto);
-      verify(repo, atMostOnce()).saveAndFlush(user);
-      verify(userFactory, atMostOnce()).createFromEntity(mockUser);
-      verifyNoMoreInteractions(repo);
+      verify(userUpdater, atMostOnce()).apply(any(UserEntity.class), any(UserDtoInput.class));
+      verify(repo, atMostOnce()).saveAndFlush(any(UserEntity.class));
+      verify(userFactory, atMostOnce()).createFromEntity(any(UserEntity.class));
+      verifyNoMoreInteractions(repo, userUpdater, userFactory);
    }
 
    @Test

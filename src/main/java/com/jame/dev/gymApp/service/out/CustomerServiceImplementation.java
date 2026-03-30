@@ -1,13 +1,13 @@
 package com.jame.dev.gymApp.service.out;
 
-import com.jame.dev.gymApp.aspects.annotations.CacheEvictCustomers;
+import com.jame.dev.gymApp.aspects.annotations.aspects.CacheEvictCustomers;
 import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.exception.NoActiveException;
 import com.jame.dev.gymApp.exception.UserEntityNotFoundException;
-import com.jame.dev.gymApp.factories.in.Factory;
+import com.jame.dev.gymApp.factories.in.CustomerFactory;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.model.dto.in.CustomerFactoryDtoInput;
 import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
@@ -16,7 +16,7 @@ import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.CustomerService;
 import com.jame.dev.gymApp.shared.enums.CacheValues;
-import com.jame.dev.gymApp.updaters.CustomerUpdater;
+import com.jame.dev.gymApp.updaters.in.CustomerUpdater;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -35,7 +35,7 @@ import java.util.Optional;
 public class CustomerServiceImplementation implements CustomerService {
    private final CustomerRepository repo;
    private final UserRepository userRepo;
-   private final Factory<CustomerEntity, CustomerDtoOutput, CustomerFactoryDtoInput> customerFactory;
+   private final CustomerFactory customerFactory;
    private final CustomerUpdater customerUpdater;
 
    @Override
@@ -105,10 +105,10 @@ public class CustomerServiceImplementation implements CustomerService {
          throw new AlreadyExistsException("Customer Already exists.");
       });
 
-      final CustomerEntity customerSaved = repo.saveAndFlush(
-              customerFactory
-                      .createFromInput(new CustomerFactoryDtoInput(user, dto))
-      );
+      final CustomerEntity customerEntity = customerFactory
+              .createFromInput(new CustomerFactoryDtoInput(user, dto));
+
+      final CustomerEntity customerSaved = repo.saveAndFlush(customerEntity);
       return customerFactory.createFromEntity(customerSaved);
    }
 

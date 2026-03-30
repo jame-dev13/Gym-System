@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.controller.service;
 
-import com.jame.dev.gymApp.aspects.annotations.NotNullObject;
+import com.jame.dev.gymApp.aspects.annotations.constraints.NotNullObject;
 import com.jame.dev.gymApp.service.common.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;

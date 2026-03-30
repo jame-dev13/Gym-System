@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.service.in;
 
-import com.jame.dev.gymApp.aspects.annotations.EmailValid;
+import com.jame.dev.gymApp.aspects.annotations.constraints.EmailValid;
 import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;

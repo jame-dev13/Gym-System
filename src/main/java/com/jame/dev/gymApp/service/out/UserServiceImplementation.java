@@ -1,19 +1,18 @@
 package com.jame.dev.gymApp.service.out;
 
-import com.jame.dev.gymApp.aspects.annotations.CacheEvictUsers;
+import com.jame.dev.gymApp.aspects.annotations.aspects.CacheEvictUsers;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.NoActiveException;
 import com.jame.dev.gymApp.exception.UserEntityNotFoundException;
-import com.jame.dev.gymApp.factories.PageDtoFactory;
-import com.jame.dev.gymApp.factories.in.Factory;
+import com.jame.dev.gymApp.factories.in.UserFactory;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.PageDto;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.shared.enums.CacheValues;
-import com.jame.dev.gymApp.updaters.UserUpdater;
+import com.jame.dev.gymApp.updaters.in.UserUpdater;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -30,9 +29,8 @@ import java.util.Optional;
 @Validated
 public class UserServiceImplementation implements UserService {
    private final UserRepository repo;
-   private final Factory<UserEntity, UserDtoOutput, UserDtoInput> userFactory;
+   private final UserFactory userFactory;
    private final UserUpdater userUpdater;
-   private final PageDtoFactory<UserEntity, UserDtoOutput> pageDtoFactory;
 
    @Override
    public Optional<UserEntity> getUserByEmail(String email) {
@@ -47,7 +45,7 @@ public class UserServiceImplementation implements UserService {
    )
    public PageDto<UserDtoOutput> getPage(Pageable pageable) {
       final Page<UserEntity> entityPage = repo.findAll(pageable);
-      return pageDtoFactory.createPageDtoFrom(entityPage);
+      return userFactory.createPageFrom(entityPage);
    }
 
    @Override

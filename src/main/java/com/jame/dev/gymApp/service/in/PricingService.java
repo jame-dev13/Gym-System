@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.service.in;
 
-import com.jame.dev.gymApp.aspects.annotations.NotNullObject;
+import com.jame.dev.gymApp.aspects.annotations.constraints.NotNullObject;
 import com.jame.dev.gymApp.entity.PricingEntity;
 import jakarta.validation.constraints.Positive;
 

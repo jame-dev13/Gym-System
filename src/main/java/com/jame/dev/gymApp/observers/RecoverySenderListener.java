@@ -22,7 +22,7 @@ public class RecoverySenderListener {
    public void sendRecoveryMail(final RecoverySender recoverySender) {
       final String recipient = recoverySender.email();
       final String token = recoverySender.token();
-      if(!accountRecoveryService.accountExists(recipient)){
+      if (!accountRecoveryService.accountExists(recipient)) {
          throw new AccountNotFoundException("Account not found.");
       }
 

@@ -1,8 +1,8 @@
 package com.jame.dev.gymApp.controller.routes.app.user;
 
-import com.jame.dev.gymApp.aspects.annotations.EmailValid;
-import com.jame.dev.gymApp.aspects.annotations.Minimum;
-import com.jame.dev.gymApp.aspects.annotations.NotNullObject;
+import com.jame.dev.gymApp.aspects.annotations.constraints.EmailValid;
+import com.jame.dev.gymApp.aspects.annotations.constraints.Minimum;
+import com.jame.dev.gymApp.aspects.annotations.constraints.NotNullObject;
 import com.jame.dev.gymApp.controller.service.ControllerPutPatchIdentifiable;
 import com.jame.dev.gymApp.entity.SubscriptionEntity;
 import com.jame.dev.gymApp.mapper.BaseMapper;

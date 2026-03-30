@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.aspects.annotations;
 
 import java.lang.annotation.*;
 
+@Deprecated
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(value = RetentionPolicy.RUNTIME)
 @Inherited

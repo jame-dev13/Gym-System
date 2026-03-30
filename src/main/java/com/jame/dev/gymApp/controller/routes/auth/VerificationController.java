@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
-import com.jame.dev.gymApp.aspects.annotations.EmailValid;
-import com.jame.dev.gymApp.aspects.annotations.NotNullObject;
+import com.jame.dev.gymApp.aspects.annotations.constraints.EmailValid;
+import com.jame.dev.gymApp.aspects.annotations.constraints.NotNullObject;
 import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
 import com.jame.dev.gymApp.model.dto.auth.VerificationRequest;
 import com.jame.dev.gymApp.service.in.VerificationService;
@@ -22,12 +22,12 @@ public class VerificationController {
    @PatchMapping("/{email}")
    public ResponseEntity<VerificationDto> verifyAccount(
            @PathVariable
-           @EmailValid String email,
+           @EmailValid final String email,
            @RequestBody
            @Valid
-           @NotNullObject VerificationRequest request) {
-      return ResponseEntity.ok()
-              .body(verificationService.verify(email, request.token()));
+           @NotNullObject final VerificationRequest request) {
+      verificationService.verify(email, request.token());
+      return ResponseEntity.ok().build();
    }
 
 }

@@ -1,7 +1,6 @@
 package com.jame.dev.gymApp.auth.service;
 
-import com.jame.dev.gymApp.aspects.annotations.CheckSignIn;
-import com.jame.dev.gymApp.aspects.annotations.NotEmptyNull;
+import com.jame.dev.gymApp.aspects.annotations.aspects.CheckSignIn;
 import com.jame.dev.gymApp.cache.service.BlacklistService;
 import com.jame.dev.gymApp.exception.AuthProviderNotAllowedException;
 import com.jame.dev.gymApp.exception.AuthenticationAttemptFailureException;
@@ -13,7 +12,6 @@ import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
-import com.jame.dev.gymApp.shared.enums.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,14 +19,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class AuthServiceImplementation implements AuthService {
    private final UserService userService;
    private final AuthenticationManager authenticationManager;
@@ -40,8 +39,8 @@ public class AuthServiceImplementation implements AuthService {
       if (dto.authProvider() != AuthProvider.LOCAL) {
          throw new AuthProviderNotAllowedException("Non LOCAL provider present");
       }
-      final UserDtoOutput userDtoOutput = userService.save(wrapDto(dto));
-      Objects.requireNonNull(userDtoOutput, "Dto object is null.");
+      final UserDtoOutput userDtoOutput = userService.save(dto);
+      Objects.requireNonNull(userDtoOutput, "Something went wrong storing data.");
    }
 
    @Override
@@ -60,18 +59,8 @@ public class AuthServiceImplementation implements AuthService {
    }
 
    @Override
-   public CookieResponseDto refresh(@NotEmptyNull final String token) {
+   public CookieResponseDto refresh(final String token) {
       blacklistService.blacklistToken(token);
       return authFactory.createRefreshCookieResponseFrom(token);
-   }
-
-   private UserDtoInput wrapDto(final UserDtoInput input) {
-      return UserDtoInput.builder()
-              .name(input.name())
-              .email(input.email())
-              .password(input.password())
-              .authProvider(AuthProvider.LOCAL)
-              .roles(Set.of(Role.USER))
-              .build();
    }
 }

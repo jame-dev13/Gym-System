@@ -25,7 +25,7 @@ public interface RoleMapper {
               .collect(Collectors.toSet());
    }
 
-   default Collection<GrantedAuthority> roleToGrantedAuthorities(Set<Role> roles) {
+   default Collection<GrantedAuthority> rolesToGrantedAuthorities(Set<Role> roles) {
       return roles.stream()
               .map(r -> new SimpleGrantedAuthority("ROLE_" + r.name()))
               .collect(Collectors.toSet());
