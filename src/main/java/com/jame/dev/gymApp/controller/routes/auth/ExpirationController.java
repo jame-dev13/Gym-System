@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
-import com.jame.dev.gymApp.aspects.annotations.EmailValid;
+import com.jame.dev.gymApp.aspects.annotations.constraints.EmailValid;
 import com.jame.dev.gymApp.service.in.ExpirationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

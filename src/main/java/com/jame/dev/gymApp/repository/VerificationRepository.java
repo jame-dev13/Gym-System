@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.repository;
 
-import com.jame.dev.gymApp.aspects.annotations.EmailValid;
-import com.jame.dev.gymApp.aspects.annotations.NotEmptyNull;
+import com.jame.dev.gymApp.aspects.annotations.constraints.EmailValid;
+import com.jame.dev.gymApp.aspects.annotations.constraints.NotEmptyNull;
 import com.jame.dev.gymApp.entity.VerificationEntity;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;

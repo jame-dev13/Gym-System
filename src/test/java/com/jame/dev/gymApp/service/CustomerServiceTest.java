@@ -5,16 +5,15 @@ import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.NoActiveException;
-import com.jame.dev.gymApp.factories.in.Factory;
+import com.jame.dev.gymApp.factories.in.CustomerFactory;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
-import com.jame.dev.gymApp.model.dto.in.CustomerFactoryDtoInput;
 import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
 import com.jame.dev.gymApp.model.dto.out.PageDto;
 import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.out.CustomerServiceImplementation;
 import com.jame.dev.gymApp.shared.enums.Role;
-import com.jame.dev.gymApp.updaters.CustomerUpdater;
+import com.jame.dev.gymApp.updaters.in.CustomerUpdater;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,7 +43,7 @@ public class CustomerServiceTest {
    @Mock
    private UserRepository userRepo;
    @Mock
-   private Factory<CustomerEntity, CustomerDtoOutput, CustomerFactoryDtoInput> customerFactory;
+   private CustomerFactory customerFactory;
    @Mock
    private CustomerUpdater customerUpdater;
 
@@ -98,17 +97,25 @@ public class CustomerServiceTest {
    @Test
    @DisplayName("Should Get Customer By Id")
    void getById() {
+      CustomerEntity customer = mock();
+      CustomerDtoOutput output = mock();
+
       when(repo.findById(anyLong()))
-              .thenReturn(Optional.of(mockCustomer));
+              .thenReturn(Optional.of(customer));
+      when(customerFactory.createFromEntity(any()))
+              .thenReturn(output);
 
-      final var result = service.getById(1L);
+      final var result = assertDoesNotThrow(() -> service.getById(1L));
 
-      verify(repo, times(1)).findById(anyLong());
-      verifyNoMoreInteractions(repo);
 
       assertTrue(result.isPresent(), "The result should not be empty");
       assertDoesNotThrow(result::get, "Shouldn't throw any Exception.");
       assertNotNull(result.get(), "The result should not be null.");
+
+      verify(repo, times(1)).findById(anyLong());
+      verify(customerFactory, times(1)).createFromEntity(any());
+      verifyNoMoreInteractions(repo, customerFactory);
+      verifyNoInteractions(customerUpdater, userRepo);
    }
 
    @Test
@@ -123,17 +130,23 @@ public class CustomerServiceTest {
    @Test
    @DisplayName("Should save a Customer")
    void saveCustomer() {
+      UserEntity user = mock();
+      CustomerEntity customer = mock();
+      when(user.isActive()).thenReturn(true);
+
       CustomerDtoOutput output =  mock(CustomerDtoOutput.class);
-      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
-      when(repo.findDeactivatedByUserId(1L)).thenReturn(Optional.empty());
-      when(customerFactory.createFromInput(any())).thenReturn(mockCustomer);
-      when(repo.saveAndFlush(mockCustomer))
-              .thenReturn(mockCustomer);
+
+      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(user));
+      when(repo.findDeactivatedByUserId(anyLong())).thenReturn(Optional.empty());
+      when(customerFactory.createFromInput(any())).thenReturn(customer);
+      when(repo.saveAndFlush(any()))
+              .thenReturn(customer);
       when(customerFactory.createFromEntity(any()))
               .thenReturn(output);
-      final var customerAdded = service.save(mockDto);
 
-      assertNotNull(customerAdded, "Result should not be null.");
+      final var result = assertDoesNotThrow(() -> service.save(mockDto));
+
+      assertNotNull(result, "Result should not be null.");
 
       verify(userRepo, atMostOnce()).findByEmail(anyString());
       verify(repo, atMostOnce()).findDeactivatedByUserId(1L);
@@ -146,13 +159,17 @@ public class CustomerServiceTest {
    @Test
    @DisplayName("Already exists check works")
    void alreadyExistsCheck() {
-      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
-      when(repo.findDeactivatedByUserId(1L)).thenReturn(Optional.of(mockCustomer));
+      UserEntity user = mock();
+      when(user.isActive()).thenReturn(true);
+
+      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(user));
+      doThrow(AlreadyExistsException.class).when(repo).findDeactivatedByUserId(anyLong());
 
       assertThrows(AlreadyExistsException.class, () -> service.save(mockDto));
 
       verify(userRepo, atMostOnce()).findByEmail(anyString());
       verify(repo, atMostOnce()).findDeactivatedByUserId(1L);
+      verifyNoInteractions(customerFactory, customerUpdater);
    }
 
    @Test
@@ -171,15 +188,14 @@ public class CustomerServiceTest {
    @Test
    @DisplayName("Customer deactivated check works")
    void deactivatedCheck() {
-      CustomerEntity customer = new CustomerEntity();
-      customer.setActive(false);
-      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(mockUser));
-      when(repo.findDeactivatedByUserId(1L)).thenReturn(Optional.of(customer));
+      UserEntity user = mock();
+      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(user));
 
       assertThrows(NoActiveException.class, () -> service.save(mockDto));
 
       verify(userRepo, atMostOnce()).findByEmail(anyString());
-      verify(repo, atMostOnce()).findDeactivatedByUserId(1L);
+      verify(repo, atMostOnce()).findDeactivatedByUserId(anyLong());
+      verifyNoInteractions(customerFactory, customerUpdater);
    }
 
    @Test
@@ -191,6 +207,7 @@ public class CustomerServiceTest {
       CustomerDtoOutput output = mock(CustomerDtoOutput.class);
 
       when(repo.findById(anyLong())).thenReturn(Optional.of(mockCustomer));
+      doNothing().when(customerUpdater).apply(any(CustomerEntity.class), any(CustomerDtoInput.class));
       when(repo.saveAndFlush(any(CustomerEntity.class))).thenReturn(customer);
       when(customerFactory.createFromEntity(any())).thenReturn(output);
 
@@ -199,9 +216,10 @@ public class CustomerServiceTest {
       assertNotNull(result);
 
       verify(repo, atMostOnce()).findById(anyLong());
+      verify(customerUpdater, atMostOnce()).apply(any(CustomerEntity.class), any(CustomerDtoInput.class));
       verify(repo, atMostOnce()).saveAndFlush(any(CustomerEntity.class));
       verify(customerFactory, atMostOnce()).createFromEntity(customer);
-      verifyNoMoreInteractions(repo);
+      verifyNoMoreInteractions(repo, customerUpdater, customerFactory);
    }
 
    @Test

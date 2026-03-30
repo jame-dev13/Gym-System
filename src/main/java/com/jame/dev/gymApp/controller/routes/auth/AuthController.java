@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
-import com.jame.dev.gymApp.aspects.annotations.PublishVerify;
+import com.jame.dev.gymApp.aspects.annotations.aspects.PublishVerify;
 import com.jame.dev.gymApp.auth.service.AuthService;
 import com.jame.dev.gymApp.config.web.CookieHelper;
 import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;

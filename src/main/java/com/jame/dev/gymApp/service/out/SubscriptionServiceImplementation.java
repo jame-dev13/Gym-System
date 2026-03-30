@@ -1,9 +1,14 @@
 package com.jame.dev.gymApp.service.out;
 
-import com.jame.dev.gymApp.aspects.annotations.CacheEvictSubscriptions;
-import com.jame.dev.gymApp.entity.*;
-import com.jame.dev.gymApp.exception.*;
-import com.jame.dev.gymApp.factories.in.Factory;
+import com.jame.dev.gymApp.aspects.annotations.aspects.CacheEvictSubscriptions;
+import com.jame.dev.gymApp.entity.CustomerEntity;
+import com.jame.dev.gymApp.entity.PricingEntity;
+import com.jame.dev.gymApp.entity.SubscriptionEntity;
+import com.jame.dev.gymApp.exception.AlreadyExistsException;
+import com.jame.dev.gymApp.exception.CustomerNotFoundException;
+import com.jame.dev.gymApp.exception.PricingNotFoundException;
+import com.jame.dev.gymApp.exception.SubscriptionNotFoundException;
+import com.jame.dev.gymApp.factories.in.SubscriptionFactory;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionFactoryDtoInput;
 import com.jame.dev.gymApp.model.dto.out.PageDto;
@@ -13,7 +18,8 @@ import com.jame.dev.gymApp.repository.PricingRepository;
 import com.jame.dev.gymApp.repository.SubscriptionRepository;
 import com.jame.dev.gymApp.service.in.SubscriptionService;
 import com.jame.dev.gymApp.shared.enums.CacheValues;
-import com.jame.dev.gymApp.updaters.SubscriptionUpdater;
+import com.jame.dev.gymApp.updaters.in.SubscriptionUpdater;
+import com.jame.dev.gymApp.validators.SubscriptionValidator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +33,6 @@ import org.springframework.validation.annotation.Validated;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -39,8 +43,9 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    private final SubscriptionRepository repo;
    private final CustomerRepository customerRepo;
    private final PricingRepository pricingRepo;
-   private final Factory<SubscriptionEntity, SubscriptionDtoOutput, SubscriptionFactoryDtoInput> subscriptionFactory;
+   private final SubscriptionFactory subscriptionFactory;
    private final SubscriptionUpdater subscriptionUpdater;
+   private final SubscriptionValidator validator;
 
    @Override
    @Transactional(readOnly = true)
@@ -68,57 +73,12 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
       final PricingEntity pricing = pricingRepo.findByMemberShipEntity_Membership(dto.membership())
               .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
 
-      final SubscriptionEntity subscriptionSaved = repo.saveAndFlush(
-              subscriptionFactory.createFromInput(
-                      new SubscriptionFactoryDtoInput(
-                              dto, customer, pricing, LocalDate.now()
-                      )
-              )
-      );
+      final SubscriptionEntity subscriptionEntity = subscriptionFactory.createFromInput(
+              new SubscriptionFactoryDtoInput(dto, customer, pricing, LocalDate.now()));
+
+      final SubscriptionEntity subscriptionSaved = repo.saveAndFlush(subscriptionEntity);
 
       return subscriptionFactory.createFromEntity(subscriptionSaved);
-   }
-
-   @Override
-   @Transactional
-   @CacheEvictSubscriptions
-   public SubscriptionDtoOutput patch(long id) {
-      final SubscriptionEntity subscription = repo.findById(id)
-              .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
-      subscription.setFinished(true);
-      subscription.setUpdatedAt(Instant.now());
-      final SubscriptionEntity subscriptionFinalized = repo.saveAndFlush(subscription);
-      return subscriptionFactory.createFromEntity(subscriptionFinalized);
-   }
-
-   @Override
-   @Transactional
-   @CacheEvictSubscriptions
-   public SubscriptionDtoOutput update(long id, SubscriptionDtoInput dto) {
-      final SubscriptionEntity subscriptionEntity = repo.findById(id)
-              .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
-
-      final PricingEntity pricingEntity = pricingRepo.findByMemberShipEntity_Membership(dto.membership())
-              .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
-
-      subscriptionUpdater.apply(subscriptionEntity, pricingEntity);
-      final SubscriptionEntity subscriptionModified = repo.saveAndFlush(subscriptionEntity);
-
-      return subscriptionFactory.createFromEntity(subscriptionModified);
-   }
-
-   @Transactional
-   @Override
-   @CacheEvictSubscriptions
-   public SubscriptionDtoOutput put(long id, SubscriptionDtoInput input) {
-      return renew(id, input);
-   }
-
-   @Override
-   @Transactional
-   @CacheEvictSubscriptions
-   public void softDelete(long id) {
-      repo.deleteById(id);
    }
 
    @Override
@@ -142,47 +102,58 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
       return repo.existsByIdAndCustomer_User_EmailAndActiveTrue(id, email);
    }
 
-   private SubscriptionDtoOutput renew(long id, final SubscriptionDtoInput input) {
+   @Override
+   @Transactional
+   @CacheEvictSubscriptions
+   public SubscriptionDtoOutput update(long id, SubscriptionDtoInput dto) {
       final SubscriptionEntity subscriptionEntity = repo.findById(id)
               .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
 
-      if (!subscriptionEntity.isFinished()) {
-         throw new SubscriptionUnfinishedException("Subscription unfinished, cannot renew yet.");
-      }
+      final PricingEntity pricingEntity = pricingRepo.findByMemberShipEntity_Membership(dto.membership())
+              .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
 
-      final String email = extractEmailFromSubscriptionCustomer(subscriptionEntity);
-      if (!Objects.equals(email, input.customerEmail())) {
-         throw new MissMatchException("Customer doesn't match.");
-      }
-      final PeriodEntity currentPeriod = subscriptionEntity.getSubscriptionPeriods().getLast();
-      if (!canRenew(currentPeriod, subscriptionEntity)) {
-         throw new RenewSubscriptionException("Can't renew the subscription yet.");
-      }
+      subscriptionUpdater.apply(subscriptionEntity, pricingEntity);
+      final SubscriptionEntity subscriptionModified = repo.saveAndFlush(subscriptionEntity);
+
+      return subscriptionFactory.createFromEntity(subscriptionModified);
+   }
+
+   @Override
+   @Transactional
+   @CacheEvictSubscriptions
+   public SubscriptionDtoOutput patch(long id) {
+      final SubscriptionEntity subscription = repo.findById(id)
+              .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
+      subscription.setFinished(true);
+      subscription.setUpdatedAt(Instant.now());
+      final SubscriptionEntity subscriptionFinalized = repo.saveAndFlush(subscription);
+      return subscriptionFactory.createFromEntity(subscriptionFinalized);
+   }
+
+   @Transactional
+   @Override
+   @CacheEvictSubscriptions
+   public SubscriptionDtoOutput put(long id, SubscriptionDtoInput input) {
+      final SubscriptionEntity subscriptionEntity = repo.findById(id)
+              .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
+
+      validator.evaluateIncomingSubscription(input, subscriptionEntity);
+
       final PricingEntity pricing = pricingRepo.findByMemberShipEntity_Membership(input.membership())
               .orElseThrow(() -> new PricingNotFoundException("Pricing not found."));
 
       subscriptionUpdater.applyRenew(
-              subscriptionEntity, pricing, currentPeriod.getEndPeriod()
+              subscriptionEntity, pricing
       );
       final SubscriptionEntity subscriptionRenewed = repo.saveAndFlush(subscriptionEntity);
       return subscriptionFactory.createFromEntity(subscriptionRenewed);
    }
 
-   private boolean canRenew(final PeriodEntity period, final SubscriptionEntity subscriptionEntity) {
-      if (subscriptionEntity.isFinished()) return true;
-      final int WINDOW = 4;
-      final LocalDate now = LocalDate.now();
-      final LocalDate finishPeriodDate = period.getEndPeriod();
-      if (now.isAfter(finishPeriodDate)) return true;
-      final long windowAccept = ChronoUnit.DAYS.between(now, finishPeriodDate);
-      return windowAccept < WINDOW;
+   @Override
+   @Transactional
+   @CacheEvictSubscriptions
+   public void softDelete(long id) {
+      repo.deleteById(id);
    }
 
-   private String extractEmailFromSubscriptionCustomer(SubscriptionEntity entity) {
-      return Optional.of(entity)
-              .map(SubscriptionEntity::getCustomer)
-              .map(CustomerEntity::getUser)
-              .map(UserEntity::getEmail)
-              .orElseThrow(() -> new EmailNotFoundException("Customer not identified."));
-   }
 }

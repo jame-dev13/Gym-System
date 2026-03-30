@@ -34,8 +34,7 @@ import java.time.OffsetDateTime;
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -79,8 +78,7 @@ class VerificationControllerTest {
    @Test
    @DisplayName("PATCH[200] OK: Account verified.")
    void verificationSuccess() throws Exception {
-      given(verificationService.verify(anyString(), anyString()))
-              .willReturn(verificationDto);
+      willDoNothing().given(verificationService).verify(anyString(), anyString());
 
       mockMvc.perform(patch(URI + '/' + verificationDto.email())
                       .accept(MediaType.APPLICATION_JSON)
@@ -90,9 +88,7 @@ class VerificationControllerTest {
                                  "token": "ANY_TOKEN"
                               }
                               """))
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.*").exists())
-              .andExpect(jsonPath("$.isVerified").value(true));
+              .andExpect(jsonPath("$.*").doesNotExist());
 
       then(verificationService).should(times(1)).verify(anyString(), anyString());
       then(verificationService).shouldHaveNoMoreInteractions();
@@ -105,8 +101,7 @@ class VerificationControllerTest {
            Class<? extends Throwable> ex,
            int statusCode,
            String code) throws Exception {
-      given(verificationService.verify(anyString(), anyString()))
-              .willThrow(ex);
+       willThrow(ex).given(verificationService).verify(anyString(), anyString());
 
       mockMvc.perform(patch(URI + '/' + verificationDto.email())
                       .accept(MediaType.APPLICATION_JSON)

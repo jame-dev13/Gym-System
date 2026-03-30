@@ -1,8 +1,8 @@
 package com.jame.dev.gymApp.controller.routes.app.admin;
 
-import com.jame.dev.gymApp.aspects.annotations.Minimum;
-import com.jame.dev.gymApp.aspects.annotations.NotNullObject;
-import com.jame.dev.gymApp.aspects.annotations.PublishVerifyAndNotifyUser;
+import com.jame.dev.gymApp.aspects.annotations.constraints.Minimum;
+import com.jame.dev.gymApp.aspects.annotations.constraints.NotNullObject;
+import com.jame.dev.gymApp.aspects.annotations.aspects.PublishVerifyAndNotifyUser;
 import com.jame.dev.gymApp.controller.service.BaseControllerCommon;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;

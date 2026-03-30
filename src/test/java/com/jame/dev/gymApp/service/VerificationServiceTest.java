@@ -8,6 +8,8 @@ import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
 import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.repository.VerificationRepository;
 import com.jame.dev.gymApp.service.out.VerificationServiceImplementation;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,18 +29,19 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class VerificationServiceTest {
    @Mock
-   private UserRepository userRepository;
+   UserRepository userRepository;
    @Mock
-   private PasswordEncoder passwordEncoder;
+   PasswordEncoder passwordEncoder;
    @Mock
-   private VerificationRepository verificationRepository;
+   VerificationRepository verificationRepository;
    @Mock
-   private VerificationFactory verificationFactory;
+   VerificationFactory verificationFactory;
 
    @InjectMocks
-   private VerificationServiceImplementation service;
+   VerificationServiceImplementation service;
 
    private final VerificationEntity verificationEntity = new VerificationEntity();
    private final UserEntity user = new UserEntity();
@@ -77,18 +80,18 @@ public class VerificationServiceTest {
 
       given(verificationRepository.findByUser_Email(email))
               .willReturn(Optional.of(verification));
-      given(passwordEncoder.matches(anyString(), anyString())).willReturn(true);
-      given(verificationRepository.saveAndFlush(any())).willReturn(verification);
-      given(verificationFactory.createDtoFrom(any())).willReturn(verificationDto);
+      given(passwordEncoder.matches(anyString(), any()))
+              .willReturn(true);
+      given(verificationRepository.saveAndFlush(any(VerificationEntity.class)))
+              .willReturn(verification);
 
-      var result = assertDoesNotThrow(() -> service.verify(email, "rawToken"));
-
-      assertNotNull(result);
+      assertDoesNotThrow(() -> service.verify(email, "rawToken"));
 
       then(verificationRepository).should().findByUser_Email(anyString());
-      then(verificationRepository).should().saveAndFlush(any());
-      then(verificationFactory).should().createDtoFrom(any());
-      verifyNoMoreInteractions(userRepository, verificationRepository, verificationFactory);
+      then(passwordEncoder).should().matches(anyString(), any());
+      then(verificationRepository).should().saveAndFlush(any(VerificationEntity.class));
+      verifyNoInteractions(verificationFactory);
+      verifyNoMoreInteractions(userRepository, verificationRepository);
    }
 
    @Test

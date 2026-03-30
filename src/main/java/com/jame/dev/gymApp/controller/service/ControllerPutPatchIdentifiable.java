@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.controller.service;
 
-import com.jame.dev.gymApp.aspects.annotations.EmailValid;
+import com.jame.dev.gymApp.aspects.annotations.constraints.EmailValid;
 import com.jame.dev.gymApp.exception.EntityNotFoundException;
 import com.jame.dev.gymApp.mapper.BaseMapper;
 import com.jame.dev.gymApp.service.common.*;

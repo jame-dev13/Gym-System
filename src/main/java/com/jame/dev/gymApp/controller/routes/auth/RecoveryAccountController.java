@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
-import com.jame.dev.gymApp.aspects.annotations.NotNullObject;
-import com.jame.dev.gymApp.aspects.annotations.PublishRecovery;
+import com.jame.dev.gymApp.aspects.annotations.constraints.NotNullObject;
+import com.jame.dev.gymApp.aspects.annotations.aspects.PublishRecovery;
 import com.jame.dev.gymApp.model.dto.in.RecoveryAccountDto;
 import com.jame.dev.gymApp.model.dto.in.RecoveryRequest;
 import com.jame.dev.gymApp.service.in.AccountRecoveryService;

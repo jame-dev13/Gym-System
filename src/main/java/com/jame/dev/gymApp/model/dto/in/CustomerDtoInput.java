@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.model.dto.in;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.jame.dev.gymApp.aspects.annotations.EmailValid;
+import com.jame.dev.gymApp.aspects.annotations.constraints.EmailValid;
 import org.jspecify.annotations.Nullable;
 
 public record CustomerDtoInput(
