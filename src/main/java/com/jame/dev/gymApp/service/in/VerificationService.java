@@ -12,4 +12,5 @@ public interface VerificationService {
    //void delete(@NonNull final String token);
    boolean isVerified(@EmailValid final String email);
    boolean checkVerifiedDeactivated(@EmailValid final String email);
+   boolean verificationExistsFor(final String email);
 }

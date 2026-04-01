@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.auth.filters;
 
-import com.jame.dev.gymApp.auth.service.CustomAuthorizationFilterHelper;
+import com.jame.dev.gymApp.auth.helpers.CustomAuthorizationFilterHelper;
 import com.jame.dev.gymApp.cache.service.BlacklistService;
 import com.jame.dev.gymApp.exception.AccessExpiredException;
 import com.jame.dev.gymApp.exception.TokenAlreadyBlacklistedException;

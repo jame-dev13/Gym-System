@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.observers;
 
 import com.jame.dev.gymApp.entity.VerificationEntity;
+import com.jame.dev.gymApp.model.listeners.VerifyOauthUserEvent;
 import com.jame.dev.gymApp.oauth2.model.AuthenticatedUser;
 import com.jame.dev.gymApp.service.in.TokenGeneratorService;
 import com.jame.dev.gymApp.service.in.VerificationService;
@@ -20,7 +21,8 @@ public class VerificationOauth2ListenerSaver {
 
    @Async
    @EventListener
-   public void saveOauthUser(final AuthenticatedUser user) {
+   public void saveOauthUser(VerifyOauthUserEvent event) {
+      final AuthenticatedUser user = event.user();
       final boolean exists = verificationService.isVerified(user.email());
       if (exists) return;
 

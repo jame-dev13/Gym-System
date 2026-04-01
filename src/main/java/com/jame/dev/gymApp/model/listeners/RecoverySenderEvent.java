@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.model.listeners;
 
-public record RecoverySender(
+public record RecoverySenderEvent(
         String email, String token
 ) {
 }

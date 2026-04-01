@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.auth.service;
+package com.jame.dev.gymApp.auth.helpers;
 
 import com.jame.dev.gymApp.exception.ExtractClaimException;
 import com.jame.dev.gymApp.jwt.service.JwtService;

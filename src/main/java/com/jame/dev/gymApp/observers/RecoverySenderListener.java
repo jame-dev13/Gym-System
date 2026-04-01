@@ -3,7 +3,7 @@ package com.jame.dev.gymApp.observers;
 import com.jame.dev.gymApp.exception.AccountNotFoundException;
 import com.jame.dev.gymApp.messages.service.EmailService;
 import com.jame.dev.gymApp.messages.service.HtmlTemplates;
-import com.jame.dev.gymApp.model.listeners.RecoverySender;
+import com.jame.dev.gymApp.model.listeners.RecoverySenderEvent;
 import com.jame.dev.gymApp.model.messages.EmailDetails;
 import com.jame.dev.gymApp.service.in.AccountRecoveryService;
 import com.jame.dev.gymApp.service.in.VerificationService;
@@ -19,9 +19,9 @@ public class RecoverySenderListener {
    private final VerificationService verificationService;
 
    @EventListener
-   public void sendRecoveryMail(final RecoverySender recoverySender) {
-      final String recipient = recoverySender.email();
-      final String token = recoverySender.token();
+   public void sendRecoveryMail(final RecoverySenderEvent recoverySenderEvent) {
+      final String recipient = recoverySenderEvent.email();
+      final String token = recoverySenderEvent.token();
       if (!accountRecoveryService.accountExists(recipient)) {
          throw new AccountNotFoundException("Account not found.");
       }

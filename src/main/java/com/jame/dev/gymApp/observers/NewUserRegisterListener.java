@@ -5,6 +5,7 @@ import com.jame.dev.gymApp.exception.CantSaveVerifcationEntityException;
 import com.jame.dev.gymApp.messages.service.EmailService;
 import com.jame.dev.gymApp.messages.service.HtmlTemplates;
 import com.jame.dev.gymApp.model.listeners.UserNotifiable;
+import com.jame.dev.gymApp.model.listeners.UserRegisteredEvent;
 import com.jame.dev.gymApp.model.messages.EmailDetails;
 import com.jame.dev.gymApp.service.in.TokenGeneratorService;
 import com.jame.dev.gymApp.service.in.UserService;
@@ -30,9 +31,10 @@ public class NewUserRegisterListener {
 
    @EventListener
    @Async
-   public void verifySignUpUser(final String subject) {
-      userService.getUserByEmail(subject)
+   public void verifySignUpUser(final UserRegisteredEvent event) {
+      userService.getUserByEmail(event.email())
               .ifPresent(user -> {
+                 log.info("New user from signUp to notify detected.");
                  final String rawToken = tokenGeneratorService.generateToken();
                  final VerificationEntity verification = verificationService.save(user.getId(), rawToken);
 

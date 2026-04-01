@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.auth.service;
 
+import com.jame.dev.gymApp.aspects.annotations.aspects.CheckExistence;
 import com.jame.dev.gymApp.aspects.annotations.aspects.CheckSignIn;
 import com.jame.dev.gymApp.cache.service.BlacklistService;
 import com.jame.dev.gymApp.exception.AuthProviderNotAllowedException;
@@ -35,9 +36,10 @@ public class AuthServiceImplementation implements AuthService {
    private final AuthResponsesFactory authFactory;
 
    @Override
+   @CheckExistence
    public void signUp(final UserDtoInput dto) {
       if (dto.authProvider() != AuthProvider.LOCAL) {
-         throw new AuthProviderNotAllowedException("Non LOCAL provider present");
+         throw new AuthProviderNotAllowedException("Local authentication provider only.");
       }
       final UserDtoOutput userDtoOutput = userService.save(dto);
       Objects.requireNonNull(userDtoOutput, "Something went wrong storing data.");
