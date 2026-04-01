@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.aspects.imp.aspects;
 
 
+import com.jame.dev.gymApp.model.listeners.VerifyOauthUserEvent;
 import com.jame.dev.gymApp.oauth2.model.CustomOAuth2User;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -19,7 +20,7 @@ public class PublishVerifyOAuthUser {
            returning = "result")
    public void publishVerification(final Object result) {
       if (result instanceof CustomOAuth2User user) {
-         applicationEventPublisher.publishEvent(user.getUser());
+         applicationEventPublisher.publishEvent(new VerifyOauthUserEvent(user.getUser()));
       }
    }
 }

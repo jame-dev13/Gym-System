@@ -25,4 +25,14 @@ public interface AuthenticationChecksQueriesRepository extends JpaRepository<Use
                    """)
    boolean existsDeactivatedByEmail(@Param("email") final String email);
 
+   @Query(nativeQuery = true,
+   value = """
+           SELECT EXISTS(
+              SELECT 1 FROM tokens t
+              INNER JOIN users u
+              ON u.id = t.user_id
+              WHERE t.verified = false AND u.email = :email
+                      )
+           """)
+   boolean existsButNotVerified(@Param("email") final String email);
 }

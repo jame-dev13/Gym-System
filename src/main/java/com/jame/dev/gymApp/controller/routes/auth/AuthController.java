@@ -29,7 +29,9 @@ public class AuthController {
 
    @PostMapping("/signUp")
    @PublishVerify
-   public ResponseEntity<Void> signUp(@Valid @RequestBody final UserDtoInput user) {
+   public ResponseEntity<Void> signUp(
+           @Valid
+           @RequestBody final UserDtoInput user) {
       authService.signUp(user);
       return ResponseEntity.status(HttpStatus.CREATED).build();
    }
@@ -38,9 +40,7 @@ public class AuthController {
    public ResponseEntity<SignInOkDto> sigIn(
            @Valid
            @RequestBody final SignInDto dto) {
-      log.info("[AUTH]: Hit signINn");
       final SignInOkDto response = authService.signIn(dto);
-      log.info("{}", response);
       return ResponseEntity.ok()
               .contentType(MediaType.APPLICATION_JSON)
               .header(HttpHeaders.SET_COOKIE, cookieHelper.createAccessTokenCookie(response.access()).toString())

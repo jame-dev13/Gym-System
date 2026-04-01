@@ -12,6 +12,7 @@ import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.repository.VerificationRepository;
 import com.jame.dev.gymApp.service.in.VerificationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class VerificationServiceImplementation implements VerificationService {
@@ -42,7 +44,7 @@ public class VerificationServiceImplementation implements VerificationService {
       final VerificationEntity verification = verificationRepository.findByUser_Email(email)
               .orElseThrow(() -> new VerificationNotFoundException("Verification not found: " + email));
 
-      if(verification.isVerified())
+      if (verification.isVerified())
          throw new AlreadyVerifiedException("Account has already been verified.");
 
       final String extractToken = verification.getToken();
@@ -78,6 +80,11 @@ public class VerificationServiceImplementation implements VerificationService {
    @Override
    public boolean checkVerifiedDeactivated(String email) {
       return verificationRepository.existsDeactivatedByUser_Email(email);
+   }
+
+   @Override
+   public boolean verificationExistsFor(String email) {
+      return verificationRepository.existsByUser_Email(email);
    }
 
 //   @Override

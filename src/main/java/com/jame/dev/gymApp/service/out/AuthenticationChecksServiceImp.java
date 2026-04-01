@@ -20,4 +20,9 @@ public class AuthenticationChecksServiceImp implements AuthenticationChecksServi
    public boolean userExists(String userEmail) {
       return queriesRepository.existsDeactivatedByEmail(userEmail);
    }
+
+   @Override
+   public boolean checkExistence(String userEmail) {
+      return queriesRepository.existsButNotVerified(userEmail);
+   }
 }

@@ -32,4 +32,6 @@ public interface VerificationRepository extends JpaRepository<@NonNull Verificat
    boolean existsDeactivatedByUser_Email(@Param("email") @NotEmptyNull final String email);
 
    boolean existsByUser_EmailAndVerifiedTrue(@NotEmptyNull final String email);
+
+   boolean existsByUser_Email(@EmailValid final String email);
 }

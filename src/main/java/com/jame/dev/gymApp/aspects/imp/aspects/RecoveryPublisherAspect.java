@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.aspects.imp.aspects;
 
 import com.jame.dev.gymApp.model.dto.in.RecoveryRequest;
-import com.jame.dev.gymApp.model.listeners.RecoverySender;
+import com.jame.dev.gymApp.model.listeners.RecoverySenderEvent;
 import com.jame.dev.gymApp.service.in.TokenGeneratorService;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.annotation.Aspect;
@@ -18,11 +18,10 @@ public class RecoveryPublisherAspect {
 
    @Before("@annotation(com.jame.dev.gymApp.aspects.annotations.aspects.PublishRecovery) && args(recoveryRequest)")
    public void publishRecovery(final RecoveryRequest recoveryRequest) {
-      final RecoverySender recoverySender = new RecoverySender(
-              recoveryRequest.email(), tokenGeneratorService.generateToken()
+      applicationEventPublisher.publishEvent(new RecoverySenderEvent(
+              recoveryRequest.email(),
+              tokenGeneratorService.generateToken())
       );
-
-      applicationEventPublisher.publishEvent(recoverySender);
    }
 
 }
