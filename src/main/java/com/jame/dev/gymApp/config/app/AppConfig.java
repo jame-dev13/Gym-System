@@ -3,47 +3,18 @@ package com.jame.dev.gymApp.config.app;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisPooled;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 import java.time.Clock;
 
+import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
+
 @Configuration
+@EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 public class AppConfig {
-
-   @Value("${redis.host}")
-   private String host;
-
-   @Value("${redis.port}")
-   private int port;
-
-   @Value("${redis.password.dev}")
-   private String passwordRedis;
-
-   @Bean(name = "tokensPool")
-   @Deprecated
-   public JedisPooled tokensPool(){
-      return new JedisPooled(new HostAndPort(host, port),
-              DefaultJedisClientConfig.builder()
-                      .password(passwordRedis)
-                      .database(0)
-                      .build());
-   }
-
-   @Bean(name = "cacheAppPool")
-   @Deprecated
-   public JedisPooled cacheAppPool(){
-      return new JedisPooled(new HostAndPort(host, port),
-              DefaultJedisClientConfig.builder()
-                      .password(passwordRedis)
-                      .database(1)
-                      .build());
-   }
 
    @Bean(name = "mapper")
    @Primary

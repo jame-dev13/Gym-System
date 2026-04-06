@@ -24,7 +24,7 @@ public class EmailServiceImplementation implements EmailService {
    private String sender;
 
    @Override
-   @Async
+   @Async("taskExecutor")
    public CompletableFuture<Boolean> sendSimpleEmail(@NonNull EmailDetails emailDetails) {
       final MimeMessage message = javaMailSender.createMimeMessage();
       MimeMessageHelper mime;

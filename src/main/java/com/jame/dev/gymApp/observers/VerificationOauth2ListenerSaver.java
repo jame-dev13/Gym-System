@@ -19,7 +19,7 @@ public class VerificationOauth2ListenerSaver {
    private final VerificationService verificationService;
    private final TokenGeneratorService tokenGeneratorService;
 
-   @Async
+   @Async("taskExecutor")
    @EventListener
    public void saveOauthUser(VerifyOauthUserEvent event) {
       final AuthenticatedUser user = event.user();

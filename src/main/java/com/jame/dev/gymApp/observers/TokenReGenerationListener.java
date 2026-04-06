@@ -23,7 +23,7 @@ public class TokenReGenerationListener {
    private final EmailService emailService;
 
    @EventListener
-   @Async
+   @Async("taskExecutor")
    public void tokenGeneratorSender(TokenGenerationEvent event) {
       final String email = event.email();
       if (verificationService.isVerified(email)) {

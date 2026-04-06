@@ -30,7 +30,7 @@ public class NewUserRegisterListener {
    private final VerificationSenderService verificationSenderService;
 
    @EventListener
-   @Async
+   @Async("taskExecutor")
    public void verifySignUpUser(final UserRegisteredEvent event) {
       userService.getUserByEmail(event.email())
               .ifPresent(user -> {
