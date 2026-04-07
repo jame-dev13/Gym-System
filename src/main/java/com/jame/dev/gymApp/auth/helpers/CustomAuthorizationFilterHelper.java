@@ -38,10 +38,11 @@ public class CustomAuthorizationFilterHelper {
       final Cookie[] cookies = Optional.ofNullable(request.getCookies())
               .orElseThrow(() -> new ServletException("unexisting cookies."));
 
-      return Arrays.stream(cookies).collect(
-              Collectors.toMap(
+      return Arrays.stream(cookies)
+              .collect(Collectors.toMap(
                       Cookie::getName,
-                      Cookie::getValue)
+                      Cookie::getValue
+              )
       );
    }
 

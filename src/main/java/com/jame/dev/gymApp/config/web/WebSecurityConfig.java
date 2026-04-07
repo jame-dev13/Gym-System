@@ -52,7 +52,7 @@ public class WebSecurityConfig {
                       .anyRequest().authenticated()
               )
               .sessionManagement(session -> session
-                      .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                      .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
               .exceptionHandling(ex -> ex
                       .authenticationEntryPoint(customAuthenticationEntryPointHandler)
                       .accessDeniedHandler(customAccessDeniedHandler)

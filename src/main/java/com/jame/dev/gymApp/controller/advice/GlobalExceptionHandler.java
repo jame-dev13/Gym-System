@@ -330,4 +330,23 @@ public class GlobalExceptionHandler {
               .buildResponse(new InputError(
                       ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION));
    }
+
+   @ExceptionHandler(TooManyRequestsException.class)
+   public ResponseEntity<ApiErrorResponse> handleTooManyRequestsException(
+           TooManyRequestsException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+              .buildResponse(new InputError(
+                      ex, request, HttpStatus.TOO_MANY_REQUESTS, ErrorCodes.ACCESS));
+   }
+
+
+   @ExceptionHandler(TemporaryBlockedException.class)
+   public ResponseEntity<ApiErrorResponse> handleTemporaryBlockedException(
+           TemporaryBlockedException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+              .buildResponse(new InputError(
+                      ex, request, HttpStatus.LOCKED, ErrorCodes.ACCESS_DENIED));
+   }
 }
