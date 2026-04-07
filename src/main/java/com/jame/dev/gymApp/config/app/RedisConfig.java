@@ -86,7 +86,7 @@ public class RedisConfig {
    }
 
    /**
-    * Scans the given package and searches for dto package ans sub packages inside and adds the mixIn there
+    * Scans the given package and searches for dto package and sub packages inside and adds the mixIn there
     * Requires a scan library or ClassPathScanningCandidateComponentProvider from Spring.
     */
    private void registerMixIns(ObjectMapper mapper, String basePackage) {
@@ -108,6 +108,22 @@ public class RedisConfig {
    @Bean(name = "tokensRedisTemplate")
    public StringRedisTemplate tokensBlacklister() {
       final JedisConnectionFactory factory = new JedisConnectionFactory(getStandaloneConfig(1));
+      factory.afterPropertiesSet();
+
+      return new StringRedisTemplate(factory);
+   }
+
+   @Bean("fixedWindowTemplate")
+   public StringRedisTemplate fixedWindowTemplate() {
+      final JedisConnectionFactory factory = new JedisConnectionFactory(getStandaloneConfig(2));
+      factory.afterPropertiesSet();
+
+      return new StringRedisTemplate(factory);
+   }
+
+   @Bean("blockingListTemplate")
+   public StringRedisTemplate blockingList() {
+      final JedisConnectionFactory factory = new JedisConnectionFactory(getStandaloneConfig(3));
       factory.afterPropertiesSet();
 
       return new StringRedisTemplate(factory);
