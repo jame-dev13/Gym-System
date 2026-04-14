@@ -2,8 +2,7 @@ package com.jame.dev.gymApp.controller.routes.app.admin;
 
 import com.jame.dev.gymApp.aspects.annotations.constraints.Minimum;
 import com.jame.dev.gymApp.aspects.annotations.constraints.NotNullObject;
-import com.jame.dev.gymApp.controller.service.ControllerComplex;
-import com.jame.dev.gymApp.entity.SubscriptionEntity;
+import com.jame.dev.gymApp.controller.service.FullController;
 import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
 import com.jame.dev.gymApp.model.dto.out.SubscriptionDtoOutput;
 import com.jame.dev.gymApp.service.in.SubscriptionService;
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/app/v1/administration/subs")
 @PreAuthorize("hasRole('ADMIN')")
 public class SubscriptionController extends
-        ControllerComplex<SubscriptionDtoOutput, SubscriptionDtoInput, SubscriptionEntity> {
+   FullController<SubscriptionDtoOutput, SubscriptionDtoInput> {
 
    public SubscriptionController(final SubscriptionService service) {
       super(service, SubscriptionDtoOutput::id);

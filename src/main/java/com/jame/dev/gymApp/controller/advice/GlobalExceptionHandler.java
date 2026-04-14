@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
            ExtractClaimException ex,
            HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.EXTRACTION));
+              ex, request, HttpStatus.CONFLICT, ErrorCodes.EXTRACTION));
    }
 
    @ExceptionHandler(AuthenticationAttemptFailureException.class)

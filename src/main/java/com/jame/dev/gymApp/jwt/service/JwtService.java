@@ -10,4 +10,5 @@ public interface JwtService {
    boolean isExpired(final String token);
    Optional<String> extractSubject(final String token);
    Optional<Date> extractExpiration(final String token);
+   Optional<String> extractJti(final  String token);
 }

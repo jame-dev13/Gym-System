@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
 import com.jame.dev.gymApp.aspects.annotations.aspects.PublishVerify;
+import com.jame.dev.gymApp.aspects.annotations.constraints.NotEmptyNull;
 import com.jame.dev.gymApp.auth.service.AuthService;
 import com.jame.dev.gymApp.config.web.CookieHelper;
 import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
@@ -14,14 +15,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Objects;
 
 @Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Validated
 public class AuthController {
 
    private final AuthService authService;
@@ -51,10 +52,8 @@ public class AuthController {
    @PostMapping("/refresh")
    public ResponseEntity<Void> refresh(
            @Valid
-           @CookieValue(name = "refresh") final String value) {
-      if (Objects.isNull(value)) {
-         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-      }
+           @CookieValue(name = "refresh")
+           @NotEmptyNull final String value) {
       final CookieResponseDto cookies = authService.refresh(value);
       return buildResponse(cookies.access(), cookies.refresh());
    }

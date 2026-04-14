@@ -22,6 +22,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Slf4j
@@ -65,6 +66,7 @@ public class JwtUtils {
          return Jwts.builder()
                  .signWith(signWith())
                  .issuedAt(Date.from(Instant.now(clock)))
+                 .id(UUID.randomUUID().toString())
                  .subject(username)
                  .expiration(Date.from(Instant.now(clock).plus(expiration, ChronoUnit.MILLIS)))
                  .compact();

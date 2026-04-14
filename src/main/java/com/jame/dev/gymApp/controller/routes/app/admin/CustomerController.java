@@ -2,7 +2,7 @@ package com.jame.dev.gymApp.controller.routes.app.admin;
 
 import com.jame.dev.gymApp.aspects.annotations.constraints.Minimum;
 import com.jame.dev.gymApp.aspects.annotations.constraints.NotNullObject;
-import com.jame.dev.gymApp.controller.service.BaseControllerCommon;
+import com.jame.dev.gymApp.controller.service.BaseController;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
 import com.jame.dev.gymApp.service.in.CustomerService;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/app/v1/administration/customers")
 @PreAuthorize("hasRole('ADMIN')")
-public class CustomerController extends BaseControllerCommon<CustomerDtoOutput, CustomerDtoInput> {
+public class CustomerController extends BaseController<CustomerDtoOutput, CustomerDtoInput> {
 
    public CustomerController(
            final CustomerService service) {

@@ -40,7 +40,7 @@ public class ExpirationServiceTest {
       String email = "more@time.com";
       VerificationEntity verificationMock = mock(VerificationEntity.class);
 
-      Instant expiration = Instant.now().plus(1, ChronoUnit.MILLIS);
+      Instant expiration = Instant.now();
 
       given(verificationMock.getExpiration()).willReturn(expiration);
 

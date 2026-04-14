@@ -11,18 +11,22 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import static java.lang.Boolean.TRUE;
 import static java.lang.Math.abs;
 
 @Service
 @RequiredArgsConstructor
-public class TokenServiceImplementation implements BlacklistService {
+public class BlackListTokenImplementation implements BlacklistService {
 
    private final StringRedisTemplate tokensRedisTemplate;
    private final JwtService jwtService;
 
    @Override
    public void blacklistToken(String key) {
-      if (tokensRedisTemplate.hasKey(key)) {
+      final String jti = jwtService.extractJti(key)
+              .orElseThrow(() -> new ExtractClaimException("JTI not found in token."));
+
+      if (TRUE.equals(tokensRedisTemplate.hasKey(jti))) {
          throw new TokenAlreadyBlacklistedException("Token already blacklisted.");
       }
 
@@ -34,11 +38,13 @@ public class TokenServiceImplementation implements BlacklistService {
               Duration.between(Instant.now(), expiration).getSeconds()
       );
       if (ttl <= 0) return;
-      tokensRedisTemplate.opsForValue().set(key, "blacklisted", Duration.of(ttl, ChronoUnit.SECONDS));
+      tokensRedisTemplate.opsForValue().set(jti, "blacklisted", Duration.of(ttl, ChronoUnit.SECONDS));
    }
 
    @Override
    public boolean isBlacklisted(String key) {
-      return tokensRedisTemplate.hasKey(key);
+      final String jti = jwtService.extractJti(key)
+              .orElseThrow(() -> new ExtractClaimException("JTI not found in token."));
+      return tokensRedisTemplate.hasKey(jti);
    }
 }
