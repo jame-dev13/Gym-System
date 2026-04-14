@@ -19,13 +19,13 @@ import java.util.Collection;
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImplementation implements UserDetailsService {
-   private final UserService service;
+   private final UserService userService;
    private final RoleMapper roleMapper;
 
    @Override
    @NonNull
    public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
-      final UserEntity userEntity = service.getUserByEmail(username)
+      final UserEntity userEntity = userService.getUserByEmail(username)
               .orElseThrow(() -> new UserEntityNotFoundException("User Not Found."));
       if(!userEntity.isActive()) {
          throw new NoActiveException("This account is deactivated.");

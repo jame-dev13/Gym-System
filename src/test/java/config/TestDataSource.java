@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.controller.routes;
+package config;
 
 public interface TestDataSource {
    String PAGINATION_ERRORS = """

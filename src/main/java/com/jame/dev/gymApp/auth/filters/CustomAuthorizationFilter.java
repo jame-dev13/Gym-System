@@ -29,6 +29,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
    private final CustomAuthorizationFilterHelper authorizationHelper;
    private final RateLimiterService rateLimiterService;
    private final TryCatchBlockExecutorService blockExecutorService;
+
    private static final String REFRESH_COOKIE = CookieNames.COOKIE_JWT_REFRESH.getValue();
    private static final String ACCESS_COOKIE = CookieNames.COOKIE_JWT_ACCESS.getValue();
 

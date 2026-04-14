@@ -1,12 +1,11 @@
-package com.jame.dev.gymApp.controller.routes.auth.recovery;
+package com.jame.dev.gymApp.controller.routes.auth;
 
 import com.jame.dev.gymApp.auth.filters.CustomAuthorizationFilter;
 import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.controller.advice.GlobalExceptionHandler;
-import com.jame.dev.gymApp.controller.routes.TestConfig;
-import com.jame.dev.gymApp.controller.routes.TestDataSource;
-import com.jame.dev.gymApp.controller.routes.TestValidationConfig;
-import com.jame.dev.gymApp.controller.routes.auth.RecoveryAccountController;
+import config.TestConfig;
+import config.TestDataSource;
+import config.TestValidationConfig;
 import com.jame.dev.gymApp.service.in.AccountRecoveryService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;

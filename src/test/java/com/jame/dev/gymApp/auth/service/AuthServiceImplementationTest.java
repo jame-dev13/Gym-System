@@ -1,195 +1,161 @@
 package com.jame.dev.gymApp.auth.service;
 
 import com.jame.dev.gymApp.cache.service.BlacklistService;
-import com.jame.dev.gymApp.config.web.CookieHelper;
-import com.jame.dev.gymApp.entity.CustomerEntity;
-import com.jame.dev.gymApp.entity.RoleEntity;
-import com.jame.dev.gymApp.entity.UserEntity;
-import com.jame.dev.gymApp.entity.VerificationEntity;
-import com.jame.dev.gymApp.jwt.service.JwtService;
-import com.jame.dev.gymApp.messages.service.EmailService;
+import com.jame.dev.gymApp.exception.AuthProviderNotAllowedException;
+import com.jame.dev.gymApp.exception.AuthenticationAttemptFailureException;
+import com.jame.dev.gymApp.factories.AuthResponsesFactory;
 import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInDto;
 import com.jame.dev.gymApp.model.dto.auth.SignInOkDto;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
-import com.jame.dev.gymApp.model.messages.EmailDetails;
-import com.jame.dev.gymApp.service.in.CustomerService;
 import com.jame.dev.gymApp.service.in.UserService;
-import com.jame.dev.gymApp.service.in.VerificationService;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import com.jame.dev.gymApp.shared.enums.Role;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 
-import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class AuthServiceImplementationTest {
 
    @Mock
-   private UserService userService;
+   UserService userService;
    @Mock
-   private CustomerService customerService;
+   AuthenticationManager authenticationManager;
    @Mock
-   private JwtService jwtService;
+   BlacklistService blacklistService;
    @Mock
-   private CookieHelper cookieHelper;
-   @Mock
-   private VerificationService verificationService;
-   @Mock
-   private AuthenticationManager authenticationManager;
-   @Mock
-   private BlacklistService blacklistService;
-   @Mock
-   private EmailService emailService;
+   AuthResponsesFactory authFactory;
 
    @InjectMocks
    private AuthServiceImplementation service;
 
-   private final UserEntity user = UserEntity.builder()
-           .name("userTest")
-           .email("userTest@mail.com")
-           .password("user123")
-           .provider(AuthProvider.LOCAL)
-           .roles(Set.of(new RoleEntity(1, Role.USER)))
-           .build();
-   private final VerificationEntity verification = new VerificationEntity();
-   @Captor
-   private ArgumentCaptor<UserDtoInput> dtoCaptor;
-   @Captor
-   private ArgumentCaptor<UserEntity> entityCaptor;
-   @Captor
-   private ArgumentCaptor<String> emailCaptor;
-   @Captor
-   private ArgumentCaptor<String> codeCaptor;
-   @Captor
-   ArgumentCaptor<String> cookieAccessCaptor;
-   @Captor
-   ArgumentCaptor<String> cookieRefreshCaptor;
+   @Nested
+   @DisplayName("Tests for signUp method")
+   class SignUpTests {
 
+      @Test
+      @DisplayName("Should successfully sign up local user")
+      void signUpShouldSucceedWhenProviderIsLocal() {
+         UserDtoInput inputDto = new UserDtoInput(
+                 "test",
+                 "email@test.com", "pass",
+                 AuthProvider.LOCAL, Set.of(Role.USER));
+         UserDtoOutput outputDto = mock(UserDtoOutput.class);
 
-   @Test
-   @DisplayName("Sign-Up: Successful signUp and email send.")
-   void signUp() {
-      final UserDtoInput dto = UserDtoInput.builder()
-              .name("dto")
-              .email("dto@mail.com")
-              .password("133453")
-              .roles(Set.of(Role.USER))
-              .authProvider(AuthProvider.LOCAL)
-              .build();
-      final String html = "<p>Hola</p>";
-      when(userService.save(any(UserDtoInput.class))).thenReturn(new UserDtoOutput(
-              1L, "", "", Set.of(Role.USER)
-      ));
-      when(verificationService.save(anyLong(), "")).thenReturn(verification);
+         given(userService.save(inputDto)).willReturn(outputDto);
 
-      when(emailService.sendSimpleEmail(any(EmailDetails.class)))
-              .thenReturn(CompletableFuture.completedFuture(true));
+         assertDoesNotThrow(() -> service.signUp(inputDto));
 
-      assertDoesNotThrow(() -> service.signUp(dto), "Should not throw any Exception.");
+         verify(userService).save(inputDto);
+      }
 
-      verify(userService, times(1)).save(dtoCaptor.capture());
-      verify(verificationService, times(1)).save(1L, "");
-      verify(emailService, atLeastOnce()).sendSimpleEmail(any(EmailDetails.class));
-      verifyNoMoreInteractions(userService, verificationService, emailService);
+      @Test
+      @DisplayName("Should throw AuthProviderNotAllowedException when provider is not LOCAL")
+      void signUpShouldThrowExceptionWhenProviderIsNotLocal() {
+         UserDtoInput inputDto = new UserDtoInput(
+                 "test",
+                 "email@test.com", "pass",
+                 AuthProvider.GOOGLE, Set.of(Role.USER));
+
+         assertThrowsExactly(AuthProviderNotAllowedException.class, () -> service.signUp(inputDto));
+
+         verifyNoInteractions(userService);
+      }
+
+      @Test
+      @DisplayName("Should throw NullPointerException when saved user is null")
+      void signUpShouldThrowExceptionWhenServiceReturnsNull() {
+         UserDtoInput inputDto = new UserDtoInput(
+                 "test",
+                 "email@test.com", "pass",
+                 AuthProvider.LOCAL, Set.of(Role.USER));
+
+         given(userService.save(inputDto)).willReturn(null);
+
+         assertThrowsExactly(NullPointerException.class, () -> service.signUp(inputDto));
+
+         verify(userService).save(inputDto);
+      }
    }
 
-   @Test
-   @DisplayName("Sign-In: Successful authentication and cookies with token generation.")
-   void signIn() {
-      final SignInDto dto = new SignInDto(this.user.getEmail(),
-      this.user.getPassword());
-      final User userAuthMock = new User(
-              dto.email(),
-              dto.password(),
-              Collections.emptyList()
-      );
+   @Nested
+   @DisplayName("Tests for signIn method")
+   class SignInTests {
 
-      final Authentication authMock = mock(Authentication.class);
-      when(userService.getUserByEmail(anyString())).thenReturn(Optional.of(this.user));
-      when(verificationService.isVerified(anyString())).thenReturn(true);
-      when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authMock);
-      when(authMock.getPrincipal()).thenReturn(userAuthMock);
+      @Test
+      @DisplayName("Should successfully sign in user")
+      void signInShouldReturnSignInOkDtoOnSuccess() {
+         SignInDto signInDto = new SignInDto("email@test.com", "pass");
+         Authentication authentication = mock(Authentication.class);
+         User user = mock(User.class);
+         SignInOkDto expectedResponse = mock(SignInOkDto.class);
 
-      when(customerService.getUserByEmail(anyString())).thenReturn(Optional.of(new CustomerEntity()));
+         given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                 .willReturn(authentication);
+         given(authentication.getPrincipal()).willReturn(user);
+         given(authFactory.createSignInOkDtoFrom(user)).willReturn(expectedResponse);
 
-      when(jwtService.generateAccessToken(dto.email())).thenAnswer(inv -> inv.getArgument(0));
-      when(jwtService.generateRefreshToken(dto.email())).thenAnswer(inv -> inv.getArgument(0));
+         SignInOkDto result = service.signIn(signInDto);
 
-      final ResponseCookie accessCookieMock = mock(ResponseCookie.class);
-      final ResponseCookie refreshCookieMock = mock(ResponseCookie.class);
+         assertNotNull(result);
+         assertEquals(expectedResponse, result);
+         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+         verify(authFactory).createSignInOkDtoFrom(user);
+      }
 
-      when(cookieHelper.createAccessTokenCookie(any(String.class))).thenReturn(accessCookieMock);
-      when(cookieHelper.createRefreshTokenCookie(any(String.class))).thenReturn(refreshCookieMock);
+      @Test
+      @DisplayName("Should throw AuthenticationAttemptFailureException when principal is null")
+      void signInShouldThrowExceptionWhenPrincipalIsNull() {
+         SignInDto signInDto = new SignInDto("email@test.com", "pass");
+         Authentication authentication = mock(Authentication.class);
 
-      final SignInOkDto response = service.signIn(dto);
+         given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                 .willReturn(authentication);
+         given(authentication.getPrincipal()).willReturn(null);
 
-      verify(userService, atLeastOnce()).getUserByEmail(anyString());
-      verify(authenticationManager, atLeastOnce()).authenticate(any(UsernamePasswordAuthenticationToken.class));
-      verify(authMock, atLeastOnce()).getPrincipal();
-      verify(customerService, atLeastOnce()).getUserByEmail(anyString());
-      verify(jwtService, atLeastOnce()).generateAccessToken(dto.email());
-      verify(jwtService, atLeastOnce()).generateRefreshToken(dto.email());
-      verify(cookieHelper, atLeastOnce()).createAccessTokenCookie(cookieAccessCaptor.capture());
-      verify(cookieHelper, atLeastOnce()).createRefreshTokenCookie(cookieRefreshCaptor.capture());
-      verifyNoMoreInteractions(userService, authenticationManager, jwtService, cookieHelper);
+         assertThrowsExactly(AuthenticationAttemptFailureException.class, () -> service.signIn(signInDto));
 
-      assertNotNull(response, "Should not be null.");
+         verifyNoInteractions(authFactory);
+      }
    }
 
-   @Test
-   @DisplayName("Refresh token: refresh tokens and blacklist the given refresh token.")
-   void refresh() {
-      final String subject = "subject";
-      final ResponseCookie accessCookieMock = mock(ResponseCookie.class);
-      final ResponseCookie refreshCookieMock = mock(ResponseCookie.class);
-      final String refreshValue = refreshCookieMock.getValue();
-      when(jwtService.extractSubject(refreshValue))
-              .thenReturn(Optional.of(subject));
-      when(jwtService.isValid(refreshValue, subject))
-              .thenReturn(true);
+   @Nested
+   @DisplayName("Tests for refresh method")
+   class RefreshTests {
 
-      when(jwtService.generateAccessToken(subject)).thenAnswer(inv -> inv.getArgument(0));
-      when(jwtService.generateRefreshToken(subject)).thenAnswer(inv -> inv.getArgument(0));
+      @Test
+      @DisplayName("Should successfully blacklist token and return CookieResponseDto")
+      void refreshShouldBlacklistTokenAndReturnResponse() {
+         String token = "valid-token";
+         CookieResponseDto expectedResponse = mock(CookieResponseDto.class);
 
-      when(cookieHelper.createAccessTokenCookie(any(String.class))).thenReturn(accessCookieMock);
-      when(cookieHelper.createRefreshTokenCookie(any(String.class))).thenReturn(refreshCookieMock);
+         given(authFactory.createRefreshCookieResponseFrom(token)).willReturn(expectedResponse);
 
-      final CookieResponseDto response = service.refresh(refreshValue);
+         CookieResponseDto result = service.refresh(token);
 
-      verify(blacklistService, atLeastOnce()).blacklistToken(refreshValue);
-      verify(jwtService).extractSubject(refreshValue);
-      verify(jwtService).isValid(refreshValue, subject);
-      verify(jwtService).generateAccessToken(subject);
-      verify(jwtService).generateRefreshToken(subject);
-      verify(cookieHelper).createAccessTokenCookie(cookieAccessCaptor.capture());
-      verify(cookieHelper).createRefreshTokenCookie(cookieRefreshCaptor.capture());
-
-      assertEquals(subject, cookieAccessCaptor.getValue(),
-              "Should be the same subject.");
-      assertEquals(subject, cookieRefreshCaptor.getValue(),
-              "Should be the same subject.");
-      assertNotNull(response, "Should not be null.");
+         assertNotNull(result);
+         verify(blacklistService).blacklistToken(token);
+         verify(authFactory).createRefreshCookieResponseFrom(token);
+         verifyNoMoreInteractions(blacklistService, authFactory);
+      }
    }
-
 }

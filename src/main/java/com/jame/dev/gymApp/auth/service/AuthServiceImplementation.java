@@ -52,7 +52,6 @@ public class AuthServiceImplementation implements AuthService {
               new UsernamePasswordAuthenticationToken(dto.email(), dto.password());
 
       final Authentication authentication = authenticationManager.authenticate(token);
-      log.info("[Auth-Service]: Auth done.");
 
       final User userAuthenticated = Optional.ofNullable((User) authentication.getPrincipal())
               .orElseThrow(() -> new AuthenticationAttemptFailureException("Can't authenticate User."));

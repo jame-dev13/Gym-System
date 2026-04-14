@@ -1,10 +1,10 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
 import com.jame.dev.gymApp.auth.filters.CustomAuthorizationFilter;
+import config.TestConfig;
+import config.TestValidationConfig;
 import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.controller.advice.GlobalExceptionHandler;
-import com.jame.dev.gymApp.controller.routes.TestConfig;
-import com.jame.dev.gymApp.controller.routes.TestValidationConfig;
 import com.jame.dev.gymApp.exception.VerificationNotFoundException;
 import com.jame.dev.gymApp.exception.WindowTimeException;
 import com.jame.dev.gymApp.service.in.ExpirationService;
@@ -38,9 +38,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = ExpirationController.class,
-        excludeFilters = @ComponentScan.Filter(
-                type = FilterType.ASSIGNABLE_TYPE,
-                classes = CustomAuthorizationFilter.class)
+   excludeFilters = @ComponentScan.Filter(
+      type = FilterType.ASSIGNABLE_TYPE,
+      classes = CustomAuthorizationFilter.class)
 )
 @AutoConfigureMockMvc(addFilters = false)
 @Import({GlobalExceptionHandler.class, TestConfig.class, TestValidationConfig.class})
@@ -64,8 +64,8 @@ public class ExpirationControllerTest {
 
    static Stream<Arguments> expirationArguments() {
       return Stream.of(
-              Arguments.of(VerificationNotFoundException.class, 404),
-              Arguments.of(WindowTimeException.class, 400)
+         Arguments.of(VerificationNotFoundException.class, 404),
+         Arguments.of(WindowTimeException.class, 400)
       );
    }
 
@@ -73,8 +73,8 @@ public class ExpirationControllerTest {
    @DisplayName("PATCH[200]: Expiration request ok")
    void expirationUpdated() throws Exception {
       mockMvc.perform(patch(URI + "/someone@mail.com" + "/refresh"))
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.*").doesNotExist());
+         .andExpect(status().isOk())
+         .andExpect(jsonPath("$.*").doesNotExist());
 
       then(expirationService).should(times(1)).getMoreTimeFor(anyString());
       verifyNoMoreInteractions(expirationService);
@@ -86,10 +86,10 @@ public class ExpirationControllerTest {
    void notFoundOrBadRequest(Class<? extends Throwable> ex, int codeExpected) throws Exception {
       willThrow(ex).given(expirationService).getMoreTimeFor(anyString());
       mockMvc.perform(patch(URI + "/someone@mail.com" + "/refresh")
-                      .contentType(MediaType.APPLICATION_JSON))
-              .andExpect(status().is(codeExpected))
-              .andExpect(jsonPath("$.*").exists())
-              .andExpect(jsonPath("$.status").value(codeExpected));
+            .contentType(MediaType.APPLICATION_JSON))
+         .andExpect(status().is(codeExpected))
+         .andExpect(jsonPath("$.*").exists())
+         .andExpect(jsonPath("$.status").value(codeExpected));
 
       then(expirationService).should(atLeastOnce()).getMoreTimeFor(anyString());
    }

@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.controller.routes;
+package config;
 
 import com.jame.dev.gymApp.controller.advice.ApiErrorResponse;
 import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;

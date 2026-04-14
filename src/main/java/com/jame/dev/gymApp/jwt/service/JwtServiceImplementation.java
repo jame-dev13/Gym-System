@@ -61,4 +61,9 @@ public class JwtServiceImplementation implements JwtService {
    public Optional<Date> extractExpiration(String token) {
       return jwtUtils.getClaim(token, Claims::getExpiration);
    }
+
+   @Override
+   public Optional<String> extractJti(String token) {
+      return jwtUtils.getClaim(token, Claims::getId);
+   }
 }

@@ -4,10 +4,9 @@ import com.jame.dev.gymApp.aspects.annotations.constraints.Minimum;
 import com.jame.dev.gymApp.aspects.annotations.constraints.NotNullObject;
 import com.jame.dev.gymApp.exception.EntityNotFoundException;
 import com.jame.dev.gymApp.model.dto.out.PageDto;
-import com.jame.dev.gymApp.service.common.BaseCrudService;
+import com.jame.dev.gymApp.service.common.BaseService;
 import jakarta.validation.Valid;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -16,30 +15,36 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.function.Function;
 
-@RequiredArgsConstructor
 @Validated
-public abstract class BaseControllerCommon<DTO_OUT, DTO_IN> {
+public abstract class BaseController<OUT, IN> {
 
-   protected final BaseCrudService<DTO_OUT, DTO_IN> service;
-   private final Function<DTO_OUT, Long> idExtractor;
+   protected final BaseService<OUT, IN> service;
+   private final Function<OUT, Long> idExtractor;
 
-   public ResponseEntity<@NonNull Page<@NonNull DTO_OUT>> getPage(
+   protected BaseController(
+      BaseService<OUT, IN> service,
+      Function<OUT, Long> idExtractor) {
+      this.service = service;
+      this.idExtractor = idExtractor;
+   }
+
+   public ResponseEntity<@NonNull Page<@NonNull OUT>> getPage(
            final int page,
            final int size) {
       final Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
-      final PageDto<@NonNull DTO_OUT> dtoPage = service.getPage(pageable);
-      final Page<DTO_OUT> response = new PageImpl<>(dtoPage.content(), pageable, dtoPage.totalElements());
+      final PageDto<@NonNull OUT> dtoPage = service.getPage(pageable);
+      final Page<OUT> response = new PageImpl<>(dtoPage.content(), pageable, dtoPage.totalElements());
       return ResponseEntity.ok(response);
    }
 
-   protected ResponseEntity<@NonNull DTO_OUT> getOne(final long id) {
-      final DTO_OUT response = service.getById(id)
+   protected ResponseEntity<@NonNull OUT> getOne(final long id) {
+      final OUT response = service.getById(id)
               .orElseThrow(() -> new EntityNotFoundException("Not found id: " + id));
       return ResponseEntity.ok(response);
    }
 
-   protected ResponseEntity<@NonNull DTO_OUT> create(final DTO_IN dto) {
-      final DTO_OUT response = service.save(dto);
+   protected ResponseEntity<@NonNull OUT> create(final IN dto) {
+      final OUT response = service.save(dto);
       final URI created = ServletUriComponentsBuilder
               .fromCurrentRequest()
               .path("/{id}")
@@ -49,12 +54,12 @@ public abstract class BaseControllerCommon<DTO_OUT, DTO_IN> {
               .body(response);
    }
 
-   protected ResponseEntity<@NonNull DTO_OUT> update(
+   protected ResponseEntity<@NonNull OUT> update(
            @Minimum
            final long id,
            @Valid
-           @NotNullObject(message = "Payload must not be null") final DTO_IN dto) {
-      final DTO_OUT response = service.update(id, dto);
+           @NotNullObject(message = "Payload must not be null") final IN dto) {
+      final OUT response = service.update(id, dto);
       return ResponseEntity.ok(response);
    }
 

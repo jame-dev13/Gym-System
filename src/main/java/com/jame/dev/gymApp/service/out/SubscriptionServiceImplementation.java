@@ -90,8 +90,8 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
       return Optional.of(subscriptionFactory.createFromEntity(entity));
    }
 
-   @Override
    @Transactional(readOnly = true)
+   @Override
    public Optional<SubscriptionEntity> getByEmail(String email) {
       return repo.findActiveSubscriptionByEmail(email);
    }

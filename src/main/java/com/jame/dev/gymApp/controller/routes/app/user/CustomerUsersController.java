@@ -8,7 +8,7 @@ import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.mapper.BaseMapper;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
-import com.jame.dev.gymApp.service.common.BaseCrudService;
+import com.jame.dev.gymApp.service.common.BaseService;
 import com.jame.dev.gymApp.service.common.EmailIdentifiable;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +21,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/app/v1/customers")
 @PreAuthorize("hasRole('USER')")
 @Validated
-public class CustomerUsersController extends ControllerIdentifiable<CustomerEntity, CustomerDtoOutput, CustomerDtoInput> {
+public class CustomerUsersController
+   extends ControllerIdentifiable<CustomerEntity, CustomerDtoOutput, CustomerDtoInput> {
 
    public CustomerUsersController(
-           BaseCrudService<CustomerDtoOutput, CustomerDtoInput> service,
+           BaseService<CustomerDtoOutput, CustomerDtoInput> service,
            EmailIdentifiable<CustomerEntity> identifiable,
            BaseMapper<CustomerEntity, CustomerDtoOutput> mapper) {
       super(service, CustomerDtoOutput::id, identifiable, mapper);
