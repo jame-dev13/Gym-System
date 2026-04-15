@@ -1,0 +1,70 @@
+name: gym-app
+secrets:
+  db_password:
+    file: ./secrets/db/password.txt
+  redis_password:
+    file: ./secrets/redis/password.txt
+
+networks:
+  spring-postgres:
+  spring-redis:
+
+services:
+  backend:
+    container_name: backend-gym-app
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${APP_PORT_BIND}"
+    networks:
+      - spring-postgres
+      - spring-redis
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_PASSWORD_FILE: /run/secrets/db_password
+      SPRING_DATA_REDIS_PASSWORD_FILE: /run/secrets/redis_password
+    secrets:
+      - db_password
+      - redis_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  postgres:
+    container_name: db-gym-app
+    image: postgres:16
+    networks:
+      - spring-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DATASOURCE_USERNAME}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATASOURCE_USERNAME} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    container_name: redis-gym-app
+    image: redis:7.2
+    networks:
+      - spring-redis
+    command: [ "sh", "-c", "redis-server --requirepass $$(cat /run/secrets/redis_password)" ]
+    secrets:
+      - redis_password
+    volumes:
+      - redis_data:/data
+
+volumes:
+  db_data:
+  redis_data:
