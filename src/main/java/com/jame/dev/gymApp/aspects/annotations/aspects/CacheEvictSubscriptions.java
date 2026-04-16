@@ -12,18 +12,18 @@ import java.lang.annotation.*;
 @Inherited
 @Documented()
 @Caching(evict = {
-        @CacheEvict(
-                value = CacheValues.SUBSCRIPTIONS,
-                allEntries = true,
-                cacheManager = "redisCacheManager",
-                beforeInvocation = true),
-        @CacheEvict(
-                value = CacheValues.SUBSCRIPTION,
-                key = "#id",
-                allEntries = true,
-                cacheManager = "redisCacheManager",
-                beforeInvocation = true
-        )
+   @CacheEvict(
+      value = CacheValues.SUBSCRIPTIONS,
+      allEntries = true,
+      cacheManager = "redisCacheManager",
+      beforeInvocation = true),
+   @CacheEvict(
+      value = CacheValues.SUBSCRIPTION,
+      key = "#id",
+      allEntries = true,
+      cacheManager = "redisCacheManager",
+      beforeInvocation = true
+   )
 })
 public @interface CacheEvictSubscriptions {
 }

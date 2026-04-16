@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.service.out;
 
 import com.jame.dev.gymApp.aspects.annotations.aspects.CacheEvictUsers;
+import com.jame.dev.gymApp.aspects.annotations.aspects.PublishUserDeleted;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.exception.NoActiveException;
@@ -14,6 +15,7 @@ import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.shared.enums.CacheValues;
 import com.jame.dev.gymApp.updaters.in.UserUpdater;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -24,6 +26,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Validated
@@ -40,8 +43,8 @@ public class UserServiceImplementation implements UserService {
    @Override
    @Transactional(readOnly = true)
    @Cacheable(
-           value = CacheValues.USERS,
-           key = "#pageable.pageNumber + ':' + #pageable.pageSize"
+      value = CacheValues.USERS,
+      key = "#pageable.pageNumber + ':' + #pageable.pageSize"
    )
    public PageDto<UserDtoOutput> getPage(Pageable pageable) {
       final Page<UserEntity> entityPage = repo.findAll(pageable);
@@ -52,12 +55,13 @@ public class UserServiceImplementation implements UserService {
    @Transactional
    @CacheEvict(value = CacheValues.USERS, allEntries = true)
    public UserDtoOutput save(UserDtoInput input) {
-      repo.findByEmail(input.email()).ifPresent(user -> {
-         if (!user.isActive()) {
-            throw new NoActiveException("This address is deactivated.");
-         }
-         throw new AlreadyExistsException("This account it's used by other user.");
-      });
+      repo.findByEmail(input.email())
+         .ifPresent(user -> {
+            if (!user.isActive()) {
+               throw new NoActiveException("This address is deactivated.");
+            }
+            throw new AlreadyExistsException("This account it's used by other user.");
+         });
 
       final UserEntity userCreated = userFactory.createFromInput(input);
       final UserEntity userSaved = repo.saveAndFlush(userCreated);
@@ -66,11 +70,13 @@ public class UserServiceImplementation implements UserService {
 
    @Override
    @Transactional(readOnly = true)
-   @Cacheable(value = CacheValues.USER, key = "#id")
+   @Cacheable(
+      value = CacheValues.USER, key = "#id",
+      unless = "#result == null || !#result.isPresent()"
+   )
    public Optional<UserDtoOutput> getById(long id) {
-      final var entity = repo.findById(id)
-              .orElseThrow(() -> new UserEntityNotFoundException("User not found."));
-      return Optional.of(userFactory.createFromEntity(entity));
+      return repo.findById(id)
+         .map(userFactory::createFromEntity);
    }
 
    @Override
@@ -78,7 +84,7 @@ public class UserServiceImplementation implements UserService {
    @CacheEvictUsers
    public UserDtoOutput update(long id, UserDtoInput input) {
       final var userEntity = repo.findById(id)
-              .orElseThrow(() -> new UserEntityNotFoundException("User Not found."));
+         .orElseThrow(() -> new UserEntityNotFoundException("User Not found."));
       userUpdater.apply(userEntity, input);
       final UserEntity userSaved = repo.saveAndFlush(userEntity);
       return userFactory.createFromEntity(userSaved);
@@ -87,6 +93,7 @@ public class UserServiceImplementation implements UserService {
    @Override
    @Transactional
    @CacheEvictUsers
+   @PublishUserDeleted
    public void softDelete(long id) {
       repo.deleteById(id);
    }

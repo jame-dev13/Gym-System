@@ -1,7 +1,6 @@
 package com.jame.dev.gymApp.entity;
 
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -24,19 +23,12 @@ import java.util.Set;
 })
 @SQLDelete(sql = "UPDATE users SET active = false, deleted_at = NOW() WHERE id = ?", table = "users")
 public class UserEntity extends BaseEntity {
-   @OneToOne(
-           mappedBy = "user",
-           cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.REMOVE},
-           orphanRemoval = true
-   )
-   @Nullable
-   private CustomerEntity customer;
 
-   @NotBlank
+   @NotBlank(message = "Name Field cannot be empty.")
    @Column(name = "name", length = 150, nullable = false)
    private String name;
 
-   @Email
+   @Email(message = "Email format not acceptable.")
    @Column(name = "email", length = 120, nullable = false, unique = true)
    private String email;
 

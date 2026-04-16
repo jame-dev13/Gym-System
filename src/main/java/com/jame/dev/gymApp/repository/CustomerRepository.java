@@ -28,4 +28,6 @@ public interface CustomerRepository extends CustomJpaRepository<CustomerEntity, 
                     WHERE c.user_id = :userId)
            """)
    boolean existsDeactivatedByUserId(@Param("userId") final long userId);
+
+   void deleteByUserId(long userId);
 }
