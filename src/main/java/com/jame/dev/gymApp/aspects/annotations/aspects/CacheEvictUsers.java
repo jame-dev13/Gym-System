@@ -6,23 +6,29 @@ import org.springframework.cache.annotation.Caching;
 
 import java.lang.annotation.*;
 
+import static com.jame.dev.gymApp.shared.enums.CacheValues.*;
+
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-@Documented()
+@Documented
 @Caching(evict = {
-        @CacheEvict(
-                value = {CacheValues.USERS, CacheValues.CUSTOMERS},
-                allEntries = true,
-                cacheManager = "redisCacheManager",
-                beforeInvocation = true),
-        @CacheEvict(
-                value = CacheValues.USER,
-                key = "#id",
-                allEntries = true,
-                cacheManager = "redisCacheManager",
-                beforeInvocation = true
-        )
+   @CacheEvict(
+      value = {
+         USERS,
+         CUSTOMERS,
+         CUSTOMER
+      },
+      allEntries = true,
+      cacheManager = "redisCacheManager",
+      beforeInvocation = true),
+   @CacheEvict(
+      value = CacheValues.USER,
+      key = "#id",
+      allEntries = true,
+      cacheManager = "redisCacheManager",
+      beforeInvocation = true
+   )
 })
 public @interface CacheEvictUsers {
 }

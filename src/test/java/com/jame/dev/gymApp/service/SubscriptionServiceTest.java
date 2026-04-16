@@ -57,7 +57,7 @@ class SubscriptionServiceTest {
    SubscriptionUpdater subscriptionUpdater;
 
    @Mock
-   SubscriptionValidator subscriptionValidator;
+   SubscriptionValidator validator;
 
    @InjectMocks
    SubscriptionServiceImplementation service;
@@ -254,9 +254,8 @@ class SubscriptionServiceTest {
       SubscriptionEntity subscription = mock(SubscriptionEntity.class);
       SubscriptionDtoOutput output = mock(SubscriptionDtoOutput.class);
 
-      when(repo.findById(1L)).thenReturn(Optional.of(subscription));
-      doNothing().when(subscriptionValidator)
-              .evaluateIncomingSubscription(any(SubscriptionDtoInput.class), any(SubscriptionEntity.class));
+      when(validator.validateOnRenew(anyLong(), any(SubscriptionDtoInput.class)))
+         .thenReturn(subscription);
       when(pricingRepo.findByMemberShipEntity_Membership(any(Membership.class)))
               .thenReturn(Optional.of(pricingMock));
       doNothing().when(subscriptionUpdater)
@@ -267,13 +266,12 @@ class SubscriptionServiceTest {
       final var result = assertDoesNotThrow(() -> service.put(1L, dtoMock));
       assertNotNull(result);
 
-      verify(repo).findById(1L);
-      verify(subscriptionValidator).evaluateIncomingSubscription(any(SubscriptionDtoInput.class), any(SubscriptionEntity.class));
+      verify(validator).validateOnRenew(anyLong(), any(SubscriptionDtoInput.class));
       verify(pricingRepo).findByMemberShipEntity_Membership(any(Membership.class));
       verify(subscriptionUpdater).applyRenew(any(SubscriptionEntity.class), any(PricingEntity.class));
       verify(repo).saveAndFlush(subscription);
       verify(subscriptionFactory, atMostOnce()).createFromEntity(any());
-      verifyNoMoreInteractions(repo, pricingRepo, subscriptionFactory, subscriptionUpdater, subscriptionValidator);
+      verifyNoMoreInteractions(repo, pricingRepo, subscriptionFactory, subscriptionUpdater, validator);
    }
 
    @Test

@@ -50,9 +50,9 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Override
    @Transactional(readOnly = true)
    @Cacheable(
-           value = CacheValues.SUBSCRIPTIONS,
-           key = "#pageable.pageNumber + ':' + #pageable.pageSize",
-           unless = "#result == null"
+      value = CacheValues.SUBSCRIPTIONS,
+      key = "#pageable.pageNumber + ':' + #pageable.pageSize",
+      unless = "#result == null"
    )
    public PageDto<SubscriptionDtoOutput> getPage(@NonNull Pageable pageable) {
       final Page<SubscriptionEntity> entityPage = repo.findAll(pageable);
@@ -64,17 +64,17 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @CacheEvict(value = CacheValues.SUBSCRIPTIONS, allEntries = true)
    public SubscriptionDtoOutput save(SubscriptionDtoInput dto) {
       final CustomerEntity customer = customerRepo.findByUser_Email(dto.customerEmail())
-              .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
+         .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
 
       if (repo.existsByCustomer(customer)) {
          throw new AlreadyExistsException("There's a subscription linked to the customer with: " + dto.customerEmail());
       }
 
       final PricingEntity pricing = pricingRepo.findByMemberShipEntity_Membership(dto.membership())
-              .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
+         .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
 
       final SubscriptionEntity subscriptionEntity = subscriptionFactory.createFromInput(
-              new SubscriptionFactoryDtoInput(dto, customer, pricing, LocalDate.now()));
+         new SubscriptionFactoryDtoInput(dto, customer, pricing, LocalDate.now()));
 
       final SubscriptionEntity subscriptionSaved = repo.saveAndFlush(subscriptionEntity);
 
@@ -83,11 +83,13 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
 
    @Override
    @Transactional(readOnly = true)
-   @Cacheable(value = CacheValues.SUBSCRIPTION, key = "#id")
+   @Cacheable(
+      value = CacheValues.SUBSCRIPTION, key = "#id",
+      unless = "#result == null || !#result.isPresent()"
+   )
    public Optional<SubscriptionDtoOutput> getById(long id) {
-      final var entity = repo.findById(id)
-              .orElseThrow(() -> new SubscriptionNotFoundException("Subscription not found."));
-      return Optional.of(subscriptionFactory.createFromEntity(entity));
+      return repo.findById(id)
+         .map(subscriptionFactory::createFromEntity);
    }
 
    @Transactional(readOnly = true)
@@ -107,10 +109,10 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @CacheEvictSubscriptions
    public SubscriptionDtoOutput update(long id, SubscriptionDtoInput dto) {
       final SubscriptionEntity subscriptionEntity = repo.findById(id)
-              .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
+         .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
 
       final PricingEntity pricingEntity = pricingRepo.findByMemberShipEntity_Membership(dto.membership())
-              .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
+         .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
 
       subscriptionUpdater.apply(subscriptionEntity, pricingEntity);
       final SubscriptionEntity subscriptionModified = repo.saveAndFlush(subscriptionEntity);
@@ -123,7 +125,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @CacheEvictSubscriptions
    public SubscriptionDtoOutput patch(long id) {
       final SubscriptionEntity subscription = repo.findById(id)
-              .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
+         .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
       subscription.setFinished(true);
       subscription.setUpdatedAt(Instant.now());
       final SubscriptionEntity subscriptionFinalized = repo.saveAndFlush(subscription);
@@ -134,17 +136,12 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Override
    @CacheEvictSubscriptions
    public SubscriptionDtoOutput put(long id, SubscriptionDtoInput input) {
-      final SubscriptionEntity subscriptionEntity = repo.findById(id)
-              .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
-
-      validator.evaluateIncomingSubscription(input, subscriptionEntity);
+      final SubscriptionEntity subscriptionEntity = validator.validateOnRenew(id, input);
 
       final PricingEntity pricing = pricingRepo.findByMemberShipEntity_Membership(input.membership())
-              .orElseThrow(() -> new PricingNotFoundException("Pricing not found."));
+         .orElseThrow(() -> new PricingNotFoundException("Pricing not found."));
 
-      subscriptionUpdater.applyRenew(
-              subscriptionEntity, pricing
-      );
+      subscriptionUpdater.applyRenew(subscriptionEntity, pricing);
       final SubscriptionEntity subscriptionRenewed = repo.saveAndFlush(subscriptionEntity);
       return subscriptionFactory.createFromEntity(subscriptionRenewed);
    }

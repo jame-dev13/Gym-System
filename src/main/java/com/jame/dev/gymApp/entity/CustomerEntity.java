@@ -14,15 +14,19 @@ import org.jspecify.annotations.Nullable;
 @Builder
 @Entity
 @Table(name = "customers", indexes = {
-        @Index(name = "idx_customer_user_id_unq", columnList = "user_id", unique = true),
-        @Index(name = "idx_customer_pagination_id_active", columnList = "id, active")
+   @Index(name = "idx_customer_user_id_unq", columnList = "user_id", unique = true),
+   @Index(name = "idx_customer_pagination_id_active", columnList = "id, active")
 })
 @SQLDelete(sql = "UPDATE customers SET active = false, deleted_at = NOW() WHERE id = ?")
 public class CustomerEntity extends BaseEntity {
 
-   @OneToOne(fetch = FetchType.LAZY, optional = false,
-           cascade = {CascadeType.REFRESH, CascadeType.MERGE})
-   @JoinColumn(name = "user_id", nullable = false, unique = true)
+   @OneToOne(fetch = FetchType.LAZY,
+      optional = false,
+      cascade = {CascadeType.REFRESH, CascadeType.MERGE})
+   @JoinColumn(
+      name = "user_id",
+      nullable = false,
+      unique = true)
    @ToString.Exclude
    @NonNull
    private UserEntity user;

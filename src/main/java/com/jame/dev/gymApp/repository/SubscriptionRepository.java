@@ -21,4 +21,6 @@ public interface SubscriptionRepository extends CustomJpaRepository<Subscription
    boolean existsByIdAndCustomer_User_EmailAndActiveTrue(long id, String email);
 
    boolean existsByCustomer(final CustomerEntity customer);
+
+   void deleteByCustomerId(long id);
 }

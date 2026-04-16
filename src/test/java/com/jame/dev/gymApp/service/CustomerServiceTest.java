@@ -10,10 +10,10 @@ import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
 import com.jame.dev.gymApp.model.dto.out.PageDto;
 import com.jame.dev.gymApp.repository.CustomerRepository;
-import com.jame.dev.gymApp.repository.UserRepository;
 import com.jame.dev.gymApp.service.out.CustomerServiceImplementation;
 import com.jame.dev.gymApp.shared.enums.Role;
 import com.jame.dev.gymApp.updaters.in.CustomerUpdater;
+import com.jame.dev.gymApp.validators.CustomerValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ public class CustomerServiceTest {
    @Mock
    private CustomerRepository repo;
    @Mock
-   private UserRepository userRepo;
+   private CustomerValidator customerValidator;
    @Mock
    private CustomerFactory customerFactory;
    @Mock
@@ -115,7 +115,7 @@ public class CustomerServiceTest {
       verify(repo, times(1)).findById(anyLong());
       verify(customerFactory, times(1)).createFromEntity(any());
       verifyNoMoreInteractions(repo, customerFactory);
-      verifyNoInteractions(customerUpdater, userRepo);
+      verifyNoInteractions(customerUpdater, customerValidator);
    }
 
    @Test
@@ -136,8 +136,8 @@ public class CustomerServiceTest {
 
       CustomerDtoOutput output =  mock(CustomerDtoOutput.class);
 
-      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(user));
-      when(repo.findDeactivatedByUserId(anyLong())).thenReturn(Optional.empty());
+      when(customerValidator.validateUserBeforeCreation(any(CustomerDtoInput.class)))
+         .thenReturn(user);
       when(customerFactory.createFromInput(any())).thenReturn(customer);
       when(repo.saveAndFlush(any()))
               .thenReturn(customer);
@@ -148,52 +148,38 @@ public class CustomerServiceTest {
 
       assertNotNull(result, "Result should not be null.");
 
-      verify(userRepo, atMostOnce()).findByEmail(anyString());
+      verify(customerValidator, atMostOnce()).validateUserBeforeCreation(any(CustomerDtoInput.class));
       verify(repo, atMostOnce()).findDeactivatedByUserId(1L);
       verify(customerFactory, atMostOnce()).createFromInput(any());
       verify(repo, atMostOnce()).saveAndFlush(mockCustomer);
       verify(customerFactory, atMostOnce()).createFromEntity(mockCustomer);
-      verifyNoMoreInteractions(userRepo, customerFactory, repo);
+      verifyNoMoreInteractions(customerValidator, customerFactory, repo);
    }
 
    @Test
    @DisplayName("Already exists check works")
    void alreadyExistsCheck() {
-      UserEntity user = mock();
-      when(user.isActive()).thenReturn(true);
-
-      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(user));
-      doThrow(AlreadyExistsException.class).when(repo).findDeactivatedByUserId(anyLong());
+      doThrow(AlreadyExistsException.class)
+         .when(customerValidator)
+         .validateUserBeforeCreation(any(CustomerDtoInput.class));
 
       assertThrows(AlreadyExistsException.class, () -> service.save(mockDto));
 
-      verify(userRepo, atMostOnce()).findByEmail(anyString());
+      verify(customerValidator, atMostOnce()).validateUserBeforeCreation(any(CustomerDtoInput.class));
       verify(repo, atMostOnce()).findDeactivatedByUserId(1L);
       verifyNoInteractions(customerFactory, customerUpdater);
    }
 
-   @Test
-   @DisplayName("Check for User deactivated, should works")
-   void checkUserActiveStatus() {
-      UserEntity user = new UserEntity();
-      user.setActive(false);
-
-      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(user));
-
-      assertThrows(NoActiveException.class, () -> service.save(mockDto));
-
-      verify(userRepo, atMostOnce()).findByEmail(anyString());
-   }
 
    @Test
    @DisplayName("Customer deactivated check works")
    void deactivatedCheck() {
-      UserEntity user = mock();
-      when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(user));
-
+      doThrow(NoActiveException.class)
+         .when(customerValidator)
+         .validateUserBeforeCreation(any());
       assertThrows(NoActiveException.class, () -> service.save(mockDto));
 
-      verify(userRepo, atMostOnce()).findByEmail(anyString());
+      verify(customerValidator, atMostOnce()).validateUserBeforeCreation(any());
       verify(repo, atMostOnce()).findDeactivatedByUserId(anyLong());
       verifyNoInteractions(customerFactory, customerUpdater);
    }
