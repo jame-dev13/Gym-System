@@ -1,11 +1,14 @@
 package com.jame.dev.gymApp.config.app;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.jame.dev.gymApp.model.mixIn.DefaultMixInDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,43 +55,78 @@ public class RedisConfig {
    @Bean
    public PolymorphicTypeValidator getPolymorphicTypeValidator() {
       return BasicPolymorphicTypeValidator.builder()
-              .allowIfSubType("com.jame.dev.gymApp")
-              .allowIfSubType("org.springframework.data.domain")
-              .allowIfBaseType(java.util.Collection.class)
-              .allowIfBaseType(java.util.Map.class)
-              .allowIfBaseType(java.time.temporal.Temporal.class)
-              .allowIfBaseType(java.lang.Number.class)
-              .allowIfBaseType(Object.class)
-              .build();
+         .allowIfSubType("com.jame.dev.gymApp")
+         .allowIfSubType("org.springframework.data.domain")
+         .allowIfBaseType(java.util.Collection.class)
+         .allowIfBaseType(java.util.Map.class)
+         .allowIfBaseType(java.time.temporal.Temporal.class)
+         .allowIfBaseType(java.lang.Number.class)
+         .allowIfBaseType(Object.class)
+         .allowIfBaseType(Record.class)
+         .build();
    }
 
    @Bean("redisCacheManager")
    public CacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {
-      final PolymorphicTypeValidator ptv = getPolymorphicTypeValidator();
       final ObjectMapper redisMapper = new ObjectMapper();
-      registerMixIns(redisMapper, "com.jame.dev.gymApp");
 
-      redisMapper.registerModule(new JavaTimeModule())
-              .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-              .activateDefaultTyping(
-                      ptv,
-                      ObjectMapper.DefaultTyping.OBJECT_AND_NON_CONCRETE,
-                      JsonTypeInfo.As.PROPERTY
-              );
+      redisMapper.registerModules(
+         new JavaTimeModule(),
+         new ParameterNamesModule(),
+         new Jdk8Module()
+      ).findAndRegisterModules();
 
-      RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-              .prefixCacheNameWith("gym-app:")
-              .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-              .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer(redisMapper)))
-              .entryTtl(Duration.ofMinutes(10));
+      redisMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-      return RedisCacheManager.builder(connectionFactory).cacheDefaults(config).build();
+      redisMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+      registerMixIns(redisMapper);
+
+      final PolymorphicTypeValidator ptv = getPolymorphicTypeValidator();
+
+      redisMapper.activateDefaultTyping(
+         ptv,
+         ObjectMapper.DefaultTyping.OBJECT_AND_NON_CONCRETE,
+         JsonTypeInfo.As.PROPERTY
+      );
+
+      final RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+         .prefixCacheNameWith("gym-app:")
+         .serializeKeysWith(
+            RedisSerializationContext.SerializationPair.fromSerializer(
+               new StringRedisSerializer()
+            )
+         )
+         .serializeValuesWith(
+            RedisSerializationContext.SerializationPair.fromSerializer(
+               new GenericJackson2JsonRedisSerializer(redisMapper)
+            )
+         )
+         .entryTtl(Duration.ofMinutes(5))
+         .disableCachingNullValues();
+
+      return RedisCacheManager.builder(connectionFactory)
+         .cacheDefaults(config)
+         .build();
    }
 
-   /**
-    * Scans the given package and searches for dto package and sub packages inside and adds the mixIn there
-    * Requires a scan library or ClassPathScanningCandidateComponentProvider from Spring.
-    */
+
+   private void registerMixIns(ObjectMapper mapper) {
+      ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+      scanner.addIncludeFilter(new AssignableTypeFilter(Object.class));
+
+      scanner.findCandidateComponents("com.jame.dev.gymApp").forEach(beanDefinition -> {
+         try {
+            Class<?> clazz = Class.forName(beanDefinition.getBeanClassName());
+            if (clazz.isRecord() && clazz.getName().contains(".dto.")) {
+               mapper.addMixIn(clazz, DefaultMixInDto.class);
+            }
+         } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e.getMessage(), e);
+         }
+      });
+   }
+
    private void registerMixIns(ObjectMapper mapper, String basePackage) {
       ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
       scanner.addIncludeFilter(new AssignableTypeFilter(Object.class));
@@ -96,11 +134,11 @@ public class RedisConfig {
       scanner.findCandidateComponents(basePackage).forEach(beanDefinition -> {
          try {
             Class<?> clazz = Class.forName(beanDefinition.getBeanClassName());
-            if (clazz.isRecord() || clazz.getName().contains(".dto.")) {
+            if (clazz.isRecord() && clazz.getName().contains(".dto.")) {
                mapper.addMixIn(clazz, DefaultMixInDto.class);
             }
          } catch (ClassNotFoundException e) {
-            log.error("{}", e.getMessage());
+            throw new RuntimeException(e.getMessage(), e);
          }
       });
    }

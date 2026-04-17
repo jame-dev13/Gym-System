@@ -70,13 +70,11 @@ public class UserServiceImplementation implements UserService {
 
    @Override
    @Transactional(readOnly = true)
-   @Cacheable(
-      value = CacheValues.USER, key = "#id",
-      unless = "#result == null || !#result.isPresent()"
-   )
-   public Optional<UserDtoOutput> getById(long id) {
+   @Cacheable(value = CacheValues.USER, key = "#id")
+   public UserDtoOutput getById(long id) {
       return repo.findById(id)
-         .map(userFactory::createFromEntity);
+         .map(userFactory::createFromEntity)
+         .orElseThrow(() -> new UserEntityNotFoundException("User not found."));
    }
 
    @Override

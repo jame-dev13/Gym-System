@@ -83,13 +83,11 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
 
    @Override
    @Transactional(readOnly = true)
-   @Cacheable(
-      value = CacheValues.SUBSCRIPTION, key = "#id",
-      unless = "#result == null || !#result.isPresent()"
-   )
-   public Optional<SubscriptionDtoOutput> getById(long id) {
+   @Cacheable(value = CacheValues.SUBSCRIPTION, key = "#id")
+   public SubscriptionDtoOutput getById(long id) {
       return repo.findById(id)
-         .map(subscriptionFactory::createFromEntity);
+         .map(subscriptionFactory::createFromEntity)
+         .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not found."));
    }
 
    @Transactional(readOnly = true)

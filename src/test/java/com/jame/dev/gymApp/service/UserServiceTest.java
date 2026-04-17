@@ -94,8 +94,7 @@ public class UserServiceTest {
               .thenReturn(output);
       final var result = assertDoesNotThrow(() -> service.getById(1L));
 
-      assertTrue(result.isPresent(), "Result optional should be present.");
-      assertNotNull(result.get(), "Result should not be null");
+      assertNotNull(result, "Result should not be null");
 
       verify(repo, atLeastOnce()).findById(anyLong());
       verify(userFactory, atLeastOnce()).createFromEntity(any());

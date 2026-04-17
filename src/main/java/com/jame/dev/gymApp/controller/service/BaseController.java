@@ -2,7 +2,6 @@ package com.jame.dev.gymApp.controller.service;
 
 import com.jame.dev.gymApp.aspects.annotations.constraints.Minimum;
 import com.jame.dev.gymApp.aspects.annotations.constraints.NotNullObject;
-import com.jame.dev.gymApp.exception.EntityNotFoundException;
 import com.jame.dev.gymApp.model.dto.out.PageDto;
 import com.jame.dev.gymApp.service.common.BaseService;
 import jakarta.validation.Valid;
@@ -38,9 +37,8 @@ public abstract class BaseController<OUT, IN> {
    }
 
    protected ResponseEntity<@NonNull OUT> getOne(final long id) {
-      final OUT response = service.getById(id)
-              .orElseThrow(() -> new EntityNotFoundException("Not found id: " + id));
-      return ResponseEntity.ok(response);
+      final OUT body = service.getById(id);
+      return ResponseEntity.ok(body);
    }
 
    protected ResponseEntity<@NonNull OUT> create(final IN dto) {

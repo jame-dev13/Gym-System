@@ -33,7 +33,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.Optional;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -118,7 +117,7 @@ class CustomerControllerTest {
       @DisplayName("GET[200] OK: get customer /customers/{id}")
       void getCustomer() throws Exception {
          given(customerService.getById(anyLong()))
-            .willReturn(Optional.of(customerDtoOutput));
+            .willReturn(customerDtoOutput);
          mockMvc.perform(MockMvcRequestBuilders.get(URI_TEMPLATE + '/' + 1L)
                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -127,10 +126,10 @@ class CustomerControllerTest {
       }
 
       @Test
-      @DisplayName("GET[400] Not Found: get customer /customers/{id}")
+      @DisplayName("GET[404] Not Found: get customer /customers/{id}")
       void customerNotFound() throws Exception {
          given(customerService.getById(anyLong()))
-            .willReturn(Optional.empty());
+            .willThrow(CustomerNotFoundException.class);
          mockMvc.perform(MockMvcRequestBuilders.get(URI_TEMPLATE + '/' + 100L)
                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound())

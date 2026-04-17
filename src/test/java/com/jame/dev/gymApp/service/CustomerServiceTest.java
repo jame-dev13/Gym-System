@@ -106,11 +106,7 @@ public class CustomerServiceTest {
               .thenReturn(output);
 
       final var result = assertDoesNotThrow(() -> service.getById(1L));
-
-
-      assertTrue(result.isPresent(), "The result should not be empty");
-      assertDoesNotThrow(result::get, "Shouldn't throw any Exception.");
-      assertNotNull(result.get(), "The result should not be null.");
+      assertNotNull(result);
 
       verify(repo, times(1)).findById(anyLong());
       verify(customerFactory, times(1)).createFromEntity(any());
@@ -132,7 +128,6 @@ public class CustomerServiceTest {
    void saveCustomer() {
       UserEntity user = mock();
       CustomerEntity customer = mock();
-      when(user.isActive()).thenReturn(true);
 
       CustomerDtoOutput output =  mock(CustomerDtoOutput.class);
 

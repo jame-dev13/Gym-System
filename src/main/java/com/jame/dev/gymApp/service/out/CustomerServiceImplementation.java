@@ -50,13 +50,11 @@ public class CustomerServiceImplementation implements CustomerService {
 
    @Override
    @Transactional(readOnly = true)
-   @Cacheable(
-      value = CacheValues.CUSTOMER, key = "#id",
-      unless = "#result == null || !#result.isPresent()"
-   )
-   public Optional<CustomerDtoOutput> getById(long id) {
+   @Cacheable(value = CacheValues.CUSTOMER, key = "#id")
+   public CustomerDtoOutput getById(long id) {
       return repo.findById(id)
-         .map(customerFactory::createFromEntity);
+         .map(customerFactory::createFromEntity)
+         .orElseThrow(() -> new CustomerNotFoundException("Customer Not found."));
    }
 
    @Override
