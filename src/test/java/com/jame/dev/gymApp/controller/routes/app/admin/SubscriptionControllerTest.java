@@ -37,7 +37,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -129,7 +128,7 @@ public class SubscriptionControllerTest {
       @DisplayName("GET[200] OK: get sub /subs/{id}")
       void getSubscription() throws Exception {
          given(subscriptionService.getById(anyLong()))
-            .willReturn(Optional.of(subscriptionDtoOutput));
+            .willReturn(subscriptionDtoOutput);
          mockMvc.perform(MockMvcRequestBuilders.get(URI_TEMPLATE + '/' + 1L)
                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -138,10 +137,10 @@ public class SubscriptionControllerTest {
       }
 
       @Test
-      @DisplayName("GET[400] Not Found: get sub /subs/{id}")
+      @DisplayName("GET[404] Not Found: get sub /subs/{id}")
       void subscriptionNotFound() throws Exception {
          given(subscriptionService.getById(anyLong()))
-            .willReturn(Optional.empty());
+            .willThrow(SubscriptionNotFoundException.class);
          mockMvc.perform(MockMvcRequestBuilders.get(URI_TEMPLATE + '/' + 100L)
                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound())

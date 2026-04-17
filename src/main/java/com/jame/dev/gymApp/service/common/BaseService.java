@@ -7,14 +7,12 @@ import jakarta.validation.Valid;
 import lombok.NonNull;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Optional;
-
 public interface BaseService<DTO_OUT, DTO_IN> {
    PageDto<@NonNull DTO_OUT> getPage(@NotNullObject @Valid final Pageable pageable);
 
    DTO_OUT save(@NotNullObject @Valid final DTO_IN dtoIn);
 
-   Optional<DTO_OUT> getById(@Minimum final long id);
+   DTO_OUT getById(@Minimum final long id);
 
    DTO_OUT update(@Minimum final long id, @NotNullObject @Valid final DTO_IN dtoIn);
 

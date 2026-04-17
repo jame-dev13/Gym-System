@@ -70,24 +70,24 @@ class SubscriptionServiceTest {
    private final SubscriptionEntity mockSubscription = new SubscriptionEntity();
 
    private final List<SubscriptionEntity> testSubsList = IntStream.range(0, 10)
-           .mapToObj(i -> {
-              CustomerEntity customer = new CustomerEntity(
-                      new UserEntity(), "32472525" + i);
-              PricingEntity pricing = new PricingEntity(
-                      (i + 1),
-                      new MemberShipEntity(
-                              (i + 1),
-                              Membership.MONTHLY),
-                      BigDecimal.valueOf(300.00d)
-              );
-              return SubscriptionEntity.builder()
-                      .customer(customer)
-                      .pricing(pricing)
-                      .subscriptionPeriods(List.of(new PeriodEntity()))
-                      .finished(false)
-                      .build();
-           })
-           .toList();
+      .mapToObj(i -> {
+         CustomerEntity customer = new CustomerEntity(
+            new UserEntity(), "32472525" + i);
+         PricingEntity pricing = new PricingEntity(
+            (i + 1),
+            new MemberShipEntity(
+               (i + 1),
+               Membership.MONTHLY),
+            BigDecimal.valueOf(300.00d)
+         );
+         return SubscriptionEntity.builder()
+            .customer(customer)
+            .pricing(pricing)
+            .subscriptionPeriods(List.of(new PeriodEntity()))
+            .finished(false)
+            .build();
+      })
+      .toList();
 
    @BeforeEach
    void setUp() {
@@ -121,12 +121,11 @@ class SubscriptionServiceTest {
       SubscriptionDtoOutput output = mock();
       when(repo.findById(anyLong())).thenReturn(Optional.of(new SubscriptionEntity()));
       when(subscriptionFactory.createFromEntity(any(SubscriptionEntity.class)))
-              .thenReturn(output);
+         .thenReturn(output);
 
       final var result = assertDoesNotThrow(() -> service.getById(anyLong()));
 
-      assertTrue(result.isPresent(), "Result should be present.");
-      assertNotNull(result.get(), "Result shouldn't be null.");
+      assertNotNull(result, "Result shouldn't be null.");
 
       verify(repo, atMostOnce()).findById(anyLong());
       verify(subscriptionFactory, atMostOnce()).createFromEntity(any());
@@ -142,17 +141,17 @@ class SubscriptionServiceTest {
       SubscriptionEntity subscriptionMock = mock(SubscriptionEntity.class);
 
       when(customerRepo.findByUser_Email(anyString()))
-              .thenReturn(Optional.of(customerMock));
+         .thenReturn(Optional.of(customerMock));
       when(repo.existsByCustomer(any(CustomerEntity.class)))
-              .thenReturn(false);
+         .thenReturn(false);
       when(pricingRepo.findByMemberShipEntity_Membership(any(Membership.class)))
-              .thenReturn(Optional.of(pricingMock));
+         .thenReturn(Optional.of(pricingMock));
       when(subscriptionFactory.createFromInput(any(SubscriptionFactoryDtoInput.class)))
-              .thenReturn(subscriptionMock);
+         .thenReturn(subscriptionMock);
       when(repo.saveAndFlush(any(SubscriptionEntity.class)))
-              .thenReturn(subscriptionMock);
+         .thenReturn(subscriptionMock);
       when(subscriptionFactory.createFromEntity(any(SubscriptionEntity.class)))
-              .thenReturn(output);
+         .thenReturn(output);
 
       final var result = assertDoesNotThrow(() -> service.save(this.dtoMock));
 
@@ -162,7 +161,7 @@ class SubscriptionServiceTest {
       verify(repo, atMostOnce()).existsByCustomer(any(CustomerEntity.class));
       verify(pricingRepo, atMostOnce()).findByMemberShipEntity_Membership(any(Membership.class));
       verify(subscriptionFactory, atMostOnce())
-              .createFromInput(any(SubscriptionFactoryDtoInput.class));
+         .createFromInput(any(SubscriptionFactoryDtoInput.class));
       verify(repo, atLeastOnce()).saveAndFlush(any(SubscriptionEntity.class));
       verify(subscriptionFactory, atMostOnce()).createFromEntity(any(SubscriptionEntity.class));
       verifyNoMoreInteractions(repo, customerRepo, pricingRepo, subscriptionFactory);
@@ -200,17 +199,17 @@ class SubscriptionServiceTest {
       subscriptionEntity.setUpdatedAt(Instant.now());
 
       when(repo.findById(anyLong()))
-              .thenReturn(Optional.of(subscriptionEntity));
+         .thenReturn(Optional.of(subscriptionEntity));
       when(pricingRepo.findByMemberShipEntity_Membership(any(Membership.class)))
-              .thenReturn(Optional.of(new PricingEntity()));
+         .thenReturn(Optional.of(new PricingEntity()));
       doNothing().when(subscriptionUpdater).apply(
-              any(SubscriptionEntity.class),
-              any(PricingEntity.class)
+         any(SubscriptionEntity.class),
+         any(PricingEntity.class)
       );
       when(repo.saveAndFlush(any(SubscriptionEntity.class))).
-              thenReturn(subscriptionEntity);
+         thenReturn(subscriptionEntity);
       when(subscriptionFactory.createFromEntity(any()))
-              .thenReturn(output);
+         .thenReturn(output);
 
       assertDoesNotThrow(() -> service.update(1L, dtoMock), "Should doesn't throw any exception");
 
@@ -231,11 +230,11 @@ class SubscriptionServiceTest {
       SubscriptionDtoOutput output = mock(SubscriptionDtoOutput.class);
 
       when(repo.findById(anyLong()))
-              .thenReturn(Optional.of(new SubscriptionEntity()));
+         .thenReturn(Optional.of(new SubscriptionEntity()));
       when(repo.saveAndFlush(any(SubscriptionEntity.class)))
-              .thenReturn(subscriptionEntity);
+         .thenReturn(subscriptionEntity);
       when(subscriptionFactory.createFromEntity(any(SubscriptionEntity.class)))
-              .thenReturn(output);
+         .thenReturn(output);
 
       final var result = assertDoesNotThrow(() -> service.patch(1L));
       assertNotNull(result);
@@ -257,9 +256,9 @@ class SubscriptionServiceTest {
       when(validator.validateOnRenew(anyLong(), any(SubscriptionDtoInput.class)))
          .thenReturn(subscription);
       when(pricingRepo.findByMemberShipEntity_Membership(any(Membership.class)))
-              .thenReturn(Optional.of(pricingMock));
+         .thenReturn(Optional.of(pricingMock));
       doNothing().when(subscriptionUpdater)
-              .applyRenew(any(SubscriptionEntity.class), any(PricingEntity.class));
+         .applyRenew(any(SubscriptionEntity.class), any(PricingEntity.class));
       when(repo.saveAndFlush(any(SubscriptionEntity.class))).thenReturn(subscription);
       when(subscriptionFactory.createFromEntity(any())).thenReturn(output);
 
