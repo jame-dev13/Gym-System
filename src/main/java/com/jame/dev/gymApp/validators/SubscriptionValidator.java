@@ -17,7 +17,7 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class SubscriptionValidator {
-   private SubscriptionRepository subscriptionRepository;
+   private final SubscriptionRepository subscriptionRepository;
    private final static int WINDOW_DAYS_RENEW = 4;
 
    public SubscriptionEntity validateOnRenew(
