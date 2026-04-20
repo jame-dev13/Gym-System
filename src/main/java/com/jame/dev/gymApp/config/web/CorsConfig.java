@@ -1,5 +1,8 @@
 package com.jame.dev.gymApp.config.web;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -10,20 +13,36 @@ import java.util.List;
 @Component
 public class CorsConfig {
 
-   private final List<String> ALLOWED_ORIGINS = List.of("http://localhost:5173");
-   private final List<String> ALLOWED_METHODS = List.of(
-           "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
-   private final List<String> ALLOWED_HEADERS = List.of(
-           "Content-Type", "Authorization", "Access-Control-Allow-Headers",
-           "Access-Control-Allow-Origin");
+   @Value("${app.cors.allowed-origins:}")
+   private List<String> allowedOrigins;
 
-   public CorsConfigurationSource configurationSource() {
-      CorsConfiguration cors = new CorsConfiguration();
-      cors.setAllowedOrigins(ALLOWED_ORIGINS);
+   private final List<String> ALLOWED_METHODS = List.of(
+      "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
+
+   private final List<String> ALLOWED_HEADERS = List.of(
+      "Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin");
+
+   @Bean
+   @Profile("dev")
+   public CorsConfigurationSource configurationSourceDev() {
+      return createSource(allowedOrigins);
+   }
+
+   @Bean
+   @Profile("prod")
+   public CorsConfigurationSource configurationSourceProd() {
+      return createSource(allowedOrigins);
+   }
+
+   private CorsConfigurationSource createSource(final List<String> origins) {
+      final CorsConfiguration cors = new CorsConfiguration();
+      cors.setAllowedOrigins(origins);
       cors.setAllowedMethods(ALLOWED_METHODS);
       cors.setAllowedHeaders(ALLOWED_HEADERS);
       cors.setAllowCredentials(true);
-      UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+      cors.setMaxAge(3600L);
+
+      final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
       source.registerCorsConfiguration("/**", cors);
       return source;
    }

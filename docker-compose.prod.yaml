@@ -13,7 +13,7 @@ services:
   backend:
     container_name: backend-gym-app
     env_file:
-      - .env
+      - .env.prod
     build:
       context: .
       dockerfile: Dockerfile

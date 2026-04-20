@@ -42,10 +42,10 @@ dev-restart:
 	docker compose --env-file $(ENV_DEV) -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) restart
 
 clean-dev:
-	docker compose --env-file $(ENV_DEV) -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) down -v --remove-orphans
+	docker compose --env-file $(ENV_DEV) -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) down -v --remove-orphans --timeout 5
 
 clean-prod:
-	docker compose -f $(COMPOSE_PROD) down -v --remove-orphans
+	docker compose -f $(COMPOSE_PROD) down -v --remove-orphans --timeout 5
 
 # Containers status
 status:
