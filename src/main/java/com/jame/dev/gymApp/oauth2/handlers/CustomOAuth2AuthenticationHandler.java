@@ -4,12 +4,12 @@ import com.jame.dev.gymApp.config.web.CookieHelper;
 import com.jame.dev.gymApp.exception.AuthenticationNullException;
 import com.jame.dev.gymApp.jwt.service.JwtService;
 import com.jame.dev.gymApp.oauth2.model.CustomOAuth2User;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -27,25 +27,28 @@ public class CustomOAuth2AuthenticationHandler implements AuthenticationSuccessH
 
    private final JwtService jwt;
    private final CookieHelper cookieHelper;
-   private static final String REDIRECT_URL = "http://localhost:5173/home";
+
+   @Value("${app.auth.redirect-url}")
+   private String REDIRECT_URL;
 
    @Override
    public void onAuthenticationSuccess(final @NonNull HttpServletRequest request,
                                        final @NonNull HttpServletResponse response,
-                                       final Authentication authentication) throws IOException, ServletException {
+                                       final Authentication authentication)
+      throws IOException {
       log.info("[Oauth2 - AuthHandler]: HIT authentication handler.");
-      if(Objects.isNull(authentication.getPrincipal())){
+      if (Objects.isNull(authentication.getPrincipal())) {
          throw new AuthenticationNullException("No user authenticated.");
       }
 
       String email = null;
-      if(authentication.getPrincipal() instanceof CustomOAuth2User user){
+      if (authentication.getPrincipal() instanceof CustomOAuth2User user) {
          log.info("User: {}", user.getUser().email());
          log.info("Name: {}", user.getName());
          email = user.getUser().email();
       }
 
-      if(Objects.isNull(email) || email.isBlank()){
+      if (Objects.isNull(email) || email.isBlank()) {
          throw new AuthenticationNullException("No Authentication founded.");
       }
 

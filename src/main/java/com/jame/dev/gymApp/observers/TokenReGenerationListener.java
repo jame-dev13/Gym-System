@@ -35,13 +35,13 @@ public class TokenReGenerationListener {
          verificationService.update(email, rawToken);
 
          final EmailDetails emailDetails = new EmailDetails(
-                 email,
-                 HtmlTemplates.verificationTemplate(email, rawToken),
-                 "New Verification Code"
+            email,
+            HtmlTemplates.verificationTemplate(email, rawToken),
+            "New Verification Code"
          );
          emailService.sendSimpleEmail(emailDetails)
-                 .thenAccept(
-                         sent -> log.info(sent ? "Email sent" : "Cannot send email."));
+            .thenAccept(
+               sent -> log.info(sent ? "Email sent" : "Cannot send email."));
       }
    }
 }
