@@ -9,7 +9,6 @@ import com.jame.dev.gymApp.service.in.RateLimiterService;
 import com.jame.dev.gymApp.service.in.TryCatchBlockExecutorService;
 import com.jame.dev.gymApp.shared.enums.CookieNames;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
 import java.util.Map;
 
 @Component
@@ -36,7 +34,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
    @Override
    protected void doFilterInternal(HttpServletRequest request,
                                    @NonNull HttpServletResponse response,
-                                   @NonNull FilterChain filterChain) throws ServletException, IOException {
+                                   @NonNull FilterChain filterChain) {
 
       log.info(request.getRequestURI());
       if (authorizationHelper.isAuthDoor(request)) {
