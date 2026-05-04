@@ -13,8 +13,8 @@ import org.mapstruct.Mapping;
 import java.util.List;
 
 @Mapper(componentModel = "spring",
-        uses = {CustomerMapper.class, PeriodMapper.class},
-        injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+   uses = {CustomerMapper.class, PeriodMapper.class},
+   injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface SubscriptionMapper extends BaseMapper<SubscriptionEntity, SubscriptionDtoOutput> {
 
    @Override
@@ -30,10 +30,10 @@ public interface SubscriptionMapper extends BaseMapper<SubscriptionEntity, Subsc
                                        PricingEntity pricingEntity,
                                        List<PeriodEntity> periods) {
       return SubscriptionEntity.builder()
-              .customer(customerEntity)
-              .pricing(pricingEntity)
-              .subscriptionPeriods(periods)
-              .finished(false)
-              .build();
+         .customer(customerEntity)
+         .pricing(pricingEntity)
+         .subscriptionPeriods(periods)
+         .finished(false)
+         .build();
    }
 }

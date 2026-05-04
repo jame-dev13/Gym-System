@@ -9,16 +9,16 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring", uses = UserMapper.class, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
-public interface CustomerMapper extends BaseMapper<CustomerEntity, CustomerDtoOutput>{
+public interface CustomerMapper extends BaseMapper<CustomerEntity, CustomerDtoOutput> {
 
    @Override
    @Mapping(target = "contact", source = "phoneContact")
    CustomerDtoOutput toDto(CustomerEntity entity);
 
-   default CustomerEntity toEntity(CustomerDtoInput dto, UserEntity user){
+   default CustomerEntity toEntity(CustomerDtoInput dto, UserEntity user) {
       return CustomerEntity.builder()
-              .user(user)
-              .phoneContact(dto.contact())
-              .build();
+         .user(user)
+         .phoneContact(dto.contact())
+         .build();
    }
 }

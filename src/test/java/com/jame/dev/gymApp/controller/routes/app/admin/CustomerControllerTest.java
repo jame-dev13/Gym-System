@@ -10,6 +10,7 @@ import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
 import com.jame.dev.gymApp.model.dto.out.PageDto;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
+import com.jame.dev.gymApp.service.in.CustomerRecoverService;
 import com.jame.dev.gymApp.service.in.CustomerService;
 import com.jame.dev.gymApp.shared.enums.Role;
 import config.TestConfig;
@@ -72,6 +73,9 @@ class CustomerControllerTest {
 
    @MockitoBean
    private CustomerService customerService;
+
+   @MockitoBean
+   private CustomerRecoverService recoverService;
 
    private final String URI_TEMPLATE = "/app/v1/administration/customers";
    private final CustomerDtoOutput customerDtoOutput = new CustomerDtoOutput(
@@ -205,7 +209,7 @@ class CustomerControllerTest {
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.*").exists())
             .andExpect(jsonPath("$.status").value(409))
-            .andExpect(jsonPath("$.code").value("ACCESS_OPERATION"));
+            .andExpect(jsonPath("$.code").value("VALIDATION_OPERATION"));
          then(customerService).should(times(1)).save(any(CustomerDtoInput.class));
       }
 

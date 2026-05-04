@@ -4,6 +4,7 @@ import com.jame.dev.gymApp.entity.RoleEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
+import com.jame.dev.gymApp.model.dto.out.UserMinimalInfo;
 import org.mapstruct.Builder;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
@@ -17,6 +18,8 @@ import java.util.Set;
 public interface UserMapper extends BaseMapper<UserEntity, UserDtoOutput> {
    @Override
    UserDtoOutput toDto(UserEntity user);
+
+   UserMinimalInfo toMinimalInfo(UserEntity user);
 
    default UserEntity toEntity(UserDtoInput dto, Set<RoleEntity> roles) {
       if (dto == null) return null;

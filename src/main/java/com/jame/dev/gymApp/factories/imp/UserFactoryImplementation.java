@@ -9,6 +9,7 @@ import com.jame.dev.gymApp.mapper.UserMapper;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.PageDto;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
+import com.jame.dev.gymApp.model.dto.out.UserMinimalInfo;
 import com.jame.dev.gymApp.repository.RoleRepository;
 import com.jame.dev.gymApp.shared.enums.AuthProvider;
 import lombok.RequiredArgsConstructor;
@@ -46,5 +47,17 @@ public class UserFactoryImplementation implements UserFactory {
          userEntity.setPassword(passwordEncoder.encode(dto.password()));
       userEntity.setCreatedAt(Instant.now());
       return userEntity;
+   }
+
+   @Override
+   public PageDto<UserMinimalInfo> createMinimalInfoPage(Page<UserMinimalInfo> page) {
+      return new PageDto<>(
+         page.getContent(),
+         page.getNumber(),
+         page.getSize(),
+         page.getTotalElements(),
+         page.getSort().toString(),
+         page.getSort().isSorted() ? "ASC" : "DESC"
+      );
    }
 }

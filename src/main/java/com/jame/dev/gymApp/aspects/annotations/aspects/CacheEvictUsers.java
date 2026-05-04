@@ -1,6 +1,5 @@
 package com.jame.dev.gymApp.aspects.annotations.aspects;
 
-import com.jame.dev.gymApp.shared.enums.CacheValues;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 
@@ -17,17 +16,16 @@ import static com.jame.dev.gymApp.shared.enums.CacheValues.*;
       value = {
          USERS,
          CUSTOMERS,
-         CUSTOMER
+         USERS_INACTIVE,
       },
       allEntries = true,
-      cacheManager = "redisCacheManager",
-      beforeInvocation = true),
+      beforeInvocation = true,
+      cacheManager = "redisCacheManager"
+   ),
    @CacheEvict(
-      value = CacheValues.USER,
+      value = USER,
       key = "#id",
-      allEntries = true,
-      cacheManager = "redisCacheManager",
-      beforeInvocation = true
+      cacheManager = "redisCacheManager"
    )
 })
 public @interface CacheEvictUsers {

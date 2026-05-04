@@ -1,4 +1,4 @@
 package com.jame.dev.gymApp.model.listeners;
 
-public record UserDeletedEvent(long userId) {
+public record UserRecoveredEvent(long userId) {
 }

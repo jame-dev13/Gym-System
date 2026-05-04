@@ -18,7 +18,7 @@ import java.util.function.Function;
 public abstract class BaseController<OUT, IN> {
 
    protected final BaseService<OUT, IN> service;
-   private final Function<OUT, Long> idExtractor;
+   protected final Function<OUT, Long> idExtractor;
 
    protected BaseController(
       BaseService<OUT, IN> service,

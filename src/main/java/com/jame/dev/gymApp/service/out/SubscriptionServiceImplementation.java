@@ -22,7 +22,6 @@ import com.jame.dev.gymApp.updaters.in.SubscriptionUpdater;
 import com.jame.dev.gymApp.validators.SubscriptionValidator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -35,7 +34,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Validated
@@ -52,7 +50,7 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Cacheable(
       value = CacheValues.SUBSCRIPTIONS,
       key = "#pageable.pageNumber + ':' + #pageable.pageSize",
-      unless = "#result == null"
+      unless = "#result == null || #result.content.isEmpty()"
    )
    public PageDto<SubscriptionDtoOutput> getPage(@NonNull Pageable pageable) {
       final Page<SubscriptionEntity> entityPage = repo.findAll(pageable);

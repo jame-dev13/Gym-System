@@ -1,16 +1,17 @@
 package com.jame.dev.gymApp.service.out;
 
 import com.jame.dev.gymApp.aspects.annotations.aspects.CacheEvictCustomers;
-import com.jame.dev.gymApp.aspects.annotations.aspects.PublishCustomerDeleted;
 import com.jame.dev.gymApp.entity.CustomerEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
 import com.jame.dev.gymApp.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.factories.in.CustomerFactory;
 import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
 import com.jame.dev.gymApp.model.dto.in.CustomerFactoryDtoInput;
+import com.jame.dev.gymApp.model.dto.in.RecoveryRequest;
 import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
 import com.jame.dev.gymApp.model.dto.out.PageDto;
 import com.jame.dev.gymApp.repository.CustomerRepository;
+import com.jame.dev.gymApp.service.in.CustomerRecoverService;
 import com.jame.dev.gymApp.service.in.CustomerService;
 import com.jame.dev.gymApp.shared.enums.CacheValues;
 import com.jame.dev.gymApp.updaters.in.CustomerUpdater;
@@ -27,10 +28,12 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
 
+import static com.jame.dev.gymApp.shared.enums.CacheValues.CUSTOMERS;
+
 @Service
 @RequiredArgsConstructor
 @Validated
-public class CustomerServiceImplementation implements CustomerService {
+public class CustomerServiceImplementation implements CustomerService, CustomerRecoverService {
    private final CustomerRepository repo;
    private final CustomerValidator customerValidator;
    private final CustomerFactory customerFactory;
@@ -39,9 +42,9 @@ public class CustomerServiceImplementation implements CustomerService {
    @Override
    @Transactional(readOnly = true)
    @Cacheable(
-      value = CacheValues.CUSTOMERS,
+      value = CUSTOMERS,
       key = "#pageable.pageNumber + ':' + #pageable.pageSize",
-      unless = "#result == null"
+      unless = "#result == null || #result.content.isEmpty()"
    )
    public PageDto<CustomerDtoOutput> getPage(Pageable pageable) {
       final Page<CustomerEntity> page = repo.findAll(pageable);
@@ -88,7 +91,7 @@ public class CustomerServiceImplementation implements CustomerService {
 
    @Override
    @Transactional
-   @CacheEvict(value = CacheValues.CUSTOMERS, allEntries = true)
+   @CacheEvict(value = CUSTOMERS, allEntries = true)
    public CustomerDtoOutput save(@NonNull CustomerDtoInput dto) {
       final UserEntity user = customerValidator.validateUserBeforeCreation(dto);
       final CustomerEntity customerEntity = customerFactory
@@ -101,8 +104,14 @@ public class CustomerServiceImplementation implements CustomerService {
    @Override
    @Transactional
    @CacheEvictCustomers
-   @PublishCustomerDeleted
    public void softDelete(long id) {
       repo.deleteById(id);
+   }
+
+   @Override
+   @Transactional
+   @CacheEvict(value = CUSTOMERS, allEntries = true)
+   public void recover(RecoveryRequest recoveryRequest) {
+      repo.recoverCustomer(recoveryRequest.email());
    }
 }
