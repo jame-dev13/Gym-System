@@ -10,24 +10,21 @@ import static com.jame.dev.gymApp.shared.enums.CacheValues.*;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-@Documented()
+@Documented
 @Caching(evict = {
    @CacheEvict(
       value = {
          CUSTOMERS,
          SUBSCRIPTIONS,
-         SUBSCRIPTION
       },
+      beforeInvocation = true,
       allEntries = true,
-      cacheManager = "redisCacheManager",
-      beforeInvocation = true
+      cacheManager = "redisCacheManager"
    ),
    @CacheEvict(
       value = CUSTOMER,
       key = "#id",
-      allEntries = true,
-      cacheManager = "redisCacheManager",
-      beforeInvocation = true
+      cacheManager = "redisCacheManager"
    )
 })
 public @interface CacheEvictCustomers {

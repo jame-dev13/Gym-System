@@ -18,8 +18,8 @@ import java.util.Set;
 @Builder
 @Entity
 @Table(name = "users", indexes = {
-        @Index(name = "idx_users_email_unq", columnList = "email", unique = true),
-        @Index(name = "idx_users_pagination", columnList = "id, active")
+   @Index(name = "idx_users_email_unq", columnList = "email", unique = true),
+   @Index(name = "idx_users_pagination", columnList = "id, active")
 })
 @SQLDelete(sql = "UPDATE users SET active = false, deleted_at = NOW() WHERE id = ?", table = "users")
 public class UserEntity extends BaseEntity {
@@ -43,9 +43,23 @@ public class UserEntity extends BaseEntity {
    @EqualsAndHashCode.Exclude
    @ToString.Exclude
    @ManyToMany(fetch = FetchType.EAGER,
-           cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
    @JoinTable(name = "user_roles",
-           joinColumns = @JoinColumn(name = "user_id"),
-           inverseJoinColumns = @JoinColumn(name = "role_id"))
+      joinColumns = @JoinColumn(name = "user_id"),
+      inverseJoinColumns = @JoinColumn(name = "role_id"))
    private Set<RoleEntity> roles = new HashSet<>();
+
+   @OneToOne(
+      mappedBy = "user",
+      orphanRemoval = true)
+   private CustomerEntity customerEntity;
+
+   @Builder
+   public UserEntity(String name, String email, String password, AuthProvider provider, Set<RoleEntity> roles) {
+      this.name = name;
+      this.email = email;
+      this.password = password;
+      this.provider = provider;
+      this.roles = roles;
+   }
 }

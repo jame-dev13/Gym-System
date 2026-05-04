@@ -13,7 +13,7 @@ import java.time.Instant;
 @Setter
 @ToString
 @Table(name = "tokens", indexes = {
-        @Index(name = "idx_verification_user_unq", columnList = "user_id", unique = true)
+   @Index(name = "idx_verification_user_unq", columnList = "user_id", unique = true)
 })
 public class VerificationEntity {
    @Id
@@ -22,10 +22,16 @@ public class VerificationEntity {
    private Long id;
 
    @OneToOne(
-           fetch = FetchType.LAZY,
-           optional = false,
-           cascade = {CascadeType.REFRESH, CascadeType.MERGE})
-   @JoinColumn(name = "user_id")
+      fetch = FetchType.LAZY,
+      optional = false)
+   @JoinColumn(
+      name = "user_id",
+      unique = true,
+      foreignKey = @ForeignKey(
+         name = "fk_verifications_user_id",
+         foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+      )
+   )
    @NonNull
    private UserEntity user;
 

@@ -208,7 +208,7 @@ public class GlobalExceptionHandler {
            NoActiveException ex,
            HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.CONFLICT, ErrorCodes.ACCESS));
+              ex, request, HttpStatus.CONFLICT, ErrorCodes.VALIDATION));
    }
 
    @ExceptionHandler(EmailNotFoundException.class)

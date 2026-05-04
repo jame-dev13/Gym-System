@@ -6,6 +6,8 @@ import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -26,7 +28,11 @@ public class CustomerEntity extends BaseEntity {
    @JoinColumn(
       name = "user_id",
       nullable = false,
-      unique = true)
+      unique = true,
+      foreignKey = @ForeignKey(
+         name = "fk_customer_user_id",
+         foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+      ))
    @ToString.Exclude
    @NonNull
    private UserEntity user;
@@ -34,4 +40,13 @@ public class CustomerEntity extends BaseEntity {
    @Nullable
    @Column(name = "contact", length = 15)
    private String phoneContact;
+
+   @OneToMany(mappedBy = "customer", orphanRemoval = true)
+   private List<SubscriptionEntity> subscriptions;
+
+   @Builder
+   public CustomerEntity(@NonNull UserEntity user, @Nullable String phoneContact) {
+      this.user = user;
+      this.phoneContact = phoneContact;
+   }
 }

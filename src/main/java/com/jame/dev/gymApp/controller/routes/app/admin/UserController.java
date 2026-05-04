@@ -4,8 +4,10 @@ import com.jame.dev.gymApp.aspects.annotations.aspects.PublishVerifyAndNotifyUse
 import com.jame.dev.gymApp.aspects.annotations.constraints.Minimum;
 import com.jame.dev.gymApp.aspects.annotations.constraints.NotNullObject;
 import com.jame.dev.gymApp.controller.service.BaseController;
+import com.jame.dev.gymApp.controller.service.out.UserInactiveController;
 import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
 import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
+import com.jame.dev.gymApp.model.dto.out.UserMinimalInfo;
 import com.jame.dev.gymApp.service.in.UserService;
 import jakarta.validation.Valid;
 import lombok.NonNull;
@@ -19,8 +21,14 @@ import org.springframework.web.bind.annotation.*;
 @PreAuthorize("hasRole('ADMIN')")
 public class UserController extends BaseController<UserDtoOutput, UserDtoInput> {
 
-   public UserController(final UserService service) {
+   private final UserInactiveController inactiveController;
+
+   public UserController(
+      final UserService service,
+      final UserInactiveController inactiveController
+   ) {
       super(service, UserDtoOutput::id);
+      this.inactiveController = inactiveController;
    }
 
    @GetMapping
@@ -28,6 +36,14 @@ public class UserController extends BaseController<UserDtoOutput, UserDtoInput> 
       @RequestParam("page") final int page,
       @RequestParam("size") final int size) {
       return super.getPage(page, size);
+   }
+
+   @GetMapping("/inactive")
+   public ResponseEntity<Page<UserMinimalInfo>> getInactivePage(
+      @RequestParam("page") final int page,
+      @RequestParam("size") final int size
+   ) {
+      return this.inactiveController.getInactivePage(page, size);
    }
 
    @GetMapping("/{id}")
@@ -54,10 +70,24 @@ public class UserController extends BaseController<UserDtoOutput, UserDtoInput> 
       return super.update(id, userDtoInput);
    }
 
+   @PatchMapping("/{id}/recover")
+   public ResponseEntity<Void> recoverUser(
+      @PathVariable("id")
+      @Minimum long id) {
+      return this.inactiveController.recover(id);
+   }
+
    @DeleteMapping("/{id}")
    public ResponseEntity<@NonNull Void> deleteUser(
       @PathVariable("id")
       @Minimum final long id) {
       return super.delete(id);
+   }
+
+   @DeleteMapping("/{id}/hard")
+   public ResponseEntity<Void> deleteUserHard(
+      @PathVariable("id")
+      @Minimum final long id) {
+      return this.inactiveController.hardDelete(id);
    }
 }
