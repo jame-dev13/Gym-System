@@ -4,6 +4,7 @@ import com.jame.dev.gymApp.service.in.TokenGeneratorService;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.util.Base64;
 
 @Service
 public class TokenGeneratorImplementation implements TokenGeneratorService {
@@ -11,13 +12,19 @@ public class TokenGeneratorImplementation implements TokenGeneratorService {
 
    @Override
    public String generateToken() {
-      final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-      final StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < 6; i++) {
-         int index = random.nextInt(CHARACTERS.length());
-         char character = CHARACTERS.charAt(index);
-         sb.append(character);
-      }
-      return sb.toString();
+      byte[] bytes = new byte[6];
+      random.nextBytes(bytes);
+      return Base64.getUrlEncoder()
+         .withoutPadding()
+         .encodeToString(bytes);
+   }
+
+   @Override
+   public String generateTokenOneTimeToken() {
+      byte[] bytes = new byte[32];
+      random.nextBytes(bytes);
+      return Base64.getUrlEncoder()
+         .withoutPadding()
+         .encodeToString(bytes);
    }
 }
