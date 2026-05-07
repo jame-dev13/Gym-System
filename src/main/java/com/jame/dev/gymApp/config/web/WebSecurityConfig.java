@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -48,8 +47,7 @@ public class WebSecurityConfig {
             corsConfig.configurationSourceDev())
          )
          .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
-            .requestMatchers(HttpMethod.PATCH, "/auth/verify/**").permitAll()
+            .requestMatchers("/auth/**").permitAll()
             .requestMatchers("/oauth2/**", "/login/oauth2/**", "/oauth2/authorization/**").permitAll()
             .requestMatchers("/error").permitAll()
             .requestMatchers("/favicon.ico").permitAll()
@@ -93,8 +91,7 @@ public class WebSecurityConfig {
          .csrf(AbstractHttpConfigurer::disable)
          .cors(cors -> cors.configurationSource(corsConfig.configurationSourceProd()))
          .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
-            .requestMatchers(HttpMethod.PATCH, "/auth/verify/**").permitAll()
+            .requestMatchers("/auth/**").permitAll()
             .requestMatchers("/oauth2/**", "/login/oauth2/**", "/oauth2/authorization/**").permitAll()
             .requestMatchers("/error").permitAll()
             .requestMatchers("/favicon.ico").permitAll()

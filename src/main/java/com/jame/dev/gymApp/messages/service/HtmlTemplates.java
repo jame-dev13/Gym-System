@@ -262,6 +262,65 @@ public final class HtmlTemplates {
            """
               .replace("{{recipient}}", subject)
               .replace("{{token}}", rawToken);
-   }
+    }
+
+    public static String magicUrlTemplate(final String magicUrl) {
+        return """
+               <!DOCTYPE html>
+               <html>
+               <head>
+                   <meta charset="UTF-8">
+                   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                   <title>Magic Link</title>
+               </head>
+               <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f9; color: #333;">
+                   <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                       <tr>
+                           <td align="center" style="padding: 40px 0;">
+                               <table border="0" cellpadding="0" cellspacing="0" width="600"
+                                      style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                                   <tr>
+                                       <td align="center" style="background-color: #0891b2; padding: 30px 20px;">
+                                           <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Magic Link</h1>
+                                       </td>
+                                   </tr>
+                                   <tr>
+                                       <td style="padding: 40px 30px;">
+                                           <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+                                               Hello! Click the button below to complete your requested action. No additional codes are required.
+                                           </p>
+                                           <p style="font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 30px;">
+                                               This link is valid for the next <strong>10 minutes</strong>. If you didn't request this, please ignore this email and your account will remain secure.
+                                           </p>
+                                           <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                               <tr>
+                                                   <td align="center">
+                                                       <a href="{{url}}"
+                                                          style="background-color: #0891b2; color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                                                           Click to Proceed
+                                                       </a>
+                                                   </td>
+                                               </tr>
+                                           </table>
+                                           <p style="font-size: 12px; color: #94a3b8; margin-top: 20px; text-align: center;">
+                                               If the button doesn't work, copy and paste this URL into your browser: <br>
+                                               <span style="color: #0891b2; word-break: break-all;">{{url}}</span>
+                                           </p>
+                                       </td>
+                                   </tr>
+                                   <tr>
+                                       <td align="center" style="padding: 20px; background-color: #f1f5f9; color: #94a3b8; font-size: 12px;">
+                                           <p style="margin: 0;">This is an automated message, please don't reply to this email.</p>
+                                           <p style="margin: 5px 0 0;">&copy; 2024 GymApp - All rights reserved.</p>
+                                       </td>
+                                   </tr>
+                               </table>
+                           </td>
+                       </tr>
+                   </table>
+               </body>
+               </html>
+               """.replace("{{url}}", magicUrl);
+    }
 
 }
