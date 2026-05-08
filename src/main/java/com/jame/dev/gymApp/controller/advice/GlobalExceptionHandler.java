@@ -349,4 +349,31 @@ public class GlobalExceptionHandler {
               .buildResponse(new InputError(
                       ex, request, HttpStatus.LOCKED, ErrorCodes.ACCESS_DENIED));
    }
+
+   @ExceptionHandler(OTTNotFoundException.class)
+   public ResponseEntity<ApiErrorResponse> handleOTTNotFoundException(
+      OTTNotFoundException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
+   }
+
+   @ExceptionHandler(UserEntityNotFoundException.class)
+   public ResponseEntity<ApiErrorResponse> handleUserEntityNotFoundException(
+      UserEntityNotFoundException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
+   }
+
+   @ExceptionHandler(UnverifiedOTTException.class)
+   public ResponseEntity<ApiErrorResponse> handleUnverifiedOTTException(
+      UnverifiedOTTException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.ACCESS_DENIED));
+   }
 }

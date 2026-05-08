@@ -39,6 +39,9 @@ public class OneTimeTokenEntity {
    @Column(name = "hash_token", nullable = false)
    private String hashToken;
 
+   @Column(name = "token_verified", nullable = false)
+   private boolean tokenVerified = false;
+
    @Column(name = "created_at", nullable = false)
    private Instant createdAt;
 

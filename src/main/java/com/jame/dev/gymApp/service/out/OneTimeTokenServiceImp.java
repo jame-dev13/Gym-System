@@ -2,10 +2,7 @@ package com.jame.dev.gymApp.service.out;
 
 import com.jame.dev.gymApp.entity.OneTimeTokenEntity;
 import com.jame.dev.gymApp.entity.UserEntity;
-import com.jame.dev.gymApp.exception.ExpiredException;
-import com.jame.dev.gymApp.exception.MissMatchException;
-import com.jame.dev.gymApp.exception.OTTNotFoundException;
-import com.jame.dev.gymApp.exception.UserEntityNotFoundException;
+import com.jame.dev.gymApp.exception.*;
 import com.jame.dev.gymApp.model.dto.auth.TokenIdResetPasswordRequest;
 import com.jame.dev.gymApp.model.dto.in.PasswordResetDtoInput;
 import com.jame.dev.gymApp.repository.OneTimeTokenRepository;
@@ -40,6 +37,7 @@ public class OneTimeTokenServiceImp implements OneTimeTokenService {
    }
 
    @Override
+   @Transactional
    public void validateTokenRequest(
       final TokenIdResetPasswordRequest tokenIdResetPasswordRequest) {
       final OneTimeTokenEntity resetTokenEntity = repository
@@ -60,6 +58,8 @@ public class OneTimeTokenServiceImp implements OneTimeTokenService {
       if (!hashMatches) {
          throw new MissMatchException("Tokens doesn't match");
       }
+
+      resetTokenEntity.setTokenVerified(Boolean.TRUE);
    }
 
    @Override
@@ -68,8 +68,11 @@ public class OneTimeTokenServiceImp implements OneTimeTokenService {
       final UserEntity user = userRepository.findByEmail(passwordResetDtoInput.email())
          .orElseThrow(() -> new UserEntityNotFoundException("User not found."));
 
-      if (!repository.existsByUserId(user.getId())) {
-         throw new OTTNotFoundException("Reset password is not allowed.");
+      final var ott = repository.findByUserId(user.getId())
+         .orElseThrow(() -> new OTTNotFoundException("Reset password is not allowed."));
+
+      if(!ott.isTokenVerified()) {
+         throw new UnverifiedOTTException("Token unchecked.");
       }
 
       final String newPasswordHashed = passwordEncoder.encode(passwordResetDtoInput.newPassword());
