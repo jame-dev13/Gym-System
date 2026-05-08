@@ -9,6 +9,7 @@ import com.jame.dev.gymApp.model.dto.in.RecoveryRequest;
 import com.jame.dev.gymApp.service.in.OneTimeTokenService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,9 @@ import static jakarta.servlet.http.HttpServletResponse.SC_FOUND;
 @RequiredArgsConstructor
 @Validated
 public class PasswordResetController {
+   @Value("${app.auth.redirect.url.password-reset:}")
+   private String REDIRECT_URL;
+
    private final OneTimeTokenService oneTimeTokenService;
 
    @PostMapping("/request-reset")
@@ -47,7 +51,7 @@ public class PasswordResetController {
          )
       );
       return ResponseEntity.status(SC_FOUND)
-         .location(URI.create("http://localhost:5173/password-reset"))
+         .location(URI.create(REDIRECT_URL))
          .build();
    }
 

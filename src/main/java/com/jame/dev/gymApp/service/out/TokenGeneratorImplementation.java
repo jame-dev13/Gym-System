@@ -9,14 +9,17 @@ import java.util.Base64;
 @Service
 public class TokenGeneratorImplementation implements TokenGeneratorService {
    private final SecureRandom random = new SecureRandom();
+   private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTWVXYZ0123456789";
 
    @Override
    public String generateToken() {
-      byte[] bytes = new byte[6];
-      random.nextBytes(bytes);
-      return Base64.getUrlEncoder()
-         .withoutPadding()
-         .encodeToString(bytes);
+      final StringBuilder sb = new StringBuilder(6);
+      final int capacity = sb.capacity();
+      for (int i = 0; i < capacity; i++) {
+         final char ch = CHARACTERS.charAt(random.nextInt(CHARACTERS.length()));
+         sb.append(ch);
+      }
+      return sb.toString();
    }
 
    @Override
