@@ -14,6 +14,7 @@ import com.jame.dev.gymApp.repository.CustomerRepository;
 import com.jame.dev.gymApp.service.in.CustomerRecoverService;
 import com.jame.dev.gymApp.service.in.CustomerService;
 import com.jame.dev.gymApp.shared.enums.CacheValues;
+import com.jame.dev.gymApp.specifications.CustomerSpecification;
 import com.jame.dev.gymApp.updaters.in.CustomerUpdater;
 import com.jame.dev.gymApp.validators.CustomerValidator;
 import lombok.NonNull;
@@ -22,6 +23,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -43,11 +45,12 @@ public class CustomerServiceImplementation implements CustomerService, CustomerR
    @Transactional(readOnly = true)
    @Cacheable(
       value = CUSTOMERS,
-      key = "#pageable.pageNumber + ':' + #pageable.pageSize",
+      keyGenerator = "pageKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
-   public PageDto<CustomerDtoOutput> getPage(Pageable pageable) {
-      final Page<CustomerEntity> page = repo.findAll(pageable);
+   public PageDto<CustomerDtoOutput> getPage(Pageable pageable, String search) {
+      final Specification<CustomerEntity> spec = new CustomerSpecification(search);
+      final Page<CustomerEntity> page = repo.findAll(spec, pageable);
       return customerFactory.createPageFrom(page);
    }
 

@@ -16,6 +16,7 @@ import com.jame.dev.gymApp.service.in.UserInactiveService;
 import com.jame.dev.gymApp.service.in.UserService;
 import com.jame.dev.gymApp.shared.enums.CacheValues;
 import com.jame.dev.gymApp.shared.enums.Role;
+import com.jame.dev.gymApp.specifications.UserSpecifications;
 import com.jame.dev.gymApp.updaters.in.UserUpdater;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -51,11 +53,12 @@ public class UserServiceImplementation implements
    @Transactional(readOnly = true)
    @Cacheable(
       value = CacheValues.USERS,
-      key = "#pageable.pageNumber + ':' + #pageable.pageSize",
+      keyGenerator = "pageKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
-   public PageDto<UserDtoOutput> getPage(Pageable pageable) {
-      final Page<UserEntity> entityPage = repo.findAll(pageable);
+   public PageDto<UserDtoOutput> getPage(Pageable pageable, String search) {
+      final Specification<UserEntity> spec = new UserSpecifications(search);
+      final Page<UserEntity> entityPage = repo.findAll(spec, pageable);
       return userFactory.createPageFrom(entityPage);
    }
 

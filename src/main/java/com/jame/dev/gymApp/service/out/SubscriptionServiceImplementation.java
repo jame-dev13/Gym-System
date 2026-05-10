@@ -18,14 +18,15 @@ import com.jame.dev.gymApp.repository.PricingRepository;
 import com.jame.dev.gymApp.repository.SubscriptionRepository;
 import com.jame.dev.gymApp.service.in.SubscriptionService;
 import com.jame.dev.gymApp.shared.enums.CacheValues;
+import com.jame.dev.gymApp.specifications.SubscriptionSpecification;
 import com.jame.dev.gymApp.updaters.in.SubscriptionUpdater;
 import com.jame.dev.gymApp.validators.SubscriptionValidator;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -49,11 +50,12 @@ public class SubscriptionServiceImplementation implements SubscriptionService {
    @Transactional(readOnly = true)
    @Cacheable(
       value = CacheValues.SUBSCRIPTIONS,
-      key = "#pageable.pageNumber + ':' + #pageable.pageSize",
+      keyGenerator = "pageKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
-   public PageDto<SubscriptionDtoOutput> getPage(@NonNull Pageable pageable) {
-      final Page<SubscriptionEntity> entityPage = repo.findAll(pageable);
+   public PageDto<SubscriptionDtoOutput> getPage(Pageable pageable, String search) {
+      final Specification<SubscriptionEntity> spec = new SubscriptionSpecification(search);
+      final Page<SubscriptionEntity> entityPage = repo.findAll(spec, pageable);
       return subscriptionFactory.createPageFrom(entityPage);
    }
 
