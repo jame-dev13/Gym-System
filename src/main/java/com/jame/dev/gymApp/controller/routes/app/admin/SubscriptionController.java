@@ -9,6 +9,9 @@ import com.jame.dev.gymApp.service.in.SubscriptionService;
 import jakarta.validation.Valid;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +28,11 @@ public class SubscriptionController extends
 
    @GetMapping
    public ResponseEntity<@NonNull Page<@NonNull SubscriptionDtoOutput>> getSubscriptionPage(
-           @RequestParam("page") final int page,
-           @RequestParam("size") final int size) {
-      return super.getPage(page, size);
+      @PageableDefault(
+         sort = "id",
+         direction = Sort.Direction.DESC) final Pageable pageable,
+      @RequestParam(required = false, name = "search") String search) {
+      return super.getPage(pageable, search);
    }
 
    @GetMapping("/{id}")
