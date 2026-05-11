@@ -1,10 +1,10 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.entity.MemberShipEntity;
-import com.jame.dev.gymApp.entity.PricingEntity;
-import com.jame.dev.gymApp.repository.PricingRepository;
-import com.jame.dev.gymApp.service.out.PricingServiceImplementation;
-import com.jame.dev.gymApp.shared.enums.Membership;
+import com.jame.dev.gymApp.features.subscription.domain.model.MemberShipEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.repository.PricingRepository;
+import com.jame.dev.gymApp.features.subscription.application.service.PricingApplicationService;
+import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +28,7 @@ public class PricingServiceTest {
    private PricingRepository repo;
 
    @InjectMocks
-   private PricingServiceImplementation service;
+   private PricingApplicationService service;
 
    private final MemberShipEntity memberShipEntityTest = MemberShipEntity.builder()
            .id(1)

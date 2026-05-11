@@ -1,12 +1,13 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
-import com.jame.dev.gymApp.auth.filters.CustomAuthorizationFilter;
-import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
-import com.jame.dev.gymApp.controller.advice.GlobalExceptionHandler;
+import com.jame.dev.gymApp.features.auth.api.RecoveryAccountController;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
+import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
+import com.jame.dev.gymApp.presentation.exception.GlobalExceptionHandler;
 import config.TestConfig;
 import config.TestDataSource;
 import config.TestValidationConfig;
-import com.jame.dev.gymApp.service.in.AccountRecoveryService;
+import com.jame.dev.gymApp.features.auth.application.contract.recovery.AccountRecoveryService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.DisplayName;

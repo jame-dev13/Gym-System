@@ -1,14 +1,18 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.entity.OneTimeTokenEntity;
-import com.jame.dev.gymApp.entity.UserEntity;
-import com.jame.dev.gymApp.exception.*;
-import com.jame.dev.gymApp.model.dto.auth.TokenIdResetPasswordRequest;
-import com.jame.dev.gymApp.model.dto.in.PasswordResetDtoInput;
-import com.jame.dev.gymApp.repository.OneTimeTokenRepository;
-import com.jame.dev.gymApp.repository.UserRepository;
-import com.jame.dev.gymApp.service.in.TokenDBHasherService;
-import com.jame.dev.gymApp.service.out.OneTimeTokenServiceImp;
+import com.jame.dev.gymApp.domain.exception.MissMatchException;
+import com.jame.dev.gymApp.domain.exception.OTTNotFoundException;
+import com.jame.dev.gymApp.features.auth.domain.exception.ExpiredException;
+import com.jame.dev.gymApp.features.auth.domain.exception.UnverifiedOTTException;
+import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;
+import com.jame.dev.gymApp.features.auth.domain.model.OneTimeTokenEntity;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
+import com.jame.dev.gymApp.features.auth.api.request.TokenIdResetPasswordRequest;
+import com.jame.dev.gymApp.features.auth.api.request.PasswordResetRequest;
+import com.jame.dev.gymApp.features.auth.application.contract.OneTimeTokenRepository;
+import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
+import com.jame.dev.gymApp.application.contract.TokenDBHasherService;
+import com.jame.dev.gymApp.features.auth.application.service.OneTimeTokenApplicationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,7 +46,7 @@ class OneTimeTokenServiceTest {
    private PasswordEncoder passwordEncoder;
 
    @InjectMocks
-   private OneTimeTokenServiceImp underTest;
+   private OneTimeTokenApplicationService underTest;
 
    @Nested
    @DisplayName("Tests for saveToken method")
@@ -157,7 +161,7 @@ class OneTimeTokenServiceTest {
          String email = "test@example.com";
          String newPassword = "newPassword123";
          String hashedNewPassword = "hashedNewPassword";
-         PasswordResetDtoInput request = new PasswordResetDtoInput(email, newPassword);
+         PasswordResetRequest request = new PasswordResetRequest(email, newPassword);
 
          UserEntity user = mock(UserEntity.class);
          OneTimeTokenEntity tokenEntity = mock(OneTimeTokenEntity.class);
@@ -179,7 +183,7 @@ class OneTimeTokenServiceTest {
       @Test
       @DisplayName("Should throw UserEntityNotFoundException when email not found")
       void shouldThrowUserNotFoundWhenEmailInvalid() {
-         PasswordResetDtoInput request = new PasswordResetDtoInput("nonexistent@example.com", "newPass");
+         PasswordResetRequest request = new PasswordResetRequest("nonexistent@example.com", "newPass");
          willThrow(UserEntityNotFoundException.class)
             .given(userRepository)
             .findByEmail(request.email());
@@ -192,7 +196,7 @@ class OneTimeTokenServiceTest {
       @DisplayName("Should throw OTTNotFoundException when no token exists for user")
       void shouldThrowOttNotFoundWhenNoToken() {
          String email = "test@example.com";
-         PasswordResetDtoInput request = new PasswordResetDtoInput(email, "newPass");
+         PasswordResetRequest request = new PasswordResetRequest(email, "newPass");
 
          willThrow(OTTNotFoundException.class).given(userRepository).findByEmail(email);
 
@@ -204,7 +208,7 @@ class OneTimeTokenServiceTest {
       @DisplayName("Should Throw UnverifiedOTTException when token is not verified.")
       void shouldThrowUnverifiedOTTExceptionWhenTokenUnverified() {
          String email = "test@example.com";
-         PasswordResetDtoInput request = new PasswordResetDtoInput(email, "newPass");
+         PasswordResetRequest request = new PasswordResetRequest(email, "newPass");
 
          UserEntity user = mock(UserEntity.class);
          OneTimeTokenEntity tokenEntity = mock(OneTimeTokenEntity.class);

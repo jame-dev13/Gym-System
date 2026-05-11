@@ -1,20 +1,25 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.entity.*;
-import com.jame.dev.gymApp.exception.AlreadyExistsException;
-import com.jame.dev.gymApp.exception.CustomerNotFoundException;
-import com.jame.dev.gymApp.factories.in.SubscriptionFactory;
-import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
-import com.jame.dev.gymApp.model.dto.in.SubscriptionFactoryDtoInput;
-import com.jame.dev.gymApp.model.dto.out.PageDto;
-import com.jame.dev.gymApp.model.dto.out.SubscriptionDtoOutput;
-import com.jame.dev.gymApp.repository.CustomerRepository;
-import com.jame.dev.gymApp.repository.PricingRepository;
-import com.jame.dev.gymApp.repository.SubscriptionRepository;
-import com.jame.dev.gymApp.service.out.SubscriptionServiceImplementation;
-import com.jame.dev.gymApp.shared.enums.Membership;
-import com.jame.dev.gymApp.updaters.in.SubscriptionUpdater;
-import com.jame.dev.gymApp.validators.SubscriptionValidator;
+import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.MemberShipEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.PeriodEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
+import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
+import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
+import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
+import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
+import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionFactoryDtoInput;
+import com.jame.dev.gymApp.application.dto.PageDto;
+import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
+import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;
+import com.jame.dev.gymApp.features.subscription.domain.repository.PricingRepository;
+import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionRepository;
+import com.jame.dev.gymApp.features.subscription.application.service.SubscriptionApplicationService;
+import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
+import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionUpdater;
+import com.jame.dev.gymApp.features.subscription.application.support.validator.SubscriptionValidator;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,13 +65,13 @@ class SubscriptionServiceTest {
    SubscriptionValidator validator;
 
    @InjectMocks
-   SubscriptionServiceImplementation service;
+   SubscriptionApplicationService service;
 
    private final MemberShipEntity MEMBERSHIP_TEST = new MemberShipEntity(1, Membership.MONTHLY);
    private final PricingEntity pricingMock = new PricingEntity(1, MEMBERSHIP_TEST, BigDecimal.valueOf(300.00));
    private final UserEntity userMock = new UserEntity();
    private final CustomerEntity customerMock = new CustomerEntity();
-   private final SubscriptionDtoInput dtoMock = new SubscriptionDtoInput("customer@mail.com", Membership.MONTHLY);
+   private final SubscriptionRequest dtoMock = new SubscriptionRequest("customer@mail.com", Membership.MONTHLY);
    private final SubscriptionEntity mockSubscription = new SubscriptionEntity();
 
    private final List<SubscriptionEntity> testSubsList = IntStream.range(0, 10)
@@ -100,7 +105,7 @@ class SubscriptionServiceTest {
    void getPageByActive() {
       final Pageable pageable = PageRequest.of(0, 5);
       final List<SubscriptionEntity> subList = testSubsList.subList(0, 5);
-      PageDto<SubscriptionDtoOutput> pageDto = mock();
+      PageDto<SubscriptionResponse> pageDto = mock();
       when(repo.findAll(pageable)).thenReturn(new PageImpl<>(subList));
       when(subscriptionFactory.createPageFrom(any())).thenReturn(pageDto);
 
@@ -118,7 +123,7 @@ class SubscriptionServiceTest {
    @Test
    @DisplayName("Should Get subscription by id")
    void getById() {
-      SubscriptionDtoOutput output = mock();
+      SubscriptionResponse output = mock();
       when(repo.findById(anyLong())).thenReturn(Optional.of(new SubscriptionEntity()));
       when(subscriptionFactory.createFromEntity(any(SubscriptionEntity.class)))
          .thenReturn(output);
@@ -135,7 +140,7 @@ class SubscriptionServiceTest {
    @Test
    @DisplayName("Save subscription")
    void save() {
-      SubscriptionDtoOutput output = mock(SubscriptionDtoOutput.class);
+      SubscriptionResponse output = mock(SubscriptionResponse.class);
       CustomerEntity customerMock = mock(CustomerEntity.class);
       PricingEntity pricingMock = mock(PricingEntity.class);
       SubscriptionEntity subscriptionMock = mock(SubscriptionEntity.class);
@@ -194,7 +199,7 @@ class SubscriptionServiceTest {
    @Test
    @DisplayName("Should update the SubscriptionEntity")
    void update() {
-      SubscriptionDtoOutput output = mock(SubscriptionDtoOutput.class);
+      SubscriptionResponse output = mock(SubscriptionResponse.class);
       SubscriptionEntity subscriptionEntity = new SubscriptionEntity();
       subscriptionEntity.setUpdatedAt(Instant.now());
 
@@ -227,7 +232,7 @@ class SubscriptionServiceTest {
       SubscriptionEntity subscriptionEntity = new SubscriptionEntity();
       subscriptionEntity.setFinished(true);
       subscriptionEntity.setUpdatedAt(Instant.now());
-      SubscriptionDtoOutput output = mock(SubscriptionDtoOutput.class);
+      SubscriptionResponse output = mock(SubscriptionResponse.class);
 
       when(repo.findById(anyLong()))
          .thenReturn(Optional.of(new SubscriptionEntity()));
@@ -248,12 +253,12 @@ class SubscriptionServiceTest {
    @DisplayName("Should renew the subscription")
    void shouldRenewSubscription() {
       String email = "sample@mail.com";
-      SubscriptionDtoInput dtoMock = new SubscriptionDtoInput(email, Membership.MONTHLY);
+      SubscriptionRequest dtoMock = new SubscriptionRequest(email, Membership.MONTHLY);
 
       SubscriptionEntity subscription = mock(SubscriptionEntity.class);
-      SubscriptionDtoOutput output = mock(SubscriptionDtoOutput.class);
+      SubscriptionResponse output = mock(SubscriptionResponse.class);
 
-      when(validator.validateOnRenew(anyLong(), any(SubscriptionDtoInput.class)))
+      when(validator.validateOnRenew(anyLong(), any(SubscriptionRequest.class)))
          .thenReturn(subscription);
       when(pricingRepo.findByMemberShipEntity_Membership(any(Membership.class)))
          .thenReturn(Optional.of(pricingMock));
@@ -265,7 +270,7 @@ class SubscriptionServiceTest {
       final var result = assertDoesNotThrow(() -> service.put(1L, dtoMock));
       assertNotNull(result);
 
-      verify(validator).validateOnRenew(anyLong(), any(SubscriptionDtoInput.class));
+      verify(validator).validateOnRenew(anyLong(), any(SubscriptionRequest.class));
       verify(pricingRepo).findByMemberShipEntity_Membership(any(Membership.class));
       verify(subscriptionUpdater).applyRenew(any(SubscriptionEntity.class), any(PricingEntity.class));
       verify(repo).saveAndFlush(subscription);

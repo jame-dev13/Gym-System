@@ -1,18 +1,18 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.entity.RoleEntity;
-import com.jame.dev.gymApp.entity.UserEntity;
-import com.jame.dev.gymApp.exception.AlreadyExistsException;
-import com.jame.dev.gymApp.exception.NoActiveException;
-import com.jame.dev.gymApp.factories.in.UserFactory;
-import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
-import com.jame.dev.gymApp.model.dto.out.PageDto;
-import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
-import com.jame.dev.gymApp.repository.UserRepository;
-import com.jame.dev.gymApp.service.out.UserServiceImplementation;
-import com.jame.dev.gymApp.shared.enums.AuthProvider;
-import com.jame.dev.gymApp.shared.enums.Role;
-import com.jame.dev.gymApp.updaters.in.UserUpdater;
+import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
+import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
+import com.jame.dev.gymApp.domain.exception.NoActiveException;
+import com.jame.dev.gymApp.features.user.application.contract.UserFactory;
+import com.jame.dev.gymApp.features.user.api.request.UserRequest;
+import com.jame.dev.gymApp.application.dto.PageDto;
+import com.jame.dev.gymApp.features.user.api.response.UserResponse;
+import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
+import com.jame.dev.gymApp.features.user.application.service.UserServiceImplementation;
+import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
+import com.jame.dev.gymApp.features.user.domain.model.Role;
+import com.jame.dev.gymApp.features.user.application.contract.UserUpdater;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,7 +52,7 @@ public class UserServiceTest {
 
    private final UserEntity mockUser = new UserEntity();
 
-   private final UserDtoInput mockDto = new UserDtoInput("name", "email", "pass", AuthProvider.LOCAL, Set.of(Role.USER));
+   private final UserRequest mockDto = new UserRequest("name", "email", "pass", AuthProvider.LOCAL, Set.of(Role.USER));
 
    private final List<UserEntity> testUserList = IntStream.range(0, 10)
            .mapToObj(i -> UserEntity.builder()
@@ -69,7 +69,7 @@ public class UserServiceTest {
    void getUsersByPages() {
       final Pageable pageable = PageRequest.of(0, 5, sort);
       final List<UserEntity> subList = testUserList.subList(0, 5);
-      final PageDto<UserDtoOutput> output = mock();
+      final PageDto<UserResponse> output = mock();
 
       when(repo.findAll(any(Pageable.class)))
               .thenReturn(new PageImpl<>(subList));
@@ -88,7 +88,7 @@ public class UserServiceTest {
    @Test
    @DisplayName("Should get user by id.")
    void getUserById() {
-      UserDtoOutput output = mock();
+      UserResponse output = mock();
       when(repo.findById(anyLong())).thenReturn(Optional.of(mockUser));
       when(userFactory.createFromEntity(any(UserEntity.class)))
               .thenReturn(output);
@@ -119,7 +119,7 @@ public class UserServiceTest {
    @Test
    @DisplayName("Should Add User")
    void addUser() {
-      UserDtoOutput output = mock(UserDtoOutput.class);
+      UserResponse output = mock(UserResponse.class);
       when(repo.findByEmail(anyString())).thenReturn(Optional.empty());
       when(userFactory.createFromInput(mockDto)).thenReturn(mockUser);
       when(repo.saveAndFlush(mockUser)).thenReturn(mockUser);
@@ -160,14 +160,14 @@ public class UserServiceTest {
    @Test
    @DisplayName("Should Update User")
    void updateUser() {
-      UserDtoOutput output = mock(UserDtoOutput.class);
+      UserResponse output = mock(UserResponse.class);
 
       UserEntity user = mock();
       user.setUpdatedAt(Instant.now());
 
       when(repo.findById(anyLong())).
               thenReturn(Optional.of(mockUser));
-      doNothing().when(userUpdater).apply(any(UserEntity.class), any(UserDtoInput.class));
+      doNothing().when(userUpdater).apply(any(UserEntity.class), any(UserRequest.class));
       when(repo.saveAndFlush(any(UserEntity.class)))
               .thenReturn(new UserEntity());
       when(userFactory.createFromEntity(any(UserEntity.class)))
@@ -178,7 +178,7 @@ public class UserServiceTest {
       assertNotNull(result, "User should not be null");
 
       verify(repo, atMostOnce()).findById(anyLong());
-      verify(userUpdater, atMostOnce()).apply(any(UserEntity.class), any(UserDtoInput.class));
+      verify(userUpdater, atMostOnce()).apply(any(UserEntity.class), any(UserRequest.class));
       verify(repo, atMostOnce()).saveAndFlush(any(UserEntity.class));
       verify(userFactory, atMostOnce()).createFromEntity(any(UserEntity.class));
       verifyNoMoreInteractions(repo, userUpdater, userFactory);

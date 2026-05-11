@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.jwt.utils;
 
-import com.jame.dev.gymApp.exception.InvalidSignedJwtKeyException;
+import com.jame.dev.gymApp.features.auth.domain.exception.InvalidSignedJwtKeyException;
+import com.jame.dev.gymApp.features.auth.infrastructure.jwt.JwtUtils;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

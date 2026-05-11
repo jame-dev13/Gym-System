@@ -1,11 +1,12 @@
 package com.jame.dev.gymApp.controller.routes.app.admin;
 
-import com.jame.dev.gymApp.auth.filters.CustomAuthorizationFilter;
-import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
-import com.jame.dev.gymApp.metrics.service.in.SubscriptionMetricsService;
-import com.jame.dev.gymApp.model.metrics.SubsPerMembership;
-import com.jame.dev.gymApp.model.metrics.SubsPerMonthDto;
-import com.jame.dev.gymApp.shared.enums.Membership;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
+import com.jame.dev.gymApp.features.metrics.api.SubscriptionMetricsController;
+import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
+import com.jame.dev.gymApp.features.metrics.application.contract.SubscriptionMetricsService;
+import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMembership;
+import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMonthDto;
+import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

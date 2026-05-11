@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.service;
 
 
-import com.jame.dev.gymApp.service.out.BlockingListServiceImp;
+import com.jame.dev.gymApp.features.auth.application.service.BlockingListApplicationService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.DisplayName;
@@ -34,7 +34,7 @@ public class BlockingServiceTest {
    ValueOperations<String, String> valueOperations;
 
    @InjectMocks
-   BlockingListServiceImp service;
+   BlockingListApplicationService service;
 
    @Test
    @DisplayName("Should block a given blockingKey")

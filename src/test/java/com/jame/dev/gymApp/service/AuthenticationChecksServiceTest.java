@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.repository.AuthenticationChecksQueriesRepository;
-import com.jame.dev.gymApp.service.out.AuthenticationChecksServiceImp;
+import com.jame.dev.gymApp.features.auth.domain.repository.AuthenticationChecksQueriesRepository;
+import com.jame.dev.gymApp.features.auth.application.service.AuthenticationApplicationCheckService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.DisplayName;
@@ -25,14 +25,14 @@ public class AuthenticationChecksServiceTest {
    AuthenticationChecksQueriesRepository queriesRepository;
 
    @InjectMocks
-   AuthenticationChecksServiceImp authenticationChecksServiceImp;
+   AuthenticationApplicationCheckService authenticationApplicationCheckService;
 
    @Test
    @DisplayName("Should validate if is local provider.")
    void isLocalProvider() {
       given(queriesRepository.isLocalProvider(anyString())).willReturn(true);
 
-      boolean result = authenticationChecksServiceImp.isLocalProvider("any@mail.com");
+      boolean result = authenticationApplicationCheckService.isLocalProvider("any@mail.com");
 
       assertTrue(result);
 
@@ -45,7 +45,7 @@ public class AuthenticationChecksServiceTest {
    void isNotLocalProvider() {
       given(queriesRepository.isLocalProvider(anyString())).willReturn(false);
 
-      boolean result = authenticationChecksServiceImp.isLocalProvider("any@mail.com");
+      boolean result = authenticationApplicationCheckService.isLocalProvider("any@mail.com");
 
       assertFalse(result);
 

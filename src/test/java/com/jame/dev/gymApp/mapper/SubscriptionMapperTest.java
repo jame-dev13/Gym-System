@@ -1,9 +1,17 @@
 package com.jame.dev.gymApp.mapper;
 
-import com.jame.dev.gymApp.entity.*;
-import com.jame.dev.gymApp.model.dto.in.SubscriptionDtoInput;
-import com.jame.dev.gymApp.model.dto.out.SubscriptionDtoOutput;
-import com.jame.dev.gymApp.shared.enums.Membership;
+import com.jame.dev.gymApp.features.customer.application.support.mapper.CustomerMapper;
+import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
+import com.jame.dev.gymApp.features.subscription.application.support.mapper.PeriodMapper;
+import com.jame.dev.gymApp.features.subscription.application.support.mapper.SubscriptionMapper;
+import com.jame.dev.gymApp.features.subscription.domain.model.MemberShipEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.PeriodEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
+import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
+import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
+import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,7 +57,7 @@ public class SubscriptionMapperTest {
    @Test
    @DisplayName("To Dto")
    void toDto() {
-      final SubscriptionDtoOutput dto = subscriptionMapper.toDto(this.subs);
+      final SubscriptionResponse dto = subscriptionMapper.toDto(this.subs);
       final Membership membership = this.subs.getPricing().getMemberShipEntity().getMembership();
       final BigDecimal price = this.subs.getPricing().getPrice();
       assertAll("Not null, properties equals and not finished.",
@@ -62,7 +70,7 @@ public class SubscriptionMapperTest {
    @Test
    @DisplayName("To Entity")
    void toEntity() {
-      final SubscriptionDtoInput dtoInput = new SubscriptionDtoInput("cmail@mail.com",
+      final SubscriptionRequest dtoInput = new SubscriptionRequest("cmail@mail.com",
               Membership.MONTHLY);
       final List<PeriodEntity> periods = new ArrayList<>();
 

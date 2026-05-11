@@ -1,20 +1,23 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
 
-import com.jame.dev.gymApp.auth.filters.CustomAuthorizationFilter;
-import com.jame.dev.gymApp.auth.service.AuthService;
+import com.jame.dev.gymApp.domain.exception.NoActiveException;
+import com.jame.dev.gymApp.features.auth.api.AuthController;
+import com.jame.dev.gymApp.features.auth.domain.exception.*;
+import com.jame.dev.gymApp.features.user.domain.exception.UserNotFoundException;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
+import com.jame.dev.gymApp.features.auth.application.contract.AuthService;
+import com.jame.dev.gymApp.features.user.api.request.UserRequest;
+import com.jame.dev.gymApp.features.auth.api.response.CookieResponse;
 import config.TestConfig;
 import config.TestValidationConfig;
-import com.jame.dev.gymApp.config.web.CookieHelper;
-import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
-import com.jame.dev.gymApp.controller.advice.GlobalExceptionHandler;
+import com.jame.dev.gymApp.infrastructure.config.web.CookieHelper;
+import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
+import com.jame.dev.gymApp.presentation.exception.GlobalExceptionHandler;
 import data.SignInTestData;
 import data.SignUpTestData;
-import com.jame.dev.gymApp.exception.*;
-import com.jame.dev.gymApp.model.dto.auth.CookieResponseDto;
-import com.jame.dev.gymApp.model.dto.auth.SignInDto;
-import com.jame.dev.gymApp.model.dto.auth.SignInOkDto;
-import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
+import com.jame.dev.gymApp.features.auth.api.request.SignInRequest;
+import com.jame.dev.gymApp.features.auth.api.response.SignInResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.validation.ConstraintViolationException;
 import lombok.AccessLevel;
@@ -85,14 +88,14 @@ public class AuthControllerTest {
       @Test
       @DisplayName("[201 Created] Should successfully sign up a new user")
       void signUpSuccess() throws Exception {
-         willDoNothing().given(authService).signUp(any(UserDtoInput.class));
+         willDoNothing().given(authService).signUp(any(UserRequest.class));
 
          mockMvc.perform(post("/auth/signUp")
                .contentType(MediaType.APPLICATION_JSON)
                .content(SignUpTestData.VALID_USER_JSON))
             .andExpect(status().isCreated());
 
-         verify(authService).signUp(any(UserDtoInput.class));
+         verify(authService).signUp(any(UserRequest.class));
          verifyNoMoreInteractions(authService);
          verifyNoInteractions(cookieHelper);
       }
@@ -101,14 +104,14 @@ public class AuthControllerTest {
       @MethodSource("serviceFailures")
       @DisplayName("[4xx] Should handle failures during sign up")
       void signUpFailuresService(Class<? extends Throwable> exception, int statusCode, String body) throws Exception {
-         willThrow(exception).given(authService).signUp(any(UserDtoInput.class));
+         willThrow(exception).given(authService).signUp(any(UserRequest.class));
 
          performSignUp(body)
             .andExpect(status().is(statusCode))
             .andExpect(jsonPath("$.*").exists())
             .andExpect(jsonPath("$.status").value(statusCode));
 
-         verify(authService).signUp(any(UserDtoInput.class));
+         verify(authService).signUp(any(UserRequest.class));
          verifyNoMoreInteractions(authService);
          verifyNoInteractions(cookieHelper);
       }
@@ -117,7 +120,7 @@ public class AuthControllerTest {
       @MethodSource("controllerFailures")
       @DisplayName("[400] Should handle failures during sign up")
       void signUpFailuresController(Class<? extends Throwable> exception, int statusCode, String body) throws Exception {
-         willThrow(exception).given(authService).signUp(any(UserDtoInput.class));
+         willThrow(exception).given(authService).signUp(any(UserRequest.class));
 
          performSignUp(body)
             .andExpect(status().is(statusCode))
@@ -157,9 +160,9 @@ public class AuthControllerTest {
       @Test
       @DisplayName("[200 Ok] Should successfully sign in and return cookies")
       void signInSuccess() throws Exception {
-         SignInOkDto mockResponse = mock(SignInOkDto.class);
+         SignInResponse mockResponse = mock(SignInResponse.class);
 
-         given(authService.signIn(any(SignInDto.class)))
+         given(authService.signIn(any(SignInRequest.class)))
             .willReturn(mockResponse);
          given(cookieHelper.createAccessTokenCookie(any()))
             .willReturn(ResponseCookie.from("access", "val").build());
@@ -173,7 +176,7 @@ public class AuthControllerTest {
             .andExpect(status().isOk())
             .andExpect(header().exists("Set-Cookie"));
 
-         verify(authService).signIn(any(SignInDto.class));
+         verify(authService).signIn(any(SignInRequest.class));
          verify(cookieHelper).createAccessTokenCookie(any());
          verify(cookieHelper).createRefreshTokenCookie(any());
          verifyNoMoreInteractions(authService, cookieHelper);
@@ -183,7 +186,7 @@ public class AuthControllerTest {
       @MethodSource("failures")
       @DisplayName("[4xx] Should handle failures during signIn service runs.")
       void signInFailures(Class<? extends Throwable> exception, int statusCode) throws Exception {
-         given(authService.signIn(any(SignInDto.class))).willThrow(exception);
+         given(authService.signIn(any(SignInRequest.class))).willThrow(exception);
 
          mockMvc.perform(post("/auth/signIn")
                .contentType(MediaType.APPLICATION_JSON)
@@ -191,7 +194,7 @@ public class AuthControllerTest {
             .andExpect(status().is(statusCode))
             .andExpect(jsonPath("$.status").value(statusCode));
 
-         verify(authService).signIn(any(SignInDto.class));
+         verify(authService).signIn(any(SignInRequest.class));
          verifyNoMoreInteractions(authService);
          verifyNoInteractions(cookieHelper);
       }
@@ -235,7 +238,7 @@ public class AuthControllerTest {
       @Test
       @DisplayName("[200 Ok] Should successfully refresh tokens using cookie")
       void refresh_Success() throws Exception {
-         CookieResponseDto mockCookies = new CookieResponseDto("new-access", "new-refresh");
+         CookieResponse mockCookies = new CookieResponse("new-access", "new-refresh");
 
          given(authService.refresh(any())).willReturn(mockCookies);
          given(cookieHelper.createAccessTokenCookie(any()))

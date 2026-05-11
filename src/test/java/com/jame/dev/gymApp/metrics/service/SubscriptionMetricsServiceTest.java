@@ -1,11 +1,11 @@
 package com.jame.dev.gymApp.metrics.service;
 
 
-import com.jame.dev.gymApp.metrics.repo.SubscriptionMetricsRepository;
-import com.jame.dev.gymApp.metrics.service.out.SubscriptionMetricsServiceImp;
-import com.jame.dev.gymApp.model.metrics.SubsPerMembership;
-import com.jame.dev.gymApp.model.metrics.SubsPerMonthDto;
-import com.jame.dev.gymApp.shared.enums.Membership;
+import com.jame.dev.gymApp.features.metrics.domain.repository.SubscriptionMetricsRepository;
+import com.jame.dev.gymApp.features.metrics.application.service.SubscriptionMetricsApplicationService;
+import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMembership;
+import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMonthDto;
+import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +29,7 @@ public class SubscriptionMetricsServiceTest {
    private SubscriptionMetricsRepository repo;
 
    @InjectMocks
-   private SubscriptionMetricsServiceImp service;
+   private SubscriptionMetricsApplicationService service;
 
 
    @Test

@@ -1,13 +1,14 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
-import com.jame.dev.gymApp.auth.filters.CustomAuthorizationFilter;
+import com.jame.dev.gymApp.features.auth.api.ExpirationController;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
 import config.TestConfig;
 import config.TestValidationConfig;
-import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
-import com.jame.dev.gymApp.controller.advice.GlobalExceptionHandler;
-import com.jame.dev.gymApp.exception.VerificationNotFoundException;
-import com.jame.dev.gymApp.exception.WindowTimeException;
-import com.jame.dev.gymApp.service.in.ExpirationService;
+import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
+import com.jame.dev.gymApp.presentation.exception.GlobalExceptionHandler;
+import com.jame.dev.gymApp.features.auth.domain.exception.VerificationNotFoundException;
+import com.jame.dev.gymApp.features.auth.domain.exception.WindowTimeException;
+import com.jame.dev.gymApp.features.auth.application.contract.expiration.ExpirationService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.DisplayName;

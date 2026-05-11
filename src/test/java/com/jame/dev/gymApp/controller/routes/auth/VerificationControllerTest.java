@@ -1,16 +1,17 @@
 package com.jame.dev.gymApp.controller.routes.auth;
 
-import com.jame.dev.gymApp.auth.filters.CustomAuthorizationFilter;
-import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
-import com.jame.dev.gymApp.controller.advice.GlobalExceptionHandler;
+import com.jame.dev.gymApp.features.auth.api.VerificationController;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
+import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
+import com.jame.dev.gymApp.presentation.exception.GlobalExceptionHandler;
 import config.TestConfig;
 import config.TestValidationConfig;
-import com.jame.dev.gymApp.exception.AlreadyVerifiedException;
-import com.jame.dev.gymApp.exception.VerificationAttemptFailedException;
-import com.jame.dev.gymApp.exception.VerificationNotFoundException;
-import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
-import com.jame.dev.gymApp.service.in.VerificationService;
-import com.jame.dev.gymApp.shared.enums.ErrorCodes;
+import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyVerifiedException;
+import com.jame.dev.gymApp.features.auth.domain.exception.VerificationAttemptFailedException;
+import com.jame.dev.gymApp.features.auth.domain.exception.VerificationNotFoundException;
+import com.jame.dev.gymApp.features.auth.application.model.VerificationDto;
+import com.jame.dev.gymApp.features.auth.application.contract.verification.VerificationService;
+import com.jame.dev.gymApp.application.model.ErrorCodes;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.DisplayName;

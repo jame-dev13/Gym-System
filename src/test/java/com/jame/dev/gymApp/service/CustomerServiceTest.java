@@ -1,19 +1,19 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.entity.CustomerEntity;
-import com.jame.dev.gymApp.entity.RoleEntity;
-import com.jame.dev.gymApp.entity.UserEntity;
-import com.jame.dev.gymApp.exception.AlreadyExistsException;
-import com.jame.dev.gymApp.exception.NoActiveException;
-import com.jame.dev.gymApp.factories.in.CustomerFactory;
-import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
-import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
-import com.jame.dev.gymApp.model.dto.out.PageDto;
-import com.jame.dev.gymApp.repository.CustomerRepository;
-import com.jame.dev.gymApp.service.out.CustomerServiceImplementation;
-import com.jame.dev.gymApp.shared.enums.Role;
-import com.jame.dev.gymApp.updaters.in.CustomerUpdater;
-import com.jame.dev.gymApp.validators.CustomerValidator;
+import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
+import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
+import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
+import com.jame.dev.gymApp.domain.exception.NoActiveException;
+import com.jame.dev.gymApp.features.customer.application.contract.CustomerFactory;
+import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
+import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
+import com.jame.dev.gymApp.application.dto.PageDto;
+import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;
+import com.jame.dev.gymApp.features.customer.application.service.CustomerApplicationService;
+import com.jame.dev.gymApp.features.user.domain.model.Role;
+import com.jame.dev.gymApp.features.customer.application.contract.CustomerUpdater;
+import com.jame.dev.gymApp.features.customer.application.support.validator.CustomerValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,11 +48,11 @@ public class CustomerServiceTest {
    private CustomerUpdater customerUpdater;
 
    @InjectMocks
-   private CustomerServiceImplementation service;
+   private CustomerApplicationService service;
 
    private final UserEntity mockUser = new UserEntity();
    private final CustomerEntity mockCustomer = new CustomerEntity();
-   private final CustomerDtoInput mockDto = new CustomerDtoInput("email@mail.com", "27930527");
+   private final CustomerRequest mockDto = new CustomerRequest("email@mail.com", "27930527");
 
    private final Sort sort = Sort.sort(CustomerEntity.class).by(CustomerEntity::getId).descending();
 
@@ -78,7 +78,7 @@ public class CustomerServiceTest {
    void getByPageable() {
       final Pageable pageable = PageRequest.of(0, 5, sort);
       final List<CustomerEntity> subList = testCustomerList.subList(0, 5);
-      final PageDto<CustomerDtoOutput> output = mock();
+      final PageDto<CustomerResponse> output = mock();
       when(repo.findAll(pageable))
               .thenReturn(new PageImpl<>(subList));
       when(customerFactory.createPageFrom(any())).thenReturn(output);
@@ -98,7 +98,7 @@ public class CustomerServiceTest {
    @DisplayName("Should Get Customer By Id")
    void getById() {
       CustomerEntity customer = mock();
-      CustomerDtoOutput output = mock();
+      CustomerResponse output = mock();
 
       when(repo.findById(anyLong()))
               .thenReturn(Optional.of(customer));
@@ -129,9 +129,9 @@ public class CustomerServiceTest {
       UserEntity user = mock();
       CustomerEntity customer = mock();
 
-      CustomerDtoOutput output =  mock(CustomerDtoOutput.class);
+      CustomerResponse output =  mock(CustomerResponse.class);
 
-      when(customerValidator.validateUserBeforeCreation(any(CustomerDtoInput.class)))
+      when(customerValidator.validateUserBeforeCreation(any(CustomerRequest.class)))
          .thenReturn(user);
       when(customerFactory.createFromInput(any())).thenReturn(customer);
       when(repo.saveAndFlush(any()))
@@ -143,7 +143,7 @@ public class CustomerServiceTest {
 
       assertNotNull(result, "Result should not be null.");
 
-      verify(customerValidator, atMostOnce()).validateUserBeforeCreation(any(CustomerDtoInput.class));
+      verify(customerValidator, atMostOnce()).validateUserBeforeCreation(any(CustomerRequest.class));
       verify(repo, atMostOnce()).findDeactivatedByUserId(1L);
       verify(customerFactory, atMostOnce()).createFromInput(any());
       verify(repo, atMostOnce()).saveAndFlush(mockCustomer);
@@ -156,11 +156,11 @@ public class CustomerServiceTest {
    void alreadyExistsCheck() {
       doThrow(AlreadyExistsException.class)
          .when(customerValidator)
-         .validateUserBeforeCreation(any(CustomerDtoInput.class));
+         .validateUserBeforeCreation(any(CustomerRequest.class));
 
       assertThrows(AlreadyExistsException.class, () -> service.save(mockDto));
 
-      verify(customerValidator, atMostOnce()).validateUserBeforeCreation(any(CustomerDtoInput.class));
+      verify(customerValidator, atMostOnce()).validateUserBeforeCreation(any(CustomerRequest.class));
       verify(repo, atMostOnce()).findDeactivatedByUserId(1L);
       verifyNoInteractions(customerFactory, customerUpdater);
    }
@@ -185,10 +185,10 @@ public class CustomerServiceTest {
       final CustomerEntity customer = new CustomerEntity();
       customer.setUpdatedAt(Instant.now());
 
-      CustomerDtoOutput output = mock(CustomerDtoOutput.class);
+      CustomerResponse output = mock(CustomerResponse.class);
 
       when(repo.findById(anyLong())).thenReturn(Optional.of(mockCustomer));
-      doNothing().when(customerUpdater).apply(any(CustomerEntity.class), any(CustomerDtoInput.class));
+      doNothing().when(customerUpdater).apply(any(CustomerEntity.class), any(CustomerRequest.class));
       when(repo.saveAndFlush(any(CustomerEntity.class))).thenReturn(customer);
       when(customerFactory.createFromEntity(any())).thenReturn(output);
 
@@ -197,7 +197,7 @@ public class CustomerServiceTest {
       assertNotNull(result);
 
       verify(repo, atMostOnce()).findById(anyLong());
-      verify(customerUpdater, atMostOnce()).apply(any(CustomerEntity.class), any(CustomerDtoInput.class));
+      verify(customerUpdater, atMostOnce()).apply(any(CustomerEntity.class), any(CustomerRequest.class));
       verify(repo, atMostOnce()).saveAndFlush(any(CustomerEntity.class));
       verify(customerFactory, atMostOnce()).createFromEntity(customer);
       verifyNoMoreInteractions(repo, customerUpdater, customerFactory);

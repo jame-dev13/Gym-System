@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.service.in.TokenGeneratorService;
-import com.jame.dev.gymApp.service.out.TokenGeneratorImplementation;
+import com.jame.dev.gymApp.application.contract.TokenGeneratorService;
+import com.jame.dev.gymApp.application.service.TokenApplicationGeneratorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 
@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TokenGeneratorServiceTest {
 
-   private final TokenGeneratorService service = new TokenGeneratorImplementation();
+   private final TokenGeneratorService service = new TokenApplicationGeneratorService();
 
    @DisplayName("Generates token of 6 character alphanumerics")
    @RepeatedTest(value = 10, name = "generateToken method rep: {currentRepetition} of {totalRepetitions}")

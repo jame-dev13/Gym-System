@@ -1,10 +1,10 @@
 package com.jame.dev.gymApp.metrics.service;
 
-import com.jame.dev.gymApp.metrics.repo.EarningMetricsRepository;
-import com.jame.dev.gymApp.metrics.service.out.EarningMetricsServiceImp;
-import com.jame.dev.gymApp.model.metrics.TotalPerMembershipTypeDto;
-import com.jame.dev.gymApp.model.metrics.TotalPerMonth;
-import com.jame.dev.gymApp.shared.enums.Membership;
+import com.jame.dev.gymApp.features.metrics.domain.repository.EarningMetricsRepository;
+import com.jame.dev.gymApp.features.metrics.application.service.EarningMetricsApplicationService;
+import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMembershipTypeDto;
+import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMonth;
+import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +26,7 @@ public class EarningMetricsServiceTest {
    private EarningMetricsRepository repo;
 
    @InjectMocks
-   private EarningMetricsServiceImp service;
+   private EarningMetricsApplicationService service;
 
    @Test
    @DisplayName("Should get the total earned")

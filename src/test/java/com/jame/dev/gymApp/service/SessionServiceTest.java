@@ -1,14 +1,14 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.exception.AuthenticationNullException;
-import com.jame.dev.gymApp.exception.ExtractClaimException;
-import com.jame.dev.gymApp.exception.IllegalSubjectAuthenticatedException;
-import com.jame.dev.gymApp.factories.AuthResponsesFactory;
-import com.jame.dev.gymApp.jwt.service.JwtService;
-import com.jame.dev.gymApp.model.dto.auth.SessionDto;
-import com.jame.dev.gymApp.service.in.IdentityExtractorService;
-import com.jame.dev.gymApp.service.out.SessionServiceImplementation;
-import com.jame.dev.gymApp.shared.enums.Role;
+import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationNullException;
+import com.jame.dev.gymApp.features.auth.domain.exception.ExtractClaimException;
+import com.jame.dev.gymApp.features.auth.domain.exception.IllegalSubjectAuthenticatedException;
+import com.jame.dev.gymApp.features.auth.application.support.factory.AuthResponsesFactory;
+import com.jame.dev.gymApp.features.auth.application.contract.JwtService;
+import com.jame.dev.gymApp.features.auth.api.response.SessionResponse;
+import com.jame.dev.gymApp.application.contract.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.application.service.SessionApplicationService;
+import com.jame.dev.gymApp.features.user.domain.model.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +36,7 @@ public class SessionServiceTest {
    private AuthResponsesFactory authResponsesFactory;
 
    @InjectMocks
-   private SessionServiceImplementation service;
+   private SessionApplicationService service;
 
    @Test
    @DisplayName("Should get session")
@@ -50,7 +50,7 @@ public class SessionServiceTest {
       when(identityExtractorService.extract(authentication)).thenReturn(subject);
 
       when(authResponsesFactory.createSessionFrom(anyString(), any()))
-              .thenReturn(new SessionDto(subject, roles, true));
+              .thenReturn(new SessionResponse(subject, roles, true));
 
       var result = assertDoesNotThrow(() -> service.getSession(access, authentication));
       assertNotNull(result);
