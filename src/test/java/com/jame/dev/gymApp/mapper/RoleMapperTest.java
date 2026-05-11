@@ -1,8 +1,9 @@
 package com.jame.dev.gymApp.mapper;
 
-import com.jame.dev.gymApp.entity.RoleEntity;
-import com.jame.dev.gymApp.repository.RoleRepository;
-import com.jame.dev.gymApp.shared.enums.Role;
+import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
+import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
+import com.jame.dev.gymApp.features.user.domain.repository.RoleRepository;
+import com.jame.dev.gymApp.features.user.domain.model.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

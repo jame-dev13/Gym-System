@@ -1,13 +1,13 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.entity.UserEntity;
-import com.jame.dev.gymApp.entity.VerificationEntity;
-import com.jame.dev.gymApp.exception.VerificationAttemptFailedException;
-import com.jame.dev.gymApp.factories.VerificationFactory;
-import com.jame.dev.gymApp.model.dto.auth.VerificationDto;
-import com.jame.dev.gymApp.repository.UserRepository;
-import com.jame.dev.gymApp.repository.VerificationRepository;
-import com.jame.dev.gymApp.service.out.VerificationServiceImplementation;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
+import com.jame.dev.gymApp.features.auth.domain.model.VerificationEntity;
+import com.jame.dev.gymApp.features.auth.domain.exception.VerificationAttemptFailedException;
+import com.jame.dev.gymApp.features.auth.application.support.factory.VerificationFactory;
+import com.jame.dev.gymApp.features.auth.application.model.VerificationDto;
+import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
+import com.jame.dev.gymApp.features.auth.domain.repository.VerificationRepository;
+import com.jame.dev.gymApp.features.auth.application.service.VerificationApplicationService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.DisplayName;
@@ -41,7 +41,7 @@ public class VerificationServiceTest {
    VerificationFactory verificationFactory;
 
    @InjectMocks
-   VerificationServiceImplementation service;
+   VerificationApplicationService service;
 
    private final VerificationEntity verificationEntity = new VerificationEntity();
    private final UserEntity user = new UserEntity();

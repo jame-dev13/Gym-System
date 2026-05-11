@@ -1,11 +1,14 @@
 package com.jame.dev.gymApp.mapper;
 
-import com.jame.dev.gymApp.entity.CustomerEntity;
-import com.jame.dev.gymApp.entity.RoleEntity;
-import com.jame.dev.gymApp.entity.UserEntity;
-import com.jame.dev.gymApp.model.dto.in.CustomerDtoInput;
-import com.jame.dev.gymApp.model.dto.out.CustomerDtoOutput;
-import com.jame.dev.gymApp.shared.enums.Role;
+import com.jame.dev.gymApp.features.customer.application.support.mapper.CustomerMapper;
+import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
+import com.jame.dev.gymApp.features.user.application.support.mapper.UserMapper;
+import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
+import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
+import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
+import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
+import com.jame.dev.gymApp.features.user.domain.model.Role;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +28,7 @@ class CustomerMapperTest {
 
    @Test
    void toDto() {
-      CustomerDtoOutput dto = customerMapper.toDto(
+      CustomerResponse dto = customerMapper.toDto(
               CustomerEntity.builder()
                       .user(testUser)
                       .phoneContact("128133")
@@ -35,7 +38,7 @@ class CustomerMapperTest {
 
    @Test
    void toEntity() {
-      CustomerDtoInput dto = new CustomerDtoInput("any@mail.com", "347293");
+      CustomerRequest dto = new CustomerRequest("any@mail.com", "347293");
       CustomerEntity entity = customerMapper.toEntity(dto, testUser);
       Assertions.assertNotNull(entity, "Should not be null.");
    }

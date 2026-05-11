@@ -1,17 +1,17 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.entity.CustomerEntity;
-import com.jame.dev.gymApp.entity.RoleEntity;
-import com.jame.dev.gymApp.entity.UserEntity;
-import com.jame.dev.gymApp.entity.VerificationEntity;
-import com.jame.dev.gymApp.exception.VerificationAttemptFailedException;
-import com.jame.dev.gymApp.exception.VerificationNotFoundException;
-import com.jame.dev.gymApp.mapper.RoleMapper;
-import com.jame.dev.gymApp.repository.CustomerRepository;
-import com.jame.dev.gymApp.repository.RoleRepository;
-import com.jame.dev.gymApp.repository.UserRepository;
-import com.jame.dev.gymApp.repository.VerificationRepository;
-import com.jame.dev.gymApp.service.out.AccountRecoveryServiceImplementation;
+import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
+import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
+import com.jame.dev.gymApp.features.auth.domain.model.VerificationEntity;
+import com.jame.dev.gymApp.features.auth.domain.exception.VerificationAttemptFailedException;
+import com.jame.dev.gymApp.features.auth.domain.exception.VerificationNotFoundException;
+import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
+import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;
+import com.jame.dev.gymApp.features.user.domain.repository.RoleRepository;
+import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
+import com.jame.dev.gymApp.features.auth.domain.repository.VerificationRepository;
+import com.jame.dev.gymApp.features.auth.application.service.AccountRecoveryApplicationService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.DisplayName;
@@ -48,7 +48,7 @@ public class AccountRecoveryServiceTest {
    RoleRepository roleRepository;
 
    @InjectMocks
-   AccountRecoveryServiceImplementation accountRecoveryService;
+   AccountRecoveryApplicationService accountRecoveryService;
 
    @Test
    @DisplayName("Should reactivate the account of customer and user type.")

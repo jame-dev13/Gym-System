@@ -1,12 +1,14 @@
 package com.jame.dev.gymApp.mapper;
 
-import com.jame.dev.gymApp.entity.RoleEntity;
-import com.jame.dev.gymApp.entity.UserEntity;
-import com.jame.dev.gymApp.model.dto.in.UserDtoInput;
-import com.jame.dev.gymApp.model.dto.out.UserDtoOutput;
-import com.jame.dev.gymApp.repository.RoleRepository;
-import com.jame.dev.gymApp.shared.enums.AuthProvider;
-import com.jame.dev.gymApp.shared.enums.Role;
+import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
+import com.jame.dev.gymApp.features.user.application.support.mapper.UserMapper;
+import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
+import com.jame.dev.gymApp.features.user.api.request.UserRequest;
+import com.jame.dev.gymApp.features.user.api.response.UserResponse;
+import com.jame.dev.gymApp.features.user.domain.repository.RoleRepository;
+import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
+import com.jame.dev.gymApp.features.user.domain.model.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,14 +44,14 @@ public class UserMapperTest {
               .roles(Set.of(userRoleEntity))
               .provider(AuthProvider.LOCAL)
               .build();
-      UserDtoOutput dto = userMapper.toDto(user);
+      UserResponse dto = userMapper.toDto(user);
       assertNotNull(dto, "Should not be null.");
    }
 
    @Test
    @DisplayName("Should map To Entity")
    void toEntity(){
-      final UserDtoInput dto = UserDtoInput.builder()
+      final UserRequest dto = UserRequest.builder()
               .name("dtoname")
               .email("dto@mail")
               .password("324524")

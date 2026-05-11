@@ -1,10 +1,10 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.entity.VerificationEntity;
-import com.jame.dev.gymApp.exception.VerificationNotFoundException;
-import com.jame.dev.gymApp.exception.WindowTimeException;
-import com.jame.dev.gymApp.repository.VerificationRepository;
-import com.jame.dev.gymApp.service.out.ExpirationServiceImplementation;
+import com.jame.dev.gymApp.features.auth.domain.model.VerificationEntity;
+import com.jame.dev.gymApp.features.auth.domain.exception.VerificationNotFoundException;
+import com.jame.dev.gymApp.features.auth.domain.exception.WindowTimeException;
+import com.jame.dev.gymApp.features.auth.domain.repository.VerificationRepository;
+import com.jame.dev.gymApp.features.auth.application.service.ExpirationApplicationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +32,7 @@ public class ExpirationServiceTest {
    private VerificationRepository verificationRepository;
 
    @InjectMocks
-   private ExpirationServiceImplementation service;
+   private ExpirationApplicationService service;
 
    @Test
    @DisplayName("Expiration time updated.")

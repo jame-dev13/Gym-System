@@ -1,9 +1,9 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.entity.MemberShipEntity;
-import com.jame.dev.gymApp.repository.MembershipRepository;
-import com.jame.dev.gymApp.service.out.MembershipServiceImplementation;
-import com.jame.dev.gymApp.shared.enums.Membership;
+import com.jame.dev.gymApp.features.subscription.domain.model.MemberShipEntity;
+import com.jame.dev.gymApp.features.subscription.domain.repository.MembershipRepository;
+import com.jame.dev.gymApp.features.subscription.application.service.MembershipApplicationService;
+import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +26,7 @@ class MembershipServiceTest {
    private MembershipRepository repo;
 
    @InjectMocks
-   private MembershipServiceImplementation service;
+   private MembershipApplicationService service;
 
    private final MemberShipEntity membershipTest = MemberShipEntity.builder()
            .id(1)

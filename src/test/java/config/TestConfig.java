@@ -1,8 +1,8 @@
 package config;
 
-import com.jame.dev.gymApp.controller.advice.ApiErrorResponse;
-import com.jame.dev.gymApp.controller.advice.ApiErrorResponseFactory;
-import com.jame.dev.gymApp.controller.advice.InputError;
+import com.jame.dev.gymApp.presentation.exception.ApiErrorResponse;
+import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
+import com.jame.dev.gymApp.presentation.exception.InputError;
 import org.mockito.invocation.InvocationOnMock;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;

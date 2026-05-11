@@ -1,9 +1,9 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.exception.TemporaryBlockedException;
-import com.jame.dev.gymApp.exception.TooManyRequestsException;
-import com.jame.dev.gymApp.service.in.BlockingService;
-import com.jame.dev.gymApp.service.out.RateLimiterServiceImp;
+import com.jame.dev.gymApp.features.auth.domain.exception.TemporaryBlockedException;
+import com.jame.dev.gymApp.features.auth.domain.exception.TooManyRequestsException;
+import com.jame.dev.gymApp.features.auth.application.contract.BlockingService;
+import com.jame.dev.gymApp.features.auth.infrastructure.rate_limiting.RateLimiterApplicationService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -37,7 +37,7 @@ public class RateLimiterServiceTest {
    ValueOperations<String, String> valueOperations;
 
    @InjectMocks
-   RateLimiterServiceImp service;
+   RateLimiterApplicationService service;
 
    @Test
    @DisplayName("Should throws TooManyRequestException and block user when limit is exceeded")
