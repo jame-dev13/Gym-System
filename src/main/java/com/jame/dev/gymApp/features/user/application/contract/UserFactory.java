@@ -8,7 +8,7 @@ import com.jame.dev.gymApp.features.user.api.response.UserResponse;
 import com.jame.dev.gymApp.features.user.api.response.UserMinimalInfoResponse;
 import org.springframework.data.domain.Page;
 
-public non-sealed interface UserFactory extends Factory<
+public interface UserFactory extends Factory<
    UserEntity, UserResponse, UserRequest> {
    PageDto<UserMinimalInfoResponse> createMinimalInfoPage(final Page<UserMinimalInfoResponse> page);
 }
