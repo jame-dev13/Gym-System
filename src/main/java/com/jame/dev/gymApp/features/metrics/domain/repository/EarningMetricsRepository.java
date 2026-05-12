@@ -19,7 +19,7 @@ public interface EarningMetricsRepository extends MetricsRepository<Subscription
    BigDecimal calculateTotalEarned();
 
    @Query("""
-           SELECT new com.jame.dev.gymApp.model.metrics.TotalPerMonth(
+           SELECT new com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMonth(
                CAST(YEAR(sp.startPeriod) AS integer) AS year,
                CAST(FUNCTION('to_char', sp.startPeriod, 'FMMonth') AS string) AS month,
                CAST(COALESCE(SUM(p.price), 0) AS big_decimal) as total

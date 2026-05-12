@@ -26,7 +26,7 @@ public interface SubscriptionMetricsRepository extends
    long countByStartDateBefore(@Param("now") LocalDate now);
 
    @Query("""
-           SELECT new com.jame.dev.gymApp.model.metrics.SubsPerMonthDto(
+           SELECT new com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMonthDto(
                CAST(FUNCTION('TO_CHAR', p.startPeriod, 'FMMonth') AS string) AS month,
                COUNT(s) as total
            )

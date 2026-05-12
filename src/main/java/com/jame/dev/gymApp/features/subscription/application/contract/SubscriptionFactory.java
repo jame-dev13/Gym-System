@@ -5,6 +5,6 @@ import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionFac
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.application.support.factories.Factory;
 
-public non-sealed interface SubscriptionFactory extends Factory<
+public interface SubscriptionFactory extends Factory<
         SubscriptionEntity, SubscriptionResponse, SubscriptionFactoryDtoInput> {
 }
