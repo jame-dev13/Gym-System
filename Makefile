@@ -3,24 +3,25 @@ COMPOSE_PROD=docker-compose.prod.yaml
 COMPOSE_BASE=docker-compose.yaml
 COMPOSE_DEV=docker-compose.dev.yaml
 ENV_DEV=.env.dev
+ENV_PROD=.env.prod
 
 # CMD prod
 prod-build:
-	docker compose -f $(COMPOSE_PROD) up --build -d --remove-orphans
+	docker compose --env-file $(ENV_PROD) -f $(COMPOSE_PROD) up --build -d --remove-orphans
 prod-up:
-	docker compose -f $(COMPOSE_PROD) up -d
+	docker compose --env-file $(ENV_PROD) -f $(COMPOSE_PROD) up -d
 
 prod-down:
-	docker compose -f $(COMPOSE_PROD) down --timeout 5
+	docker compose --env-file $(ENV_PROD) -f $(COMPOSE_PROD) down --timeout 5
 
 prod-down-vol:
-	docker compose -f $(COMPOSE_PROD) down -v --remove-orphans --timeout 5
+	docker compose --env-file $(ENV_PROD) -f $(COMPOSE_PROD) down -v --remove-orphans --timeout 5
 
 prod-logs:
 	docker compose -f $(COMPOSE_PROD) logs -f
 
 prod-restart:
-	docker compose -f $(COMPOSE_PROD) restart
+	docker compose --env-file $(ENV_PROD) -f $(COMPOSE_PROD) restart
 
 # CMD dev
 dev-build:

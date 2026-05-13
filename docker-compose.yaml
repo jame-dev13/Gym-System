@@ -11,6 +11,13 @@ services:
     restart: always
     volumes:
       - redis_data_dev:/data
+  mongo:
+    container_name: mongo-gym-app-dev
+    image: mongo:8
+    restart: always
+    volumes:
+      - mongo_data_dev:/data/db
 volumes:
   db_data_dev:
   redis_data_dev:
+  mongo_data_dev:
