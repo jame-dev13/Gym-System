@@ -1,70 +1,217 @@
 name: gym-app
-secrets:
-  db_password:
-    file: ./secrets/db/password.txt
-  redis_password:
-    file: ./secrets/redis/password.txt
-
-networks:
-  spring-postgres:
-  spring-redis:
 
 services:
+
   backend:
     container_name: backend-gym-app
-    env_file:
-      - .env.prod
+
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "${APP_PORT_BIND}"
-    networks:
-      - spring-postgres
-      - spring-redis
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+      - .env.prod
+
     environment:
       SPRING_PROFILES_ACTIVE: prod
+
       SPRING_DATASOURCE_PASSWORD_FILE: /run/secrets/db_password
       SPRING_DATA_REDIS_PASSWORD_FILE: /run/secrets/redis_password
-    secrets:
-      - db_password
-      - redis_password
+      MONGO_URI_FILE: /run/secrets/mongo_uri
+
+      TZ: America/Mexico_City
+
+    ports:
+      - "${APP_PORT_BIND}"
+
     depends_on:
       postgres:
         condition: service_healthy
+
       redis:
-        condition: service_started
+        condition: service_healthy
+
+      mongo:
+        condition: service_healthy
+
+    secrets:
+      - db_password
+      - redis_password
+      - mongo_uri
+
+    networks:
+      - backend-network
+
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1024M
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   postgres:
     container_name: db-gym-app
-    image: postgres:16
-    networks:
-      - spring-postgres
+
+    image: postgres:16-alpine
+
+    restart: unless-stopped
+
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DATASOURCE_USERNAME}
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      TZ: America/Mexico_City
+
     secrets:
       - db_password
+
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - backend-network
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DATASOURCE_USERNAME} -d ${DB_NAME}"]
-      interval: 5s
+      test: [ "CMD-SHELL", "pg_isready -U ${DATASOURCE_USERNAME} -d ${DB_NAME}" ]
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   redis:
     container_name: redis-gym-app
-    image: redis:7.2
-    networks:
-      - spring-redis
-    command: [ "sh", "-c", "redis-server --requirepass $$(cat /run/secrets/redis_password)" ]
+
+    image: redis:7.2-alpine
+
+    restart: unless-stopped
+
+    command:
+      [
+        "sh",
+        "-c",
+        "redis-server --appendonly yes --requirepass $$(cat /run/secrets/redis_password)"
+      ]
+
     secrets:
       - redis_password
+
     volumes:
       - redis_data:/data
 
+    networks:
+      - backend-network
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "redis-cli -a $$(cat /run/secrets/redis_password) ping | grep PONG"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 256M
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  mongo:
+    container_name: mongo-gym-app
+
+    image: mongo:8
+
+    restart: unless-stopped
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME_FILE: /run/secrets/mongo_user_root
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo_password_root
+      TZ: America/Mexico_City
+
+    secrets:
+      - mongo_user_root
+      - mongo_password_root
+
+    volumes:
+      - mongo_data:/data/db
+
+    networks:
+      - backend-network
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--eval",
+          "db.adminCommand('ping')"
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+secrets:
+  db_password:
+    file: ./secrets/db/password.txt
+
+  redis_password:
+    file: ./secrets/redis/password.txt
+
+  mongo_password_root:
+    file: ./secrets/mongo/password_root.txt
+
+  mongo_user_root:
+    file: ./secrets/mongo/username_root.txt
+
+  mongo_uri:
+    file: ./secrets/mongo/uri.txt
+
 volumes:
-  db_data:
+  postgres_data:
   redis_data:
+  mongo_data:
+
+networks:
+  backend-network:
+    driver: bridge

@@ -1,15 +1,88 @@
 name: gym-app-dev
+
 services:
+
   db:
+    container_name: postgres-gym-dev
+
+    image: postgres:16-alpine
+
+    restart: always
+
+    mem_limit: 1024m
+    cpus: 0.5
+
     ports:
-      - '5432:5432'
+      - "5432:5432"
+
     environment:
-      - 'POSTGRES_DB=${DB_NAME}'
-      - 'POSTGRES_USER=${DATASOURCE_USERNAME}'
-      - 'POSTGRES_PASSWORD=${DATASOURCE_PASSWORD}'
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DATASOURCE_USERNAME}
+      POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD}
+
     volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
       - ./docker/postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATASOURCE_USERNAME} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis:
+    container_name: redis-gym-dev
+
+    image: redis:7.2-alpine
+
+    restart: always
+
+    mem_limit: 256m
+    cpus: 0.5
+
     ports:
-      - '6379:6379'
-    command: ["redis-server", "--requirepass", "${REDIS_PWD_DEV}"]
+      - "6379:6379"
+
+    command: >
+      sh -c "redis-server --appendonly yes --requirepass ${REDIS_PWD_DEV}"
+
+    volumes:
+      - redis_dev_data:/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PWD_DEV} ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo:
+    container_name: mongo-gym-dev
+
+    image: mongo:8
+
+    restart: always
+
+    mem_limit: 512m
+    cpus: 0.5
+
+    ports:
+      - "27017:27017"
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: dev
+      MONGO_INITDB_ROOT_PASSWORD: dev1234
+      MONGO_INITDB_DATABASE: audit_db
+
+    volumes:
+      - mongo_dev_data:/data/db
+
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+  mongo_dev_data:
