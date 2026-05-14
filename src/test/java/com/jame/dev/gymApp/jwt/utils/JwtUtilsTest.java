@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.jwt.utils;
 
+import com.jame.dev.gymApp.features.auth.application.model.JwtArgument;
 import com.jame.dev.gymApp.features.auth.domain.exception.InvalidSignedJwtKeyException;
 import com.jame.dev.gymApp.features.auth.infrastructure.jwt.JwtUtils;
 import io.jsonwebtoken.Claims;
@@ -51,8 +52,8 @@ class JwtUtilsTest {
    void successfulTokenBuild() {
       ReflectionTestUtils.setField(jwtUtils, "secret", VALID_SECRET);
       String token = assertDoesNotThrow(() -> jwtUtils
-                      .buildToken("Angel", 10_000L),
-              "Should return the token object.");
+            .buildToken(new JwtArgument(1L, "Angel", 10_000L)),
+         "Should return the token object.");
       assertNotNull(token, "Token should not be null.");
       assertFalse(token.isEmpty(), "Token should not be empty.");
       assertFalse(token.isBlank(), "Token should not be blank.");
@@ -62,17 +63,17 @@ class JwtUtilsTest {
    @DisplayName("Fail built token with invalid secret.")
    void failureTokenBuild() {
       ReflectionTestUtils.setField(jwtUtils, "secret", INVALID_SECRET);
-      assertThrows(InvalidSignedJwtKeyException.class, () -> jwtUtils.buildToken("Angel", 10_000L),
-              "Should throwing an Exception.");
+      assertThrows(InvalidSignedJwtKeyException.class, () -> jwtUtils.buildToken(new JwtArgument(1L, "Angel", 10_000L)),
+         "Should throwing an Exception.");
    }
 
    @Test
    @DisplayName("Returns claims.")
    void returnsClaim() {
       ReflectionTestUtils.setField(jwtUtils, "secret", VALID_SECRET);
-      String token = jwtUtils.buildToken("Angel", 10_000L);
+      String token = jwtUtils.buildToken(new JwtArgument(1L, "Angel", 10_000L));
       Optional<String> optionalSubject = Assertions.assertDoesNotThrow(() -> jwtUtils.getClaim(token, Claims::getSubject),
-              "Should return the Optional Object.");
+         "Should return the Optional Object.");
       Assertions.assertNotNull(optionalSubject);
       assertFalse(optionalSubject.isEmpty());
       assertTrue(optionalSubject.isPresent());
@@ -82,7 +83,7 @@ class JwtUtilsTest {
    @DisplayName("Do not return claims on modifying token.")
    void tokenModifiedFails() {
       ReflectionTestUtils.setField(jwtUtils, "secret", VALID_SECRET);
-      String token = jwtUtils.buildToken("Angel", 10_000L);
+      String token = jwtUtils.buildToken(new JwtArgument(1L, "Angel", 10_000L));
       String modifiedToken = token.concat("123");
       Optional<String> optionalSubject = jwtUtils.getClaim(modifiedToken, Claims::getSubject);
       assertTrue(optionalSubject.isEmpty(), "Should be empty.");
@@ -95,25 +96,25 @@ class JwtUtilsTest {
    void tokenExpired() {
 
       Clock initialClock = Clock.fixed(
-              Instant.parse("2026-01-01T00:00:00Z"),
-              ZoneOffset.UTC
+         Instant.parse("2026-01-01T00:00:00Z"),
+         ZoneOffset.UTC
       );
 
       JwtUtils jwtUtils = new JwtUtils(initialClock);
       ReflectionTestUtils.setField(jwtUtils, "secret", VALID_SECRET);
 
-      String token = jwtUtils.buildToken("Angel", 2000L);
+      String token = jwtUtils.buildToken(new JwtArgument(1L, "Angel", 2000L));
 
       Clock laterClock = Clock.fixed(
-              Instant.parse("2026-01-01T00:00:03Z"),
-              ZoneOffset.UTC
+         Instant.parse("2026-01-01T00:00:03Z"),
+         ZoneOffset.UTC
       );
 
       jwtUtils = new JwtUtils(laterClock);
       ReflectionTestUtils.setField(jwtUtils, "secret", VALID_SECRET);
 
       Optional<String> optionalSubject =
-              jwtUtils.getClaim(token, Claims::getSubject);
+         jwtUtils.getClaim(token, Claims::getSubject);
 
       assertTrue(optionalSubject.isEmpty());
    }

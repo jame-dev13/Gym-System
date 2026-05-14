@@ -1,11 +1,11 @@
 package com.jame.dev.gymApp.presentation.exception;
 
+import com.jame.dev.gymApp.application.model.ErrorCodes;
 import com.jame.dev.gymApp.domain.exception.*;
 import com.jame.dev.gymApp.features.auth.domain.exception.*;
 import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.*;
 import com.jame.dev.gymApp.features.user.domain.exception.*;
-import com.jame.dev.gymApp.application.model.ErrorCodes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.NonNull;
@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -379,5 +380,14 @@ public class GlobalExceptionHandler {
       return responseFactory
          .buildResponse(new InputError(
             ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.ACCESS_DENIED));
+   }
+
+   @ExceptionHandler(MissingRequestCookieException.class)
+   public ResponseEntity<ApiErrorResponse> handleMissingRequestCookieException(
+      MissingRequestCookieException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.ARGUMENT));
    }
 }

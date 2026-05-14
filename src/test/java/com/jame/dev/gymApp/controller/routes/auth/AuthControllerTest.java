@@ -11,7 +11,7 @@ import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.features.auth.api.response.CookieResponse;
 import config.TestConfig;
 import config.TestValidationConfig;
-import com.jame.dev.gymApp.infrastructure.config.web.CookieHelper;
+import com.jame.dev.gymApp.features.auth.application.support.helper.CookieHelper;
 import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.presentation.exception.GlobalExceptionHandler;
 import data.SignInTestData;
