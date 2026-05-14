@@ -1,25 +1,25 @@
 package com.jame.dev.gymApp.features.auth.application.service;
 
+import com.jame.dev.gymApp.features.auth.api.request.SignInRequest;
+import com.jame.dev.gymApp.features.auth.api.response.CookieResponse;
+import com.jame.dev.gymApp.features.auth.api.response.SignInResponse;
 import com.jame.dev.gymApp.features.auth.application.contract.AuthService;
-import com.jame.dev.gymApp.features.auth.infrastructure.annotation.CheckExistence;
-import com.jame.dev.gymApp.features.auth.infrastructure.annotation.CheckSignIn;
-import com.jame.dev.gymApp.infrastructure.cache.BlacklistService;
+import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
+import com.jame.dev.gymApp.features.auth.application.support.factory.AuthResponsesFactory;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthProviderNotAllowedException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationAttemptFailureException;
-import com.jame.dev.gymApp.features.auth.application.support.factory.AuthResponsesFactory;
-import com.jame.dev.gymApp.features.auth.api.response.CookieResponse;
-import com.jame.dev.gymApp.features.auth.api.request.SignInRequest;
-import com.jame.dev.gymApp.features.auth.api.response.SignInResponse;
+import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
+import com.jame.dev.gymApp.features.auth.infrastructure.annotation.CheckExistence;
+import com.jame.dev.gymApp.features.auth.infrastructure.annotation.CheckSignIn;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.features.user.api.response.UserResponse;
 import com.jame.dev.gymApp.features.user.application.contract.UserService;
-import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
+import com.jame.dev.gymApp.infrastructure.cache.BlacklistService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -54,9 +54,8 @@ public class AuthApplicationService implements AuthService {
 
       final Authentication authentication = authenticationManager.authenticate(token);
 
-      final User userAuthenticated = Optional.ofNullable((User) authentication.getPrincipal())
+      final UserPrincipal userAuthenticated = Optional.ofNullable((UserPrincipal) authentication.getPrincipal())
               .orElseThrow(() -> new AuthenticationAttemptFailureException("Can't authenticate User."));
-
       return authFactory.createSignInOkDtoFrom(userAuthenticated);
    }
 

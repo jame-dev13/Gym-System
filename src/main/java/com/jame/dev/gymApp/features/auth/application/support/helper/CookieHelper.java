@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.infrastructure.config.web;
+package com.jame.dev.gymApp.features.auth.application.support.helper;
 
 import com.jame.dev.gymApp.features.auth.application.model.CookieNames;
 import jakarta.servlet.http.HttpServletResponse;

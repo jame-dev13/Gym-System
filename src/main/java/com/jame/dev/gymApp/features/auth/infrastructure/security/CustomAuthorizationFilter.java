@@ -1,13 +1,14 @@
 package com.jame.dev.gymApp.features.auth.infrastructure.security;
 
+import com.jame.dev.gymApp.application.contract.TryCatchBlockExecutorService;
+import com.jame.dev.gymApp.features.auth.application.contract.RateLimiterService;
+import com.jame.dev.gymApp.features.auth.application.model.CookieNames;
+import com.jame.dev.gymApp.features.auth.application.model.JwtValidationArgument;
 import com.jame.dev.gymApp.features.auth.application.support.helper.CustomAuthorizationFilterHelper;
-import com.jame.dev.gymApp.infrastructure.cache.BlacklistService;
 import com.jame.dev.gymApp.features.auth.domain.exception.AccessExpiredException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationNullException;
 import com.jame.dev.gymApp.features.auth.domain.exception.TokenAlreadyBlacklistedException;
-import com.jame.dev.gymApp.features.auth.application.contract.RateLimiterService;
-import com.jame.dev.gymApp.application.contract.TryCatchBlockExecutorService;
-import com.jame.dev.gymApp.features.auth.application.model.CookieNames;
+import com.jame.dev.gymApp.infrastructure.cache.BlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -57,8 +58,9 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
          }
 
          final String subject = authorizationHelper.extractSubject(access);
+         final long userId = authorizationHelper.extractUserId(access);
 
-         if (authorizationHelper.validateAccess(access, subject)) {
+         if (authorizationHelper.validateAccess(new JwtValidationArgument(access, subject, userId))) {
             authorizationHelper.authorizeSubject(subject);
             filterChain.doFilter(request, response);
             return;
@@ -70,7 +72,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             throw new TokenAlreadyBlacklistedException("Token already blacklisted.");
          }
 
-         if (authorizationHelper.validateAccess(refresh, subject)) {
+         if (authorizationHelper.validateAccess(new JwtValidationArgument(refresh, subject, userId))) {
             authorizationHelper.authorizeSubject(subject);
             filterChain.doFilter(request, response);
             return;

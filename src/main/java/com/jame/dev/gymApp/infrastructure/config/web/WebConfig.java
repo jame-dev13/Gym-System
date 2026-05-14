@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.infrastructure.config.web;
 
+import com.jame.dev.gymApp.features.auth.application.support.helper.CookieHelper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

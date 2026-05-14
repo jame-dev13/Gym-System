@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.auth.infrastructure.jwt;
 
+import com.jame.dev.gymApp.features.auth.application.model.JwtArgument;
 import com.jame.dev.gymApp.features.auth.domain.exception.AccessExpiredException;
 import com.jame.dev.gymApp.features.auth.domain.exception.InvalidSignedJwtKeyException;
 import io.jsonwebtoken.Claims;
@@ -19,10 +20,7 @@ import javax.crypto.SecretKey;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 @Slf4j
@@ -44,16 +42,16 @@ public class JwtUtils {
    }
 
    public <T> Optional<T> getClaim(final String token, final Function<Claims, T> function) {
-      if(Objects.isNull(token)){
+      if (Objects.isNull(token)) {
          throw new AccessExpiredException("Session Expired.");
       }
       try {
          final Claims claims = Jwts.parser()
-                 .verifyWith(signWith())
-                 .clock(() -> Date.from(clock.instant()))
-                 .build()
-                 .parseSignedClaims(token)
-                 .getPayload();
+            .verifyWith(signWith())
+            .clock(() -> Date.from(clock.instant()))
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
          return Optional.of(function.apply(claims));
       } catch (JwtException e) {
          log.error("Cant´t parse the Claims: {}", e.getMessage());
@@ -61,22 +59,26 @@ public class JwtUtils {
       }
    }
 
-   public String buildToken(final String username, final long expiration) {
+   public String buildToken(JwtArgument jwtArgument) {
       try {
          return Jwts.builder()
-                 .signWith(signWith())
-                 .issuedAt(Date.from(Instant.now(clock)))
-                 .id(UUID.randomUUID().toString())
-                 .subject(username)
-                 .expiration(Date.from(Instant.now(clock).plus(expiration, ChronoUnit.MILLIS)))
-                 .compact();
+            .signWith(signWith())
+            .issuedAt(Date.from(Instant.now(clock)))
+            .id(UUID.randomUUID().toString())
+            .claim("userId", jwtArgument.userId())
+            .subject(jwtArgument.subject())
+            .expiration(Date
+               .from(Instant
+                  .now(clock)
+                  .plus(jwtArgument.expiration(), ChronoUnit.MILLIS)))
+            .compact();
       } catch (InvalidKeyException e) {
          log.error("Can´t build Jwt Token: {}", e.getMessage());
          throw new InvalidSignedJwtKeyException("Signed key is not valid.", e);
       }
    }
 
-   public Clock getClock(){
+   public Clock getClock() {
       return this.clock;
    }
 }

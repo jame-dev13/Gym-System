@@ -3,7 +3,7 @@ package com.jame.dev.gymApp.features.auth.api;
 import com.jame.dev.gymApp.features.auth.infrastructure.annotation.PublishVerify;
 import com.jame.dev.gymApp.infrastructure.annotation.NotEmptyNull;
 import com.jame.dev.gymApp.features.auth.application.contract.AuthService;
-import com.jame.dev.gymApp.infrastructure.config.web.CookieHelper;
+import com.jame.dev.gymApp.features.auth.application.support.helper.CookieHelper;
 import com.jame.dev.gymApp.features.auth.api.response.CookieResponse;
 import com.jame.dev.gymApp.features.auth.api.request.SignInRequest;
 import com.jame.dev.gymApp.features.auth.api.response.SignInResponse;

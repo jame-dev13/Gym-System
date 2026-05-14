@@ -2,7 +2,7 @@ package com.jame.dev.gymApp.auth.service;
 
 import com.jame.dev.gymApp.features.auth.application.service.LogoutApplicationService;
 import com.jame.dev.gymApp.infrastructure.cache.BlacklistService;
-import com.jame.dev.gymApp.infrastructure.config.web.CookieHelper;
+import com.jame.dev.gymApp.features.auth.application.support.helper.CookieHelper;
 import com.jame.dev.gymApp.features.auth.application.model.CookieNames;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

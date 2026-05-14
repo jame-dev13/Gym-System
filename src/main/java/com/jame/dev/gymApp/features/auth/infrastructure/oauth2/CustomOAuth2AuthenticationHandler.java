@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.auth.infrastructure.oauth2;
 
-import com.jame.dev.gymApp.infrastructure.config.web.CookieHelper;
+import com.jame.dev.gymApp.features.auth.application.support.helper.CookieHelper;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationNullException;
 import com.jame.dev.gymApp.features.auth.application.contract.JwtService;
 import com.jame.dev.gymApp.features.auth.domain.model.CustomOAuth2User;
@@ -42,18 +42,19 @@ public class CustomOAuth2AuthenticationHandler implements AuthenticationSuccessH
       }
 
       String email = null;
+      Long id = null;
       if (authentication.getPrincipal() instanceof CustomOAuth2User user) {
-         log.info("User: {}", user.getUser().email());
-         log.info("Name: {}", user.getName());
+         log.info("[Oauth2 - AuthHandler]: USER AUTHENTICATED: {}.]", user.getUser());
          email = user.getUser().email();
+         id = user.getUser().id();
       }
 
       if (Objects.isNull(email) || email.isBlank()) {
          throw new AuthenticationNullException("No Authentication founded.");
       }
 
-      final String access = jwt.generateAccessToken(email);
-      final String refreshToken = jwt.generateRefreshToken(email);
+      final String access = jwt.generateAccessToken(id, email);
+      final String refreshToken = jwt.generateRefreshToken(id, email);
 
       final ResponseCookie accessCookie = cookieHelper.createAccessTokenCookie(access);
       final ResponseCookie refreshCookie = cookieHelper.createRefreshTokenCookie(refreshToken);

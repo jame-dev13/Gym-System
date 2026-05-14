@@ -1,18 +1,19 @@
 package com.jame.dev.gymApp.auth.service;
 
+import com.jame.dev.gymApp.features.auth.api.request.SignInRequest;
+import com.jame.dev.gymApp.features.auth.api.response.CookieResponse;
+import com.jame.dev.gymApp.features.auth.api.response.SignInResponse;
+import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.auth.application.service.AuthApplicationService;
-import com.jame.dev.gymApp.infrastructure.cache.BlacklistService;
+import com.jame.dev.gymApp.features.auth.application.support.factory.AuthResponsesFactory;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthProviderNotAllowedException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationAttemptFailureException;
-import com.jame.dev.gymApp.features.auth.application.support.factory.AuthResponsesFactory;
-import com.jame.dev.gymApp.features.auth.api.response.CookieResponse;
-import com.jame.dev.gymApp.features.auth.api.request.SignInRequest;
-import com.jame.dev.gymApp.features.auth.api.response.SignInResponse;
+import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.features.user.api.response.UserResponse;
 import com.jame.dev.gymApp.features.user.application.contract.UserService;
-import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.user.domain.model.Role;
+import com.jame.dev.gymApp.infrastructure.cache.BlacklistService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +26,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 
 import java.util.Set;
 
@@ -107,7 +107,7 @@ public class AuthApplicationServiceTest {
       void signInShouldReturnSignInOkDtoOnSuccess() {
          SignInRequest signInRequest = new SignInRequest("email@test.com", "pass");
          Authentication authentication = mock(Authentication.class);
-         User user = mock(User.class);
+         UserPrincipal user = mock(UserPrincipal.class);
          SignInResponse expectedResponse = mock(SignInResponse.class);
 
          given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
