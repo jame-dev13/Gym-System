@@ -37,8 +37,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Set;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
@@ -91,7 +90,7 @@ class CustomerAdministrationControllerTest {
       @DisplayName("GET[200] OK: get page /customers?page=0&size=1")
       void getPage() throws Exception {
          PageDto<CustomerResponse> page = mock();
-         given(customerService.getPage(any()))
+         given(customerService.getPage(any(), anyString()))
             .willReturn(page);
          mockMvc.perform(MockMvcRequestBuilders.get(URI_TEMPLATE)
                .param("page", "0")
@@ -99,7 +98,7 @@ class CustomerAdministrationControllerTest {
                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content").exists());
-         then(customerService).should(times(1)).getPage(any());
+         then(customerService).should(times(1)).getPage(any(), anyString());
       }
 
       @ParameterizedTest

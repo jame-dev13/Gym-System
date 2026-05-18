@@ -89,7 +89,7 @@ public class UserAdministrationControllerTest {
       @DisplayName("GET[200] OK: get page /users?page=0&size=1")
       void getPage() throws Exception {
          PageDto<UserResponse> page = mock();
-         given(userService.getPage(any()))
+         given(userService.getPage(any(), anyString()))
             .willReturn(page);
          mockMvc.perform(MockMvcRequestBuilders.get(URI_TEMPLATE)
                .param("page", "0")
@@ -97,7 +97,7 @@ public class UserAdministrationControllerTest {
                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content").exists());
-         then(userService).should(times(1)).getPage(any());
+         then(userService).should(times(1)).getPage(any(), anyString());
       }
 
       @ParameterizedTest

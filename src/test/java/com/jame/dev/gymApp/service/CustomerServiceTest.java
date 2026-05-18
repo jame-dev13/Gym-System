@@ -76,6 +76,7 @@ public class CustomerServiceTest {
    @Test
    @DisplayName("Should get a page of CustomerEntity.")
    void getByPageable() {
+      final String search = "id=10";
       final Pageable pageable = PageRequest.of(0, 5, sort);
       final List<CustomerEntity> subList = testCustomerList.subList(0, 5);
       final PageDto<CustomerResponse> output = mock();
@@ -83,7 +84,7 @@ public class CustomerServiceTest {
               .thenReturn(new PageImpl<>(subList));
       when(customerFactory.createPageFrom(any())).thenReturn(output);
 
-      final var page = service.getPage(pageable);
+      final var page = service.getPage(pageable, search);
       final var pageContent = page.content();
 
       assertNotNull(page, "Should not be null.");

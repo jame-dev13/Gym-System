@@ -103,13 +103,14 @@ class SubscriptionServiceTest {
    @Test
    @DisplayName("Should Get Page of subscriptions")
    void getPageByActive() {
+      final String search = "id=10";
       final Pageable pageable = PageRequest.of(0, 5);
       final List<SubscriptionEntity> subList = testSubsList.subList(0, 5);
       PageDto<SubscriptionResponse> pageDto = mock();
       when(repo.findAll(pageable)).thenReturn(new PageImpl<>(subList));
       when(subscriptionFactory.createPageFrom(any())).thenReturn(pageDto);
 
-      final var page = service.getPage(pageable);
+      final var page = service.getPage(pageable, search);
       final var pageContent = page.content();
 
       assertNotNull(page, "Page shouldn't be null");

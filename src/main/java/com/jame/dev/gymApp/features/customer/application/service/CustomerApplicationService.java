@@ -1,5 +1,8 @@
 package com.jame.dev.gymApp.features.customer.application.service;
 
+import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
+import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
+import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.customer.infrastructure.annotations.CacheEvictCustomers;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
@@ -84,6 +87,13 @@ public class CustomerApplicationService implements CustomerService, CustomerReco
    @Override
    @Transactional
    @CacheEvictCustomers
+   @AuditLog(
+      action = AuditLogAction.UPDATE,
+      entityType = AuditLogEntityType.CUSTOMER,
+      entityId = "#id",
+      input = "#dto",
+      result = "#result"
+   )
    public CustomerResponse update(long id, CustomerRequest dto) {
       final CustomerEntity customer = repo.findById(id)
          .orElseThrow(() -> new CustomerNotFoundException("Customer not found, id: " + id));
@@ -95,6 +105,13 @@ public class CustomerApplicationService implements CustomerService, CustomerReco
    @Override
    @Transactional
    @CacheEvict(value = CUSTOMERS, allEntries = true)
+   @AuditLog(
+      action = AuditLogAction.INSERT,
+      entityType = AuditLogEntityType.CUSTOMER,
+      entityId = "#result.id",
+      input = "#dto",
+      result = "#result"
+   )
    public CustomerResponse save(@NonNull CustomerRequest dto) {
       final UserEntity user = customerValidator.validateUserBeforeCreation(dto);
       final CustomerEntity customerEntity = customerFactory
@@ -107,6 +124,11 @@ public class CustomerApplicationService implements CustomerService, CustomerReco
    @Override
    @Transactional
    @CacheEvictCustomers
+   @AuditLog(
+      action = AuditLogAction.DELETE,
+      entityType = AuditLogEntityType.CUSTOMER,
+      entityId = "#id"
+   )
    public void softDelete(long id) {
       repo.deleteById(id);
    }
