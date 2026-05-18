@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.presentation.exception;
 
 import com.jame.dev.gymApp.application.model.ErrorCodes;
 import com.jame.dev.gymApp.domain.exception.*;
+import com.jame.dev.gymApp.features.audit.domain.exception.AuditLogNotFoundException;
 import com.jame.dev.gymApp.features.auth.domain.exception.*;
 import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.*;
@@ -28,7 +29,7 @@ public class GlobalExceptionHandler {
    public ResponseEntity<@NonNull ApiErrorResponse> handleUserNotFoundException(final UserNotFoundException ex,
                                                                                 final HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
+         ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
       ));
    }
 
@@ -36,7 +37,7 @@ public class GlobalExceptionHandler {
    public ResponseEntity<@NonNull ApiErrorResponse> handleCustomerNotFoundException(final CustomerNotFoundException ex,
                                                                                     final HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
+         ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
       ));
    }
 
@@ -44,7 +45,7 @@ public class GlobalExceptionHandler {
    public ResponseEntity<@NonNull ApiErrorResponse> handleMembershipNotFoundException(final MembershipNotFoundException ex,
                                                                                       final HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
+         ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
       ));
    }
 
@@ -52,7 +53,7 @@ public class GlobalExceptionHandler {
    public ResponseEntity<@NonNull ApiErrorResponse> handlePeriodNotFoundException(final PeriodNotFoundException ex,
                                                                                   final HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
+         ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
       ));
    }
 
@@ -60,7 +61,7 @@ public class GlobalExceptionHandler {
    public ResponseEntity<@NonNull ApiErrorResponse> handlePricingNotFoundException(final PricingNotFoundException ex,
                                                                                    final HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
+         ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
       ));
    }
 
@@ -68,291 +69,291 @@ public class GlobalExceptionHandler {
    public ResponseEntity<@NonNull ApiErrorResponse> handleSubscriptionNotFoundException(final SubscriptionNotFoundException ex,
                                                                                         final HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
+         ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND
       ));
    }
 
    @ExceptionHandler(ExtractClaimException.class)
    public ResponseEntity<ApiErrorResponse> handleExtractClaimException(
-           ExtractClaimException ex,
-           HttpServletRequest request) {
+      ExtractClaimException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.CONFLICT, ErrorCodes.EXTRACTION));
+         ex, request, HttpStatus.CONFLICT, ErrorCodes.EXTRACTION));
    }
 
    @ExceptionHandler(AuthenticationAttemptFailureException.class)
    public ResponseEntity<ApiErrorResponse> handleAuthenticationAttemptFailureException(
-           AuthenticationAttemptFailureException ex,
-           HttpServletRequest request) {
+      AuthenticationAttemptFailureException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.AUTHENTICATION));
+         ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.AUTHENTICATION));
    }
 
    @ExceptionHandler(AuthenticationNullException.class)
    public ResponseEntity<ApiErrorResponse> handleAuthenticationNullException(
-           AuthenticationNullException ex,
-           HttpServletRequest request) {
+      AuthenticationNullException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.AUTHENTICATION));
+         ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.AUTHENTICATION));
    }
 
    @ExceptionHandler(CantSaveUserException.class)
    public ResponseEntity<ApiErrorResponse> handleCantSaveUserException(
-           CantSaveUserException ex,
-           HttpServletRequest request) {
+      CantSaveUserException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
+         ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
    }
 
    @ExceptionHandler(CantSaveVerifcationEntityException.class)
    public ResponseEntity<ApiErrorResponse> handleCantSaveVerificationEntityException(
-           CantSaveVerifcationEntityException ex,
-           HttpServletRequest request) {
+      CantSaveVerifcationEntityException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
+         ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
    }
 
    @ExceptionHandler(InvalidJwtException.class)
    public ResponseEntity<ApiErrorResponse> handleInvalidJwtException(
-           InvalidJwtException ex,
-           HttpServletRequest request) {
+      InvalidJwtException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.FORBIDDEN, ErrorCodes.ACCESS_DENIED));
+         ex, request, HttpStatus.FORBIDDEN, ErrorCodes.ACCESS_DENIED));
    }
 
    @ExceptionHandler(InvalidSignedJwtKeyException.class)
    public ResponseEntity<ApiErrorResponse> handleInvalidSignedJwtKeyException(
-           InvalidSignedJwtKeyException ex,
-           HttpServletRequest request) {
+      InvalidSignedJwtKeyException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.FORBIDDEN, ErrorCodes.ACCESS_DENIED));
+         ex, request, HttpStatus.FORBIDDEN, ErrorCodes.ACCESS_DENIED));
    }
 
    @ExceptionHandler(RoleNotFoundException.class)
    public ResponseEntity<ApiErrorResponse> handleRoleNotFoundException(
-           RoleNotFoundException ex,
-           HttpServletRequest request) {
+      RoleNotFoundException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
+         ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 
    @ExceptionHandler(TokenAlreadyBlacklistedException.class)
    public ResponseEntity<ApiErrorResponse> handleTokenAlreadyBlacklistedException(
-           TokenAlreadyBlacklistedException ex,
-           HttpServletRequest request) {
+      TokenAlreadyBlacklistedException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
+         ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
    }
 
    @ExceptionHandler(VerificationTokenNotFoundException.class)
    public ResponseEntity<ApiErrorResponse> handleVerificationTokenNotFoundException(
-           VerificationTokenNotFoundException ex,
-           HttpServletRequest request) {
+      VerificationTokenNotFoundException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
+         ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 
    @ExceptionHandler(UserNotVerifiedException.class)
    public ResponseEntity<ApiErrorResponse> handleUserNotVerifiedException(
-           UserNotVerifiedException ex,
-           HttpServletRequest request) {
+      UserNotVerifiedException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.FORBIDDEN, ErrorCodes.VERIFICATION));
+         ex, request, HttpStatus.FORBIDDEN, ErrorCodes.VERIFICATION));
    }
 
    @ExceptionHandler(IllegalArgumentException.class)
    public ResponseEntity<ApiErrorResponse> handleIllegalArgumentException(
-           IllegalArgumentException ex,
-           HttpServletRequest request) {
+      IllegalArgumentException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.ARGUMENT));
+         ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.ARGUMENT));
    }
 
    @ExceptionHandler(AlreadyExistsException.class)
    public ResponseEntity<ApiErrorResponse> handleAlreadyExistsException(
-           AlreadyExistsException ex,
-           HttpServletRequest request) {
+      AlreadyExistsException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
+         ex, request, HttpStatus.CONFLICT, ErrorCodes.SAVE));
    }
 
    @ExceptionHandler(AccessExpiredException.class)
    public ResponseEntity<ApiErrorResponse> handleAccessExpiredException(
-           AccessExpiredException ex,
-           HttpServletRequest request) {
+      AccessExpiredException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.FORBIDDEN, ErrorCodes.ACCESS));
+         ex, request, HttpStatus.FORBIDDEN, ErrorCodes.ACCESS));
    }
 
    @ExceptionHandler(RenewSubscriptionException.class)
    public ResponseEntity<ApiErrorResponse> handleRenewSubscriptionException(
-           RenewSubscriptionException ex,
-           HttpServletRequest request) {
+      RenewSubscriptionException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.CONFLICT, ErrorCodes.UPDATE));
+         ex, request, HttpStatus.CONFLICT, ErrorCodes.UPDATE));
    }
 
    @ExceptionHandler(EntityNotFoundException.class)
    public ResponseEntity<ApiErrorResponse> handleEntityNotFoundException(
-           EntityNotFoundException ex,
-           HttpServletRequest request) {
+      EntityNotFoundException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
+         ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 
    @ExceptionHandler(IllegalSubjectAuthenticatedException.class)
    public ResponseEntity<ApiErrorResponse> handleIllegalSubjectAuthenticatedException(
-           IllegalSubjectAuthenticatedException ex,
-           HttpServletRequest request) {
+      IllegalSubjectAuthenticatedException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.NO_ACCESS));
+         ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.NO_ACCESS));
    }
 
    @ExceptionHandler(NoActiveException.class)
    public ResponseEntity<ApiErrorResponse> handleNoActiveException(
-           NoActiveException ex,
-           HttpServletRequest request) {
+      NoActiveException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.CONFLICT, ErrorCodes.VALIDATION));
+         ex, request, HttpStatus.CONFLICT, ErrorCodes.VALIDATION));
    }
 
    @ExceptionHandler(EmailNotFoundException.class)
    public ResponseEntity<ApiErrorResponse> handleEmailNotFoundException(
-           EmailNotFoundException ex,
-           HttpServletRequest request) {
+      EmailNotFoundException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
+         ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 
    @ExceptionHandler(MethodArgumentNotValidException.class)
    public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValidException(
-           MethodArgumentNotValidException ex,
-           HttpServletRequest request
+      MethodArgumentNotValidException ex,
+      HttpServletRequest request
    ) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION));
+         ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION));
    }
 
    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
    public ResponseEntity<ApiErrorResponse> handleTypeMismatch(
-           MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+      MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.TYPE));
+         ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.TYPE));
    }
 
    @ExceptionHandler(HttpMessageNotReadableException.class)
    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadableException(
-           HttpMessageNotReadableException ex, HttpServletRequest request) {
+      HttpMessageNotReadableException ex, HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION));
+         ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION));
    }
 
    @ExceptionHandler(ConstraintViolationException.class)
    public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
-           ConstraintViolationException ex,
-           HttpServletRequest request) {
+      ConstraintViolationException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.CONSTRAINT));
+         ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.CONSTRAINT));
    }
 
    @ExceptionHandler(NonLocalAuthenticationAllowedException.class)
    public ResponseEntity<ApiErrorResponse> handleNonLocalAuthenticationAllowedException(
-           NonLocalAuthenticationAllowedException ex,
-           HttpServletRequest request) {
+      NonLocalAuthenticationAllowedException ex,
+      HttpServletRequest request) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.SAVE));
+         ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.SAVE));
    }
 
    @ExceptionHandler(VerificationNotFoundException.class)
    public ResponseEntity<ApiErrorResponse> handleVerificationNotFoundException(
-           VerificationNotFoundException ex,
-           HttpServletRequest request
+      VerificationNotFoundException ex,
+      HttpServletRequest request
    ) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
+         ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 
    @ExceptionHandler(SubscriptionUnfinishedException.class)
    public ResponseEntity<ApiErrorResponse> handleSubscriptionUnfinishedException(
-           SubscriptionUnfinishedException ex,
-           HttpServletRequest request
+      SubscriptionUnfinishedException ex,
+      HttpServletRequest request
    ) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.CONFLICT, ErrorCodes.UPDATE));
+         ex, request, HttpStatus.CONFLICT, ErrorCodes.UPDATE));
    }
 
    @ExceptionHandler(MissMatchException.class)
    public ResponseEntity<ApiErrorResponse> handleMissMatchException(
-           MissMatchException ex,
-           HttpServletRequest request
+      MissMatchException ex,
+      HttpServletRequest request
    ) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.CONFLICT, ErrorCodes.UPDATE));
+         ex, request, HttpStatus.CONFLICT, ErrorCodes.UPDATE));
    }
 
    @ExceptionHandler(VerificationAttemptFailedException.class)
    public ResponseEntity<ApiErrorResponse> handleVerificationAttemptFailedException(
-           VerificationAttemptFailedException ex,
-           HttpServletRequest request
+      VerificationAttemptFailedException ex,
+      HttpServletRequest request
    ) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.UPDATE));
+         ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.UPDATE));
    }
 
    @ExceptionHandler(AlreadyVerifiedException.class)
    public ResponseEntity<ApiErrorResponse> handleAlreadyVerifiedException(
-           AlreadyVerifiedException ex,
-           HttpServletRequest request
+      AlreadyVerifiedException ex,
+      HttpServletRequest request
    ) {
       return responseFactory.buildResponse(new InputError(
-              ex, request, HttpStatus.CONFLICT, ErrorCodes.VALIDATION));
+         ex, request, HttpStatus.CONFLICT, ErrorCodes.VALIDATION));
    }
 
    @ExceptionHandler(WindowTimeException.class)
    public ResponseEntity<ApiErrorResponse> handleWindowVerifiedException(
-           WindowTimeException ex, HttpServletRequest request
+      WindowTimeException ex, HttpServletRequest request
    ) {
       return responseFactory
-              .buildResponse(new InputError(
-                      ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.ACCESS));
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.ACCESS));
    }
 
 
    @ExceptionHandler(AccountNotFoundException.class)
    public ResponseEntity<ApiErrorResponse> handleAccountNotFoundException(
-           AccountNotFoundException ex, HttpServletRequest request
+      AccountNotFoundException ex, HttpServletRequest request
    ) {
       return responseFactory
-              .buildResponse(new InputError(
-                      ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 
    @ExceptionHandler(AuthProviderNotAllowedException.class)
    public ResponseEntity<ApiErrorResponse> handleAuthProviderNotAllowedException(
-           AuthProviderNotAllowedException ex, HttpServletRequest request
+      AuthProviderNotAllowedException ex, HttpServletRequest request
    ) {
       return responseFactory
-              .buildResponse(new InputError(
-                      ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION));
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.VALIDATION));
    }
 
    @ExceptionHandler(TooManyRequestsException.class)
    public ResponseEntity<ApiErrorResponse> handleTooManyRequestsException(
-           TooManyRequestsException ex, HttpServletRequest request
+      TooManyRequestsException ex, HttpServletRequest request
    ) {
       return responseFactory
-              .buildResponse(new InputError(
-                      ex, request, HttpStatus.TOO_MANY_REQUESTS, ErrorCodes.ACCESS));
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.TOO_MANY_REQUESTS, ErrorCodes.ACCESS));
    }
 
 
    @ExceptionHandler(TemporaryBlockedException.class)
    public ResponseEntity<ApiErrorResponse> handleTemporaryBlockedException(
-           TemporaryBlockedException ex, HttpServletRequest request
+      TemporaryBlockedException ex, HttpServletRequest request
    ) {
       return responseFactory
-              .buildResponse(new InputError(
-                      ex, request, HttpStatus.LOCKED, ErrorCodes.ACCESS_DENIED));
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.LOCKED, ErrorCodes.ACCESS_DENIED));
    }
 
    @ExceptionHandler(OTTNotFoundException.class)
@@ -389,5 +390,23 @@ public class GlobalExceptionHandler {
       return responseFactory
          .buildResponse(new InputError(
             ex, request, HttpStatus.BAD_REQUEST, ErrorCodes.ARGUMENT));
+   }
+
+   @ExceptionHandler(InvalidAuthenticationPrincipalException.class)
+   public ResponseEntity<ApiErrorResponse> handleInvalidAuthenticationPrincipalException(
+      InvalidAuthenticationPrincipalException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.AUTHENTICATION));
+   }
+
+   @ExceptionHandler(AuditLogNotFoundException.class)
+   public ResponseEntity<ApiErrorResponse> handleAuditLogNotFoundException(
+      AuditLogNotFoundException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 }

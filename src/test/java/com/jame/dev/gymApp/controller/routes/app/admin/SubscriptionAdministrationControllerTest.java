@@ -108,7 +108,7 @@ public class SubscriptionAdministrationControllerTest {
       @DisplayName("GET[200] OK: get page /subs?page=0&size=1")
       void getPage() throws Exception {
          PageDto<SubscriptionResponse> page = mock();
-         given(subscriptionService.getPage(any()))
+         given(subscriptionService.getPage(any(), anyString()))
             .willReturn(page);
          mockMvc.perform(MockMvcRequestBuilders.get(URI_TEMPLATE)
                .param("page", "0")
@@ -116,7 +116,7 @@ public class SubscriptionAdministrationControllerTest {
                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content").exists());
-         then(subscriptionService).should(times(1)).getPage(any());
+         then(subscriptionService).should(times(1)).getPage(any(), anyString());
       }
 
       @ParameterizedTest

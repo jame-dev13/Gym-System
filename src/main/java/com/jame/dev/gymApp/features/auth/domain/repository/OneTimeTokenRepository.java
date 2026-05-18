@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.features.auth.application.contract;
+package com.jame.dev.gymApp.features.auth.domain.repository;
 
 import com.jame.dev.gymApp.features.auth.domain.model.OneTimeTokenEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

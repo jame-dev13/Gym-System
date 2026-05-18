@@ -9,12 +9,10 @@ import com.jame.dev.gymApp.features.auth.application.support.helper.CookieHelper
 import com.jame.dev.gymApp.features.auth.domain.exception.ExtractClaimException;
 import com.jame.dev.gymApp.features.auth.domain.exception.InvalidJwtException;
 import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
-import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
-import com.jame.dev.gymApp.features.user.application.contract.UserService;
 import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
-import com.jame.dev.gymApp.features.user.domain.exception.UserNotFoundException;
 import com.jame.dev.gymApp.features.user.domain.model.Role;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
+import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
@@ -23,7 +21,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -32,7 +29,7 @@ public class AuthResponsesFactory {
    private final JwtService jwtService;
    private final CookieHelper cookieHelper;
    private final RoleMapper roleMapper;
-   private final UserService userService;
+   private final UserRepository userRepository;
 
    public CookieResponse createRefreshCookieResponseFrom(@NonNull final String token) {
       final long userId = jwtService.extractUserId(token)
@@ -65,11 +62,9 @@ public class AuthResponsesFactory {
 
    public SessionResponse createSessionFrom(String username, Collection<? extends GrantedAuthority> authorities) {
       final Set<Role> roles = roleMapper.authoritiesToRoles(authorities);
-      final UserEntity user = userService.getUserByEmail(username)
-         .orElseThrow(() -> new UserNotFoundException("User Not Found."));
-      final boolean isCustomer = Optional.of(user.getCustomerEntity())
-         .map(CustomerEntity::isActive)
-         .orElse(false);
+      boolean isCustomer = userRepository.findByEmail(username)
+         .map(UserEntity::getCustomerEntity)
+         .isPresent();
       return new SessionResponse(username, roles, isCustomer);
    }
 

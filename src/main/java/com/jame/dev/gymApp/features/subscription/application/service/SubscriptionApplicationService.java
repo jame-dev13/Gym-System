@@ -1,5 +1,8 @@
 package com.jame.dev.gymApp.features.subscription.application.service;
 
+import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
+import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
+import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.CacheEvictSubscriptions;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
@@ -60,28 +63,6 @@ public class SubscriptionApplicationService implements SubscriptionService {
    }
 
    @Override
-   @Transactional
-   @CacheEvict(value = CacheValues.SUBSCRIPTIONS, allEntries = true)
-   public SubscriptionResponse save(SubscriptionRequest dto) {
-      final CustomerEntity customer = customerRepo.findByUser_Email(dto.customerEmail())
-         .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
-
-      if (repo.existsByCustomer(customer)) {
-         throw new AlreadyExistsException("There's a subscription linked to the customer with: " + dto.customerEmail());
-      }
-
-      final PricingEntity pricing = pricingRepo.findByMemberShipEntity_Membership(dto.membership())
-         .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
-
-      final SubscriptionEntity subscriptionEntity = subscriptionFactory.createFromInput(
-         new SubscriptionFactoryDtoInput(dto, customer, pricing, LocalDate.now()));
-
-      final SubscriptionEntity subscriptionSaved = repo.saveAndFlush(subscriptionEntity);
-
-      return subscriptionFactory.createFromEntity(subscriptionSaved);
-   }
-
-   @Override
    @Transactional(readOnly = true)
    @Cacheable(value = CacheValues.SUBSCRIPTION, key = "#id")
    public SubscriptionResponse getById(long id) {
@@ -104,7 +85,43 @@ public class SubscriptionApplicationService implements SubscriptionService {
 
    @Override
    @Transactional
+   @CacheEvict(value = CacheValues.SUBSCRIPTIONS, allEntries = true)
+   @AuditLog(
+      action = AuditLogAction.INSERT,
+      entityType = AuditLogEntityType.SUBSCRIPTION,
+      input = "#dto",
+      entityId = "#result.id",
+      result = "#result"
+   )
+   public SubscriptionResponse save(SubscriptionRequest dto) {
+      final CustomerEntity customer = customerRepo.findByUser_Email(dto.customerEmail())
+         .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
+
+      if (repo.existsByCustomer(customer)) {
+         throw new AlreadyExistsException("There's a subscription linked to the customer with: " + dto.customerEmail());
+      }
+
+      final PricingEntity pricing = pricingRepo.findByMemberShipEntity_Membership(dto.membership())
+         .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
+
+      final SubscriptionEntity subscriptionEntity = subscriptionFactory.createFromInput(
+         new SubscriptionFactoryDtoInput(dto, customer, pricing, LocalDate.now()));
+
+      final SubscriptionEntity subscriptionSaved = repo.saveAndFlush(subscriptionEntity);
+
+      return subscriptionFactory.createFromEntity(subscriptionSaved);
+   }
+
+   @Override
+   @Transactional
    @CacheEvictSubscriptions
+   @AuditLog(
+      action = AuditLogAction.UPDATE,
+      entityType = AuditLogEntityType.SUBSCRIPTION,
+      input = "#dto",
+      entityId = "#id",
+      result = "#result"
+   )
    public SubscriptionResponse update(long id, SubscriptionRequest dto) {
       final SubscriptionEntity subscriptionEntity = repo.findById(id)
          .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
@@ -121,6 +138,12 @@ public class SubscriptionApplicationService implements SubscriptionService {
    @Override
    @Transactional
    @CacheEvictSubscriptions
+   @AuditLog(
+      action = AuditLogAction.UPDATE,
+      entityType = AuditLogEntityType.SUBSCRIPTION,
+      entityId = "#id",
+      result = "#result"
+   )
    public SubscriptionResponse patch(long id) {
       final SubscriptionEntity subscription = repo.findById(id)
          .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
@@ -133,6 +156,13 @@ public class SubscriptionApplicationService implements SubscriptionService {
    @Transactional
    @Override
    @CacheEvictSubscriptions
+   @AuditLog(
+      action = AuditLogAction.UPDATE,
+      entityType = AuditLogEntityType.SUBSCRIPTION,
+      input = "#input",
+      entityId = "#id",
+      result = "#result"
+   )
    public SubscriptionResponse put(long id, SubscriptionRequest input) {
       final SubscriptionEntity subscriptionEntity = validator.validateOnRenew(id, input);
 
@@ -147,6 +177,11 @@ public class SubscriptionApplicationService implements SubscriptionService {
    @Override
    @Transactional
    @CacheEvictSubscriptions
+   @AuditLog(
+      action = AuditLogAction.DELETE,
+      entityType = AuditLogEntityType.SUBSCRIPTION,
+       entityId = "#id"
+   )
    public void softDelete(long id) {
       repo.deleteById(id);
    }

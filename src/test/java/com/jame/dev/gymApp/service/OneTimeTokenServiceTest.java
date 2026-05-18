@@ -9,7 +9,7 @@ import com.jame.dev.gymApp.features.auth.domain.model.OneTimeTokenEntity;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.auth.api.request.TokenIdResetPasswordRequest;
 import com.jame.dev.gymApp.features.auth.api.request.PasswordResetRequest;
-import com.jame.dev.gymApp.features.auth.application.contract.OneTimeTokenRepository;
+import com.jame.dev.gymApp.features.auth.domain.repository.OneTimeTokenRepository;
 import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
 import com.jame.dev.gymApp.application.contract.TokenDBHasherService;
 import com.jame.dev.gymApp.features.auth.application.service.OneTimeTokenApplicationService;

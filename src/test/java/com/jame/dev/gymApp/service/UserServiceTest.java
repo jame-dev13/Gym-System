@@ -67,6 +67,7 @@ public class UserServiceTest {
    @Test
    @DisplayName("Should return an UserEntity Page.")
    void getUsersByPages() {
+      final String search = "id=10";
       final Pageable pageable = PageRequest.of(0, 5, sort);
       final List<UserEntity> subList = testUserList.subList(0, 5);
       final PageDto<UserResponse> output = mock();
@@ -75,7 +76,7 @@ public class UserServiceTest {
               .thenReturn(new PageImpl<>(subList));
       when(userFactory.createPageFrom(any())).thenReturn(output);
 
-      final var page = service.getPage(pageable);
+      final var page = service.getPage(pageable, search);
       final var pageList = page.content();
 
       assertEquals(page.content().size(), pageList.size(), "Page content size should be equals.");

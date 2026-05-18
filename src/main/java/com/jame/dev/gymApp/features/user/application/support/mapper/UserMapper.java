@@ -9,6 +9,7 @@ import com.jame.dev.gymApp.application.support.mapper.BaseMapper;
 import org.mapstruct.Builder;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.Set;
 
@@ -18,6 +19,7 @@ import java.util.Set;
         builder = @Builder)
 public interface UserMapper extends BaseMapper<UserEntity, UserResponse> {
    @Override
+   @Mapping(source = "provider", target = "authProvider")
    UserResponse toDto(UserEntity user);
 
    UserMinimalInfoResponse toMinimalInfo(UserEntity user);
