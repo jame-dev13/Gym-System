@@ -18,7 +18,6 @@ import java.util.Objects;
 public class RoleEntity {
 
    @Id
-   @GeneratedValue(strategy = GenerationType.IDENTITY)
    @Setter(AccessLevel.NONE)
    private Integer id;
 
