@@ -52,8 +52,7 @@ public interface RoleMapper {
 
    default RoleEntity toEntity(Role role, RoleRepository roleRepository){
       if(role == null) return null;
-      return roleRepository.findByRole(role)
-              .orElse(new RoleEntity(null, role));
+      return roleRepository.getReferenceByRole(role);
    }
 
    default Role toDto(RoleEntity entity){

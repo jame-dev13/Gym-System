@@ -1,11 +1,10 @@
 package com.jame.dev.gymApp.features.user.application.support.mapper;
 
-import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
-import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
+import com.jame.dev.gymApp.application.support.mapper.BaseMapper;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.features.user.api.response.UserResponse;
-import com.jame.dev.gymApp.features.user.api.response.UserMinimalInfoResponse;
-import com.jame.dev.gymApp.application.support.mapper.BaseMapper;
+import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import org.mapstruct.Builder;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
@@ -21,8 +20,6 @@ public interface UserMapper extends BaseMapper<UserEntity, UserResponse> {
    @Override
    @Mapping(source = "provider", target = "authProvider")
    UserResponse toDto(UserEntity user);
-
-   UserMinimalInfoResponse toMinimalInfo(UserEntity user);
 
    default UserEntity toEntity(UserRequest dto, Set<RoleEntity> roles) {
       if (dto == null) return null;
