@@ -14,10 +14,6 @@ public interface AuditLogMapper extends BaseMapper<AuditLogDocument, AuditLogRes
    @Override
    AuditLogResponse toDto(final AuditLogDocument entity);
 
-   default String map(ObjectId value) {
-      return value != null ? value.toHexString() : null;
-   }
-
    default AuditLogDocument toEntity(AuditLogInput auditLogInput) {
       return AuditLogDocument.builder()
          .id(ObjectId.get())
