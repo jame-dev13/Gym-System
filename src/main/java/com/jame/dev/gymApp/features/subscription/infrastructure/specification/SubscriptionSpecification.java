@@ -9,6 +9,10 @@ import jakarta.persistence.criteria.*;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
 public class SubscriptionSpecification implements Specification<SubscriptionEntity> {
 
    private final String search;
@@ -18,18 +22,39 @@ public class SubscriptionSpecification implements Specification<SubscriptionEnti
       if (search == null || search.isBlank()) return cb.conjunction();
 
       final String like = "%" + search.toLowerCase() + "%";
+      final String trimmed = search.trim();
 
-      final Join<SubscriptionEntity, PricingEntity> ignoredpricingJoin = root.join("pricing", JoinType.INNER);
-      final Join<PricingEntity, MemberShipEntity> membershipJoin = root.join("membership", JoinType.INNER);
-      final Join<SubscriptionEntity, CustomerEntity> ignoredCustomerJoin = root.join("customer", JoinType.INNER);
-      final Join<CustomerEntity, UserEntity> userJoin = root.join("user", JoinType.INNER);
+      final Join<SubscriptionEntity, PricingEntity> pricingJoin = root.join("pricing", JoinType.LEFT);
+      final Join<PricingEntity, MemberShipEntity> membershipJoin = pricingJoin.join("memberShipEntity", JoinType.LEFT);
+      final Join<SubscriptionEntity, CustomerEntity> customerJoin = root.join("customer", JoinType.LEFT);
+      final Join<CustomerEntity, UserEntity> userJoin = customerJoin.join("user", JoinType.LEFT);
+
       query.distinct(true);
 
-      return cb.or(
-         cb.like(cb.lower(membershipJoin.get("membership").as(String.class)), like),
-         cb.like(cb.lower(userJoin.get("email")), like),
-         cb.equal(root.get("finished"), Boolean.parseBoolean(like))
-      );
+      final List<Predicate> predicates = new ArrayList<>();
+      predicates.add(cb.like(cb.lower(userJoin.get("email")), like));
+
+      predicates.add(cb.equal(
+         cb.lower(membershipJoin.get("membership")).as(String.class),
+         trimmed.toLowerCase()
+      ));
+
+      try {
+         BigDecimal price = new BigDecimal(trimmed);
+         predicates.add(cb.equal(
+            pricingJoin.get("price").as(BigDecimal.class),
+            price
+         ));
+      } catch (NumberFormatException ignored) {}
+
+      if ("true".equalsIgnoreCase(trimmed) || "false".equalsIgnoreCase(trimmed)) {
+         predicates.add(cb.equal(
+            root.get("finished").as(Boolean.class),
+            Boolean.parseBoolean(trimmed)
+         ));
+      }
+
+      return cb.or(predicates.toArray(new Predicate[0]));
    }
 
    public SubscriptionSpecification(String search) {
