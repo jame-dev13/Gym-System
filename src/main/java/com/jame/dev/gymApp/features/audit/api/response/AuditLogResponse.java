@@ -10,7 +10,6 @@ import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import java.time.Instant;
 
 public record AuditLogResponse(
-   @JsonProperty("id") String id,
    @JsonProperty("entity") AuditLogEntity entity,
    @JsonProperty("action") AuditLogAction action,
    @JsonProperty("actor") AuditLogActor actor,
