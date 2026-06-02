@@ -23,7 +23,7 @@ public class AuditLogApplicationService implements AuditLogService {
       unless = "#result == null || #result.content.isEmpty()",
       cacheManager = "redisCacheManager"
    )
-   public PageDto<AuditLogResponse> getPage(Pageable pageable) {
-      return auditLogFactory.createPageFrom(auditLogRepository.findAll(pageable));
+   public PageDto<AuditLogResponse> getPage(Pageable pageable, String search) {
+      return auditLogFactory.createPageFrom(auditLogRepository.search(pageable, search));
    }
 }
