@@ -29,7 +29,5 @@ public class AuditLogEventListener {
       final AuditLogDocument entity = auditLogFactory.createFromInput(input);
       final AuditLogDocument logDocument = auditLogRepository.save(entity);
       final AuditLogResponse response = auditLogFactory.createFromEntity(logDocument);
-      log.info("AuditLogDocument saved: id: {}", logDocument.getId());
-      log.info("Document Response: {}", response);
    }
 }

@@ -21,6 +21,7 @@ import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
 import com.jame.dev.gymApp.features.user.infrastructure.annotations.CacheEvictUsers;
 import com.jame.dev.gymApp.features.user.infrastructure.annotations.PublishUserRecovered;
 import com.jame.dev.gymApp.features.user.infrastructure.specification.UserSpecifications;
+import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -46,6 +47,7 @@ public class UserServiceImplementation implements
    private final UserRepository repo;
    private final UserFactory userFactory;
    private final UserUpdater userUpdater;
+   private final SortPropertyResolver userSortApplicationResolver;
 
    @Override
    public Optional<UserEntity> getUserByEmail(String email) {
@@ -60,8 +62,9 @@ public class UserServiceImplementation implements
       unless = "#result == null || #result.content.isEmpty()"
    )
    public PageDto<UserResponse> getPage(Pageable pageable, String search) {
+      final Pageable pageableWrapped = userSortApplicationResolver.resolve(pageable);
       final Specification<UserEntity> spec = new UserSpecifications(search);
-      final Page<UserEntity> entityPage = repo.findAll(spec, pageable);
+      final Page<UserEntity> entityPage = repo.findAll(spec, pageableWrapped);
       return userFactory.createPageFrom(entityPage);
    }
 
@@ -69,11 +72,12 @@ public class UserServiceImplementation implements
    @Transactional(readOnly = true)
    @Cacheable(
       value = CacheValues.USERS_INACTIVE,
-      key = "#pageable.pageNumber + ':' + #pageable.pageSize",
+      keyGenerator = "pageKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
-   public PageDto<UserMinimalInfoResponse> getInactivePage(Pageable pageable) {
-      final Page<UserMinimalInfoResponse> page = repo.findAllInactives(pageable);
+   public PageDto<UserMinimalInfoResponse> getInactivePage(Pageable pageable, String search) {
+      final Pageable pageableWrapped = userSortApplicationResolver.resolve(pageable);
+      final Page<UserMinimalInfoResponse> page = repo.findAllInactives(search, pageableWrapped);
       return userFactory.createMinimalInfoPage(page);
    }
 

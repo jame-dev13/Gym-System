@@ -28,9 +28,7 @@ public class SessionController {
            @Valid
            @CookieValue(name = "access") final String access,
            @NonNull Authentication authentication) {
-      log.info("HIT Session controller.");
       final SessionResponse sessionResponse = sessionService.getSession(access, authentication);
-      System.out.println(sessionResponse);
       return ResponseEntity.ok(sessionResponse);
    }
 }

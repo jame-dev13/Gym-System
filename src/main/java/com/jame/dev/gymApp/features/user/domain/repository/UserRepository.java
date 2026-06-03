@@ -1,8 +1,8 @@
 package com.jame.dev.gymApp.features.user.domain.repository;
 
-import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
-import com.jame.dev.gymApp.features.user.api.response.UserMinimalInfoResponse;
 import com.jame.dev.gymApp.domain.repository.CustomJpaRepository;
+import com.jame.dev.gymApp.features.user.api.response.UserMinimalInfoResponse;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,15 +27,32 @@ public interface UserRepository extends CustomJpaRepository<UserEntity, Long> {
           u.name AS name,
           u.email AS email
       FROM users u
-      WHERE u.active = false AND
-      u.deleted_at IS NOT NULL
-      """, countQuery = """
-      SELECT COUNT(*) FROM users u
-      WHERE u.active = false AND
-      u.deleted_at IS NOT NULL
+      WHERE u.active = false
+        AND u.deleted_at IS NOT NULL
+        AND (
+              :search IS NULL
+              OR TRIM(:search) = ''
+              OR u.name ILIKE CONCAT('%', :search, '%')
+              OR u.email ILIKE CONCAT('%', :search, '%')
+        )
       """,
+      countQuery = """
+         SELECT COUNT(*)
+         FROM users u
+         WHERE u.active = false
+           AND u.deleted_at IS NOT NULL
+           AND (
+                 :search IS NULL
+                 OR TRIM(:search) = ''
+                 OR u.name ILIKE CONCAT('%', :search, '%')
+                 OR u.email ILIKE CONCAT('%', :search, '%')
+           )
+         """,
       nativeQuery = true)
-   Page<UserMinimalInfoResponse> findAllInactives(Pageable pageable);
+   Page<UserMinimalInfoResponse> findAllInactives(
+      @Param("search") String search,
+      Pageable pageable
+   );
 
    @NativeQuery("""
       SELECT * FROM users u

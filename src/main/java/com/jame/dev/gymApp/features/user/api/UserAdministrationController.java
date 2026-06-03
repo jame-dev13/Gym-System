@@ -1,14 +1,14 @@
 package com.jame.dev.gymApp.features.user.api;
 
 import com.jame.dev.gymApp.features.auth.infrastructure.annotation.PublishVerifyAndNotifyUser;
+import com.jame.dev.gymApp.features.user.api.request.UserRequest;
+import com.jame.dev.gymApp.features.user.api.response.UserMinimalInfoResponse;
+import com.jame.dev.gymApp.features.user.api.response.UserResponse;
+import com.jame.dev.gymApp.features.user.application.contract.UserService;
+import com.jame.dev.gymApp.features.user.infrastructure.web.UserInactiveController;
 import com.jame.dev.gymApp.infrastructure.annotation.Minimum;
 import com.jame.dev.gymApp.infrastructure.annotation.NotNullObject;
 import com.jame.dev.gymApp.infrastructure.web.BaseController;
-import com.jame.dev.gymApp.features.user.infrastructure.web.UserInactiveController;
-import com.jame.dev.gymApp.features.user.api.request.UserRequest;
-import com.jame.dev.gymApp.features.user.api.response.UserResponse;
-import com.jame.dev.gymApp.features.user.api.response.UserMinimalInfoResponse;
-import com.jame.dev.gymApp.features.user.application.contract.UserService;
 import jakarta.validation.Valid;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
@@ -45,10 +45,13 @@ public class UserAdministrationController extends BaseController<UserResponse, U
 
    @GetMapping("/inactive")
    public ResponseEntity<Page<UserMinimalInfoResponse>> getInactivePage(
-      @RequestParam("page") final int page,
-      @RequestParam("size") final int size
+      @PageableDefault(
+         sort = "id",
+         direction = Sort.Direction.DESC
+      ) Pageable pageable,
+      @RequestParam(required = false, name = "search") String search
    ) {
-      return this.inactiveController.getInactivePage(page, size);
+      return this.inactiveController.getInactivePage(pageable, search);
    }
 
    @GetMapping("/{id}")
