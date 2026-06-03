@@ -20,6 +20,7 @@ import com.jame.dev.gymApp.application.model.CacheValues;
 import com.jame.dev.gymApp.features.customer.infrastructure.specification.CustomerSpecification;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerUpdater;
 import com.jame.dev.gymApp.features.customer.application.support.validator.CustomerValidator;
+import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -43,6 +44,7 @@ public class CustomerApplicationService implements CustomerService, CustomerReco
    private final CustomerValidator customerValidator;
    private final CustomerFactory customerFactory;
    private final CustomerUpdater customerUpdater;
+   private final SortPropertyResolver customerSortAppResolver;
 
    @Override
    @Transactional(readOnly = true)
@@ -52,8 +54,9 @@ public class CustomerApplicationService implements CustomerService, CustomerReco
       unless = "#result == null || #result.content.isEmpty()"
    )
    public PageDto<CustomerResponse> getPage(Pageable pageable, String search) {
+      final Pageable pageableWrapped = customerSortAppResolver.resolve(pageable);
       final Specification<CustomerEntity> spec = new CustomerSpecification(search);
-      final Page<CustomerEntity> page = repo.findAll(spec, pageable);
+      final Page<CustomerEntity> page = repo.findAll(spec, pageableWrapped);
       return customerFactory.createPageFrom(page);
    }
 

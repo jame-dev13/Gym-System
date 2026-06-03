@@ -1,29 +1,30 @@
 package com.jame.dev.gymApp.features.subscription.application.service;
 
+import com.jame.dev.gymApp.application.dto.PageDto;
+import com.jame.dev.gymApp.application.model.CacheValues;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
-import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.CacheEvictSubscriptions;
-import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
-import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
-import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
+import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
+import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;
+import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
+import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
+import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
+import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionService;
+import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionUpdater;
+import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionFactoryDtoInput;
+import com.jame.dev.gymApp.features.subscription.application.support.validator.SubscriptionValidator;
 import com.jame.dev.gymApp.features.subscription.domain.exception.PricingNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNotFoundException;
-import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
-import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
-import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionFactoryDtoInput;
-import com.jame.dev.gymApp.application.dto.PageDto;
-import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
-import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;
+import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.PricingRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionRepository;
-import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionService;
-import com.jame.dev.gymApp.application.model.CacheValues;
+import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.CacheEvictSubscriptions;
 import com.jame.dev.gymApp.features.subscription.infrastructure.specification.SubscriptionSpecification;
-import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionUpdater;
-import com.jame.dev.gymApp.features.subscription.application.support.validator.SubscriptionValidator;
+import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -48,6 +49,7 @@ public class SubscriptionApplicationService implements SubscriptionService {
    private final SubscriptionFactory subscriptionFactory;
    private final SubscriptionUpdater subscriptionUpdater;
    private final SubscriptionValidator validator;
+   private final SortPropertyResolver subSortAppResolver;
 
    @Override
    @Transactional(readOnly = true)
@@ -57,8 +59,9 @@ public class SubscriptionApplicationService implements SubscriptionService {
       unless = "#result == null || #result.content.isEmpty()"
    )
    public PageDto<SubscriptionResponse> getPage(Pageable pageable, String search) {
+      final Pageable pageableWrapped = subSortAppResolver.resolve(pageable);
       final Specification<SubscriptionEntity> spec = new SubscriptionSpecification(search);
-      final Page<SubscriptionEntity> entityPage = repo.findAll(spec, pageable);
+      final Page<SubscriptionEntity> entityPage = repo.findAll(spec, pageableWrapped);
       return subscriptionFactory.createPageFrom(entityPage);
    }
 
@@ -180,7 +183,7 @@ public class SubscriptionApplicationService implements SubscriptionService {
    @AuditLog(
       action = AuditLogAction.DELETE,
       entityType = AuditLogEntityType.SUBSCRIPTION,
-       entityId = "#id"
+      entityId = "#id"
    )
    public void softDelete(long id) {
       repo.deleteById(id);
