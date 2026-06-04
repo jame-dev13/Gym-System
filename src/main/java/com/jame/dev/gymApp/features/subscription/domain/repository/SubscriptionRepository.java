@@ -1,13 +1,14 @@
 package com.jame.dev.gymApp.features.subscription.domain.repository;
 
+import com.jame.dev.gymApp.domain.repository.CustomJpaRepository;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
-import com.jame.dev.gymApp.domain.repository.CustomJpaRepository;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SubscriptionRepository extends CustomJpaRepository<SubscriptionEntity, Long> {
@@ -24,6 +25,14 @@ public interface SubscriptionRepository extends CustomJpaRepository<Subscription
    boolean existsByCustomer(final CustomerEntity customer);
 
    void deleteByCustomerId(long id);
+
+   @Query(
+      """
+         SELECT s
+         FROM SubscriptionEntity s
+         JOIN FETCH s.subscriptionPeriods
+         """)
+   List<SubscriptionEntity> findAllNotifiable();
 
    @NativeQuery("""
       SELECT * FROM subscriptions s
