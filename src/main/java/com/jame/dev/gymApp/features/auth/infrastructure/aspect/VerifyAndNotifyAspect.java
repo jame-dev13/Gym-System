@@ -19,10 +19,12 @@ public class VerifyAndNotifyAspect {
    private final ApplicationEventPublisher applicationEventPublisher;
 
    @AfterReturning(
-           pointcut = "@annotation(com.jame.dev.gymApp.app.auth.infrastructure.annotation.PublishVerifyAndNotifyUser) && args(userRequest, ..)",
+           pointcut = "@annotation(com.jame.dev.gymApp.features.auth.infrastructure.annotation.PublishVerifyAndNotifyUser) && args(userRequest, ..)",
            returning = "response"
    )
-   public void afterPostUserFromAdmin(UserRequest userRequest, ResponseEntity<UserResponse> response) {
+   public void afterPostUserFromAdmin(
+      UserRequest userRequest,
+      ResponseEntity<UserResponse> response) {
       boolean isNotifiable = response.getStatusCode().is2xxSuccessful();
       applicationEventPublisher.publishEvent(new UserNotifiableEvent(
          userRequest, isNotifiable

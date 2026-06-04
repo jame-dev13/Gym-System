@@ -5,6 +5,7 @@ import com.jame.dev.gymApp.domain.exception.*;
 import com.jame.dev.gymApp.features.audit.domain.exception.AuditLogNotFoundException;
 import com.jame.dev.gymApp.features.auth.domain.exception.*;
 import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
+import com.jame.dev.gymApp.features.notification.domain.exception.NotificationException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.*;
 import com.jame.dev.gymApp.features.user.domain.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -408,5 +409,14 @@ public class GlobalExceptionHandler {
       return responseFactory
          .buildResponse(new InputError(
             ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
+   }
+
+   @ExceptionHandler(NotificationException.class)
+   public ResponseEntity<ApiErrorResponse> handleNotificationException(
+      NotificationException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.UNSUPPORTED));
    }
 }

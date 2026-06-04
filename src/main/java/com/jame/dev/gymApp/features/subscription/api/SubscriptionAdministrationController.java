@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.api;
 
+import com.jame.dev.gymApp.features.subscription.infrastructure.notification.service.SubscriptionNotificationAppService;
 import com.jame.dev.gymApp.infrastructure.annotation.Minimum;
 import com.jame.dev.gymApp.infrastructure.annotation.NotNullObject;
 import com.jame.dev.gymApp.infrastructure.web.FullController;
@@ -22,8 +23,13 @@ import org.springframework.web.bind.annotation.*;
 public class SubscriptionAdministrationController extends
    FullController<SubscriptionResponse, SubscriptionRequest> {
 
-   public SubscriptionAdministrationController(final SubscriptionService service) {
+   private final SubscriptionNotificationAppService subsNotificationAppService;
+
+   public SubscriptionAdministrationController(
+      final SubscriptionService service,
+      final SubscriptionNotificationAppService subsNotificationAppService) {
       super(service, SubscriptionResponse::id);
+      this.subsNotificationAppService = subsNotificationAppService;
    }
 
    @GetMapping
@@ -45,6 +51,12 @@ public class SubscriptionAdministrationController extends
    public ResponseEntity<@NonNull SubscriptionResponse> postSubscription(
            @RequestBody @Valid @NotNullObject final SubscriptionRequest subscriptionRequest) {
       return super.create(subscriptionRequest);
+   }
+
+   @PostMapping("/notify")
+   public ResponseEntity<Void> notifySubscribers() {
+      subsNotificationAppService.notifySubscriptionEnds();
+      return ResponseEntity.ok().build();
    }
 
    @PutMapping("/{id}")

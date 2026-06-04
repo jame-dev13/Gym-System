@@ -166,4 +166,12 @@ public class RedisConfig {
 
       return new StringRedisTemplate(factory);
    }
+
+   @Bean("notificationTemplate")
+   public StringRedisTemplate notificationTemplate() {
+      final JedisConnectionFactory factory = new JedisConnectionFactory(getStandaloneConfig(4));
+      factory.afterPropertiesSet();
+
+      return new StringRedisTemplate(factory);
+   }
 }
