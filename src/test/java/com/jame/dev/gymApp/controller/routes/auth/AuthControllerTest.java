@@ -7,7 +7,7 @@ import com.jame.dev.gymApp.features.auth.domain.exception.*;
 import com.jame.dev.gymApp.features.user.domain.exception.UserNotFoundException;
 import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
 import com.jame.dev.gymApp.features.auth.application.contract.AuthService;
-import com.jame.dev.gymApp.features.user.api.request.UserRequest;
+import com.jame.dev.gymApp.features.auth.api.request.RegisterRequest;
 import com.jame.dev.gymApp.features.auth.api.response.CookieResponse;
 import config.TestConfig;
 import config.TestValidationConfig;
@@ -88,14 +88,14 @@ public class AuthControllerTest {
       @Test
       @DisplayName("[201 Created] Should successfully sign up a new user")
       void signUpSuccess() throws Exception {
-         willDoNothing().given(authService).signUp(any(UserRequest.class));
+         willDoNothing().given(authService).signUp(any(RegisterRequest.class));
 
          mockMvc.perform(post("/auth/signUp")
                .contentType(MediaType.APPLICATION_JSON)
                .content(SignUpTestData.VALID_USER_JSON))
             .andExpect(status().isCreated());
 
-         verify(authService).signUp(any(UserRequest.class));
+         verify(authService).signUp(any(RegisterRequest.class));
          verifyNoMoreInteractions(authService);
          verifyNoInteractions(cookieHelper);
       }
@@ -104,14 +104,14 @@ public class AuthControllerTest {
       @MethodSource("serviceFailures")
       @DisplayName("[4xx] Should handle failures during sign up")
       void signUpFailuresService(Class<? extends Throwable> exception, int statusCode, String body) throws Exception {
-         willThrow(exception).given(authService).signUp(any(UserRequest.class));
+         willThrow(exception).given(authService).signUp(any(RegisterRequest.class));
 
          performSignUp(body)
             .andExpect(status().is(statusCode))
             .andExpect(jsonPath("$.*").exists())
             .andExpect(jsonPath("$.status").value(statusCode));
 
-         verify(authService).signUp(any(UserRequest.class));
+         verify(authService).signUp(any(RegisterRequest.class));
          verifyNoMoreInteractions(authService);
          verifyNoInteractions(cookieHelper);
       }
@@ -120,8 +120,6 @@ public class AuthControllerTest {
       @MethodSource("controllerFailures")
       @DisplayName("[400] Should handle failures during sign up")
       void signUpFailuresController(Class<? extends Throwable> exception, int statusCode, String body) throws Exception {
-         willThrow(exception).given(authService).signUp(any(UserRequest.class));
-
          performSignUp(body)
             .andExpect(status().is(statusCode))
             .andExpect(jsonPath("$.*").exists())
@@ -138,7 +136,7 @@ public class AuthControllerTest {
 
       private static Stream<Arguments> serviceFailures() {
          return Stream.of(
-            Arguments.of(AuthProviderNotAllowedException.class, 400, SignUpTestData.GOOGLE_PROVIDER_JSON),
+            Arguments.of(AuthProviderNotAllowedException.class, 400, SignUpTestData.VALID_USER_JSON),
             Arguments.of(ConstraintViolationException.class, 400, SignUpTestData.ADMIN_USER_JSON),
             Arguments.of(NoActiveException.class, 409, SignUpTestData.VALID_USER_JSON),
             Arguments.of(AlreadyExistsException.class, 409, SignUpTestData.VALID_USER_JSON)
@@ -148,7 +146,8 @@ public class AuthControllerTest {
       private static Stream<Arguments> controllerFailures() {
          return Stream.of(
             Arguments.of(MethodArgumentTypeMismatchException.class, 400, SignUpTestData.INVALID_JSON),
-            Arguments.of(ConstraintViolationException.class, 400, SignUpTestData.EMPTY_ROLES_JSON)
+            Arguments.of(ConstraintViolationException.class, 400, """
+               {"name": "", "email": "test@test.com", "password": "pass123"}""")
          );
       }
    }

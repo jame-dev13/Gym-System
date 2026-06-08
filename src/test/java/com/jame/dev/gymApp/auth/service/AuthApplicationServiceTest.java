@@ -1,18 +1,17 @@
 package com.jame.dev.gymApp.auth.service;
 
+import com.jame.dev.gymApp.features.auth.api.request.RegisterRequest;
 import com.jame.dev.gymApp.features.auth.api.request.SignInRequest;
 import com.jame.dev.gymApp.features.auth.api.response.CookieResponse;
 import com.jame.dev.gymApp.features.auth.api.response.SignInResponse;
-import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.auth.application.service.AuthApplicationService;
 import com.jame.dev.gymApp.features.auth.application.support.factory.AuthResponsesFactory;
-import com.jame.dev.gymApp.features.auth.domain.exception.AuthProviderNotAllowedException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationAttemptFailureException;
 import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
-import com.jame.dev.gymApp.features.user.api.response.UserResponse;
-import com.jame.dev.gymApp.features.user.application.contract.UserService;
-import com.jame.dev.gymApp.features.user.domain.model.Role;
+import com.jame.dev.gymApp.features.user.application.contract.UserFactory;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
+import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
 import com.jame.dev.gymApp.infrastructure.cache.BlacklistService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -27,8 +26,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
-import java.util.Set;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -38,7 +35,9 @@ import static org.mockito.Mockito.*;
 public class AuthApplicationServiceTest {
 
    @Mock
-   UserService userService;
+   UserRepository userRepository;
+   @Mock
+   UserFactory userFactory;
    @Mock
    AuthenticationManager authenticationManager;
    @Mock
@@ -56,45 +55,21 @@ public class AuthApplicationServiceTest {
       @Test
       @DisplayName("Should successfully sign up local user")
       void signUpShouldSucceedWhenProviderIsLocal() {
-         UserRequest inputDto = new UserRequest(
+         var input = new RegisterRequest(
                  "test",
-                 "email@test.com", "pass",
-                 AuthProvider.LOCAL, Set.of(Role.USER));
-         UserResponse outputDto = mock(UserResponse.class);
+                 "email@test.com",
+                 "pass");
+         var userEntity = mock(UserEntity.class);
 
-         given(userService.save(inputDto)).willReturn(outputDto);
+         given(userFactory.createFromInput(any(UserRequest.class))).willReturn(userEntity);
+         given(userRepository.saveAndFlush(userEntity)).willReturn(userEntity);
 
-         assertDoesNotThrow(() -> service.signUp(inputDto));
+         assertDoesNotThrow(() -> service.signUp(input));
 
-         verify(userService).save(inputDto);
-      }
-
-      @Test
-      @DisplayName("Should throw AuthProviderNotAllowedException when provider is not LOCAL")
-      void signUpShouldThrowExceptionWhenProviderIsNotLocal() {
-         UserRequest inputDto = new UserRequest(
-                 "test",
-                 "email@test.com", "pass",
-                 AuthProvider.GOOGLE, Set.of(Role.USER));
-
-         assertThrowsExactly(AuthProviderNotAllowedException.class, () -> service.signUp(inputDto));
-
-         verifyNoInteractions(userService);
-      }
-
-      @Test
-      @DisplayName("Should throw NullPointerException when saved user is null")
-      void signUpShouldThrowExceptionWhenServiceReturnsNull() {
-         UserRequest inputDto = new UserRequest(
-                 "test",
-                 "email@test.com", "pass",
-                 AuthProvider.LOCAL, Set.of(Role.USER));
-
-         given(userService.save(inputDto)).willReturn(null);
-
-         assertThrowsExactly(NullPointerException.class, () -> service.signUp(inputDto));
-
-         verify(userService).save(inputDto);
+         verify(userFactory).createFromInput(any(UserRequest.class));
+         verify(userRepository).saveAndFlush(userEntity);
+         verifyNoMoreInteractions(userRepository, userFactory, blacklistService, authFactory);
+         verifyNoInteractions(authenticationManager);
       }
    }
 
