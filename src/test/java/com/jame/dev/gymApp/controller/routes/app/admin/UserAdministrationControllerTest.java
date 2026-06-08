@@ -11,6 +11,7 @@ import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.application.dto.PageDto;
 import com.jame.dev.gymApp.features.user.api.response.UserResponse;
 import com.jame.dev.gymApp.features.user.application.contract.UserService;
+import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.user.domain.model.Role;
 import config.TestConfig;
 import config.TestDataSource;
@@ -78,7 +79,7 @@ public class UserAdministrationControllerTest {
 
    private final String URI_TEMPLATE = "/app/v1/administration/users";
    private final UserResponse userDto = new UserResponse(
-      1L, "dto", "dto@mail", Set.of(Role.USER)
+       1L, "dto", "dto@mail", AuthProvider.LOCAL, Set.of(Role.USER)
    );
 
    @Nested
