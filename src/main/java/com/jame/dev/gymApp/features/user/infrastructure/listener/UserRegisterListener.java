@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.features.user.application.listener;
+package com.jame.dev.gymApp.features.user.infrastructure.listener;
 
 import com.jame.dev.gymApp.application.contract.TokenGeneratorService;
 import com.jame.dev.gymApp.features.auth.application.contract.verification.VerificationSenderService;
@@ -10,14 +10,19 @@ import com.jame.dev.gymApp.features.notification.application.contract.EmailServi
 import com.jame.dev.gymApp.features.notification.application.dto.EmailDetails;
 import com.jame.dev.gymApp.features.notification.domain.model.HtmlTemplates;
 import com.jame.dev.gymApp.features.user.domain.event.UserRegisteredEvent;
+import com.jame.dev.gymApp.features.user.domain.exception.UserNotFoundException;
 import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.Objects;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class UserRegisterListener {
@@ -25,23 +30,6 @@ public class UserRegisterListener {
    private final UserRepository userRepository;
    private final VerificationService verificationService;
    private final TokenGeneratorService tokenGeneratorService;
-   private final VerificationSenderService verificationSenderService;
-
-   @EventListener
-   @Async("taskExecutor")
-   public void verifySignUpUser(final UserRegisteredEvent event) {
-      userRepository.findByEmail(event.email())
-         .ifPresent(user -> {
-            final String rawToken = tokenGeneratorService.generateToken();
-            final VerificationEntity verification = verificationService.save(user.getId(), rawToken);
-
-            if (Objects.isNull(verification)) {
-               throw new CantSaveVerifcationEntityException("Can't save the verification.");
-            }
-
-            verificationSenderService.sendVerificationEmail(user.getEmail(), rawToken);
-         });
-   }
 
    @EventListener
    @Async("taskExecutor")

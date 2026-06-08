@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.features.user.application.listener;
+package com.jame.dev.gymApp.features.user.infrastructure.listener;
 
 import com.jame.dev.gymApp.features.user.domain.event.UserRecoveredEvent;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;

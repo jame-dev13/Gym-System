@@ -1,16 +1,14 @@
 package com.jame.dev.gymApp.features.auth.api;
 
-import com.jame.dev.gymApp.features.auth.infrastructure.annotation.PublishVerify;
-import com.jame.dev.gymApp.infrastructure.annotation.NotEmptyNull;
+import com.jame.dev.gymApp.features.auth.api.request.RegisterRequest;
+import com.jame.dev.gymApp.features.auth.api.request.SignInRequest;
+import com.jame.dev.gymApp.features.auth.api.response.CookieResponse;
+import com.jame.dev.gymApp.features.auth.api.response.SignInResponse;
 import com.jame.dev.gymApp.features.auth.application.contract.AuthService;
 import com.jame.dev.gymApp.features.auth.application.support.helper.CookieHelper;
-import com.jame.dev.gymApp.features.auth.api.response.CookieResponse;
-import com.jame.dev.gymApp.features.auth.api.request.SignInRequest;
-import com.jame.dev.gymApp.features.auth.api.response.SignInResponse;
-import com.jame.dev.gymApp.features.user.api.request.UserRequest;
+import com.jame.dev.gymApp.infrastructure.annotation.NotEmptyNull;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -29,11 +26,10 @@ public class AuthController {
    private final CookieHelper cookieHelper;
 
    @PostMapping("/signUp")
-   @PublishVerify
    public ResponseEntity<Void> signUp(
            @Valid
-           @RequestBody final UserRequest user) {
-      authService.signUp(user);
+           @RequestBody final RegisterRequest register) {
+      authService.signUp(register);
       return ResponseEntity.status(HttpStatus.CREATED).build();
    }
 
