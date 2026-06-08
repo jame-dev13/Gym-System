@@ -419,4 +419,13 @@ public class GlobalExceptionHandler {
          .buildResponse(new InputError(
             ex, request, HttpStatus.UNAUTHORIZED, ErrorCodes.UNSUPPORTED));
    }
+
+   @ExceptionHandler(EventPublisherException.class)
+   public ResponseEntity<ApiErrorResponse> handleEventPublisherException(
+      EventPublisherException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.CONFLICT, ErrorCodes.UNSUPPORTED));
+   }
 }

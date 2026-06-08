@@ -1,8 +1,9 @@
 package com.jame.dev.gymApp.features.auth.infrastructure.aspect;
 
+import com.jame.dev.gymApp.domain.exception.EventPublisherException;
+import com.jame.dev.gymApp.features.auth.domain.event.UserNotifiableEvent;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.features.user.api.response.UserResponse;
-import com.jame.dev.gymApp.features.auth.domain.event.UserNotifiableEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -19,15 +20,14 @@ public class VerifyAndNotifyAspect {
    private final ApplicationEventPublisher applicationEventPublisher;
 
    @AfterReturning(
-           pointcut = "@annotation(com.jame.dev.gymApp.features.auth.infrastructure.annotation.PublishVerifyAndNotifyUser) && args(userRequest, ..)",
-           returning = "response"
+      pointcut = "@annotation(com.jame.dev.gymApp.features.auth.infrastructure.annotation.PublishVerifyAndNotifyUser) && args(request, ..)",
+      returning = "response"
    )
-   public void afterPostUserFromAdmin(
-      UserRequest userRequest,
-      ResponseEntity<UserResponse> response) {
+   public void afterPostUserFromAdmin(UserRequest request, ResponseEntity<UserResponse> response) {
       boolean isNotifiable = response.getStatusCode().is2xxSuccessful();
-      applicationEventPublisher.publishEvent(new UserNotifiableEvent(
-         userRequest, isNotifiable
-      ));
+      if (!isNotifiable)
+         throw new EventPublisherException("Cannot send notification to user for now.");
+      applicationEventPublisher
+         .publishEvent(new UserNotifiableEvent(request.email(), request.password()));
    }
 }
