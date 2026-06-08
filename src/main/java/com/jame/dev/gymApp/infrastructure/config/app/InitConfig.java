@@ -94,10 +94,10 @@ public class InitConfig {
             .authProvider(AuthProvider.LOCAL)
             .build();
          final var adminSaved = userRepository.save(userFactory.createFromInput(admin));
-         saveAndVerifyUser(tokenService, verificationService, adminSaved.getId());
+         saveAndVerifyUser(tokenService, verificationService, adminSaved);
 
          final var userSaved = userRepository.save(userFactory.createFromInput(user));
-         saveAndVerifyUser(tokenService, verificationService, userSaved.getId());
+         saveAndVerifyUser(tokenService, verificationService, userSaved);
 
          final CustomerEntity customerRequest = new CustomerEntity(userSaved, "1112223334");
          customerRepository.save(customerRequest);
@@ -146,7 +146,7 @@ public class InitConfig {
                //Users
                final var user = createUser(i + 1);
                final var userEntity = userRepository.save(userFactory.createFromInput(user));
-               saveAndVerifyUser(tokenGeneratorService, verificationService, userEntity.getId());
+               saveAndVerifyUser(tokenGeneratorService, verificationService, userEntity);
                //Customers
                final var customer = createCustomer(userEntity, i + 1);
                final var customerEntity = customerRepository.save(customer);
@@ -187,9 +187,9 @@ public class InitConfig {
    private void saveAndVerifyUser(
       final TokenGeneratorService tokenGeneratorService,
       final VerificationService verificationService,
-      final long userId) {
+      final UserEntity user) {
       final String rawToken = tokenGeneratorService.generateToken();
-      final var userVerification = verificationService.save(userId, rawToken);
-      verificationService.verify(userVerification.getUser().getEmail(), rawToken);
+      final var userVerification = verificationService.save(user, rawToken);
+      verificationService.verify(userVerification, rawToken);
    }
 }

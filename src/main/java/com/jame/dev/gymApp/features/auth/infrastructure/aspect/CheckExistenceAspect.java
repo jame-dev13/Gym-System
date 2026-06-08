@@ -18,9 +18,9 @@ public class CheckExistenceAspect {
 
    @Before("@annotation(com.jame.dev.gymApp.features.auth.infrastructure.annotation.CheckExistence) && args(dto)")
    public void validateExistenceAndVerificationStatus(RegisterRequest dto) {
-      log.info("Before SignUp");
       if (authenticationChecksService.checkExistence(dto.email())) {
          throw new UserNotVerifiedException("This account is not verified yet.");
       }
+      log.info("Check Passed.");
    }
 }

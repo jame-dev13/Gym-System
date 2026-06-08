@@ -21,6 +21,7 @@ import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionService;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import com.jame.dev.gymApp.features.subscription.domain.model.Period;
+import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.user.domain.model.Role;
 import config.TestConfig;
 import config.TestDataSource;
@@ -90,7 +91,7 @@ public class SubscriptionAdministrationControllerTest {
 
    private final String URI_TEMPLATE = "/app/v1/administration/subs";
    private final CustomerResponse customerResponse = new CustomerResponse(
-      1L, new UserResponse(1L, "dto", "dto@mail", Set.of(Role.USER)), "25082525"
+      1L, new UserResponse(1L, "dto", "dto@mail", AuthProvider.LOCAL, Set.of(Role.USER)), "25082525"
    );
 
    private final SubscriptionResponse subscriptionResponse = new SubscriptionResponse(
