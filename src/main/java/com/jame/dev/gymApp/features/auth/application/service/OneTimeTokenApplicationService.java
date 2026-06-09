@@ -10,7 +10,7 @@ import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.auth.api.request.TokenIdResetPasswordRequest;
 import com.jame.dev.gymApp.features.auth.api.request.PasswordResetRequest;
 import com.jame.dev.gymApp.features.auth.domain.repository.OneTimeTokenRepository;
-import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
 import com.jame.dev.gymApp.features.auth.application.contract.OneTimeTokenService;
 import com.jame.dev.gymApp.application.contract.TokenDBHasherService;
 import lombok.RequiredArgsConstructor;

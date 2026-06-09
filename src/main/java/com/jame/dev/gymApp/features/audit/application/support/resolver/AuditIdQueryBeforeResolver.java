@@ -10,7 +10,7 @@ import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionR
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
 import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;
-import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

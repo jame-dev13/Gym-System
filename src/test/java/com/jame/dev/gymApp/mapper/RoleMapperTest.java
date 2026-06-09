@@ -4,7 +4,7 @@ import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
 import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapperImpl;
 import com.jame.dev.gymApp.features.user.domain.model.Role;
 import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
-import com.jame.dev.gymApp.features.user.domain.repository.RoleRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.persistence.RoleRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

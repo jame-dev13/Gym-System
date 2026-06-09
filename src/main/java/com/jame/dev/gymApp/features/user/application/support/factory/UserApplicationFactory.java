@@ -10,7 +10,7 @@ import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.application.dto.PageDto;
 import com.jame.dev.gymApp.features.user.api.response.UserResponse;
 import com.jame.dev.gymApp.features.user.api.response.UserMinimalInfoResponse;
-import com.jame.dev.gymApp.features.user.domain.repository.RoleRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.persistence.RoleRepository;
 import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

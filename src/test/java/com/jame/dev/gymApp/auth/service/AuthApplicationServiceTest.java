@@ -11,7 +11,7 @@ import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.features.user.application.contract.UserFactory;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
-import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
 import com.jame.dev.gymApp.infrastructure.cache.BlacklistService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;

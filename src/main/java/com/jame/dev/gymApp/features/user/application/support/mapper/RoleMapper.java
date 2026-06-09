@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.features.user.application.support.mapper;
 
 import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
-import com.jame.dev.gymApp.features.user.domain.repository.RoleRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.persistence.RoleRepository;
 import com.jame.dev.gymApp.features.user.domain.model.Role;
 import lombok.NonNull;
 import org.mapstruct.Mapper;

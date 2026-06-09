@@ -17,7 +17,7 @@ import com.jame.dev.gymApp.features.user.application.contract.UserUpdater;
 import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;
 import com.jame.dev.gymApp.features.user.domain.model.Role;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
-import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
 import com.jame.dev.gymApp.features.user.infrastructure.annotations.CacheEvictUsers;
 import com.jame.dev.gymApp.features.user.infrastructure.annotations.PublishUserRecovered;
 import com.jame.dev.gymApp.features.user.infrastructure.specification.UserSpecifications;

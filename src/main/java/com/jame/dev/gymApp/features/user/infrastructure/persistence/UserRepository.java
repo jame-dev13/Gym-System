@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.features.user.domain.repository;
+package com.jame.dev.gymApp.features.user.infrastructure.persistence;
 
 import com.jame.dev.gymApp.domain.repository.CustomJpaRepository;
 import com.jame.dev.gymApp.features.user.api.response.UserMinimalInfoResponse;
@@ -61,13 +61,6 @@ public interface UserRepository extends CustomJpaRepository<UserEntity, Long> {
       """)
    Optional<UserEntity> findDeactivatedById(@Param("id") long id);
 
-   @Modifying(clearAutomatically = true, flushAutomatically = true)
-   @NativeQuery("""
-      UPDATE users
-      SET active = true
-      WHERE id = :id AND active = false
-      """)
-   void recoverUser(@Param("id") long id);
 
    @Modifying(clearAutomatically = true, flushAutomatically = true)
    @NativeQuery(value = """
@@ -76,4 +69,11 @@ public interface UserRepository extends CustomJpaRepository<UserEntity, Long> {
       u.active = false
       """)
    void hardDelete(@Param("id") long id);
+
+   boolean existsByEmail(final String email);
+
+   @NativeQuery("""
+      SELECT EXISTS(SELECT 1 FROM users u WHERE u.email = :email AND u.active = false)
+      """)
+   boolean existsAndIsDeactivatedByEmail(final String email);
 }
