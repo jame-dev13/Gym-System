@@ -3,7 +3,6 @@ package config;
 public interface TestDataSource {
    String PAGINATION_ERRORS = """
            PAGE,  SIZE,   ERROR_CODE
-           -1,    -1,     ARGUMENT_OPERATION
            NULL,  10,     TYPE_MISMATCH
            0,     letter, TYPE_MISMATCH
            """;

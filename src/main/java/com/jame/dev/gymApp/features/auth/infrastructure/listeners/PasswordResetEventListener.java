@@ -5,7 +5,7 @@ import com.jame.dev.gymApp.features.notification.application.contract.EmailServi
 import com.jame.dev.gymApp.features.notification.domain.model.HtmlTemplates;
 import com.jame.dev.gymApp.features.auth.domain.event.PasswordResetEvent;
 import com.jame.dev.gymApp.features.notification.application.dto.EmailDetails;
-import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
 import com.jame.dev.gymApp.features.auth.application.contract.OneTimeTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;

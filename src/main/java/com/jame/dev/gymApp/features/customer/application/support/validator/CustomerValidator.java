@@ -6,7 +6,7 @@ import com.jame.dev.gymApp.domain.exception.NoActiveException;
 import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;
-import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

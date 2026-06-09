@@ -1,0 +1,29 @@
+package com.jame.dev.gymApp.features.user.application.service.mutation;
+
+import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
+import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
+import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
+import com.jame.dev.gymApp.features.user.application.usecases.mutation.SoftDeleteUserByIdUseCase;
+import com.jame.dev.gymApp.features.user.domain.repository.UserMutationRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.annotations.CacheEvictUsers;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class SoftDeleteUserByIdUseCaseService implements SoftDeleteUserByIdUseCase {
+   private final UserMutationRepository userMutationRepository;
+
+   @Override
+   @Transactional
+   @CacheEvictUsers
+   @AuditLog(
+      action = AuditLogAction.DELETE,
+      entityType = AuditLogEntityType.USER,
+      entityId = "#id"
+   )
+   public void softDeleteById(long id) {
+      userMutationRepository.deleteById(id);
+   }
+}

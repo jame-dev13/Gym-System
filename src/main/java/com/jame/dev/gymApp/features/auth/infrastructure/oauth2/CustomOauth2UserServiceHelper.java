@@ -9,7 +9,7 @@ import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
 import com.jame.dev.gymApp.features.user.domain.exception.CantSaveUserException;
 import com.jame.dev.gymApp.features.user.domain.model.Role;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
-import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;

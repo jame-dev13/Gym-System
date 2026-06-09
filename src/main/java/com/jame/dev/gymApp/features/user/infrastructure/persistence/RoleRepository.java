@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.features.user.domain.repository;
+package com.jame.dev.gymApp.features.user.infrastructure.persistence;
 
 import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
 import com.jame.dev.gymApp.features.user.domain.model.Role;

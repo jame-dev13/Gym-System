@@ -5,7 +5,7 @@ import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.features.user.application.contract.UserUpdater;
 import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
-import com.jame.dev.gymApp.features.user.domain.repository.RoleRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.persistence.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

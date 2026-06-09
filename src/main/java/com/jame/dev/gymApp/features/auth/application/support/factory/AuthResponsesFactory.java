@@ -12,7 +12,7 @@ import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
 import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
 import com.jame.dev.gymApp.features.user.domain.model.Role;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
-import com.jame.dev.gymApp.features.user.domain.repository.UserRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
