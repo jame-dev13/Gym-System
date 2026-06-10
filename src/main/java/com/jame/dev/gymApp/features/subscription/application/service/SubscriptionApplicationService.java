@@ -20,8 +20,8 @@ import com.jame.dev.gymApp.features.subscription.domain.exception.PricingNotFoun
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
-import com.jame.dev.gymApp.features.subscription.domain.repository.PricingRepository;
-import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.SubscriptionRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.CacheEvictSubscriptions;
 import com.jame.dev.gymApp.features.subscription.infrastructure.specification.SubscriptionSpecification;
 import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
@@ -77,13 +77,13 @@ public class SubscriptionApplicationService implements SubscriptionService {
    @Transactional(readOnly = true)
    @Override
    public Optional<SubscriptionEntity> getByEmail(String email) {
-      return repo.findActiveSubscriptionByEmail(email);
+      return repo.findByCustomerEmail(email);
    }
 
    @Override
    @Transactional(readOnly = true)
    public boolean exitsByIdAndCustomerEmail(long id, String email) {
-      return repo.existsByIdAndCustomer_User_EmailAndActiveTrue(id, email);
+      return repo.existsByIdAndCustomer_User_Email(id, email);
    }
 
    @Override

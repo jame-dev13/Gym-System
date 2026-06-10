@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.features.subscription.application.service;
 
 import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
-import com.jame.dev.gymApp.features.subscription.domain.repository.PricingRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
 import com.jame.dev.gymApp.features.subscription.application.contract.PricingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

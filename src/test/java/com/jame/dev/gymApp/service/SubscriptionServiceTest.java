@@ -14,8 +14,8 @@ import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionFac
 import com.jame.dev.gymApp.application.dto.PageDto;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.customer.infrastructure.persistence.CustomerRepository;
-import com.jame.dev.gymApp.features.subscription.domain.repository.PricingRepository;
-import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.SubscriptionRepository;
 import com.jame.dev.gymApp.features.subscription.application.service.SubscriptionApplicationService;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionUpdater;
@@ -43,6 +43,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * @deprecated Use cases extracted to {@code subscription/usecases/{query,mutation,validation}/}.
+ * Each use case now has its own dedicated test under the corresponding package.
+ */
+@Deprecated(forRemoval = true)
 @ExtendWith(MockitoExtension.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 class SubscriptionServiceTest {

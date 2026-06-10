@@ -9,7 +9,7 @@ import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
-import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

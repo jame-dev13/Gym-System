@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.features.subscription.application.service;
 
 import com.jame.dev.gymApp.features.subscription.domain.model.PeriodEntity;
-import com.jame.dev.gymApp.features.subscription.domain.repository.PeriodRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PeriodRepository;
 import com.jame.dev.gymApp.features.subscription.application.contract.PeriodService;
 import com.jame.dev.gymApp.features.subscription.domain.model.Period;
 import lombok.NonNull;

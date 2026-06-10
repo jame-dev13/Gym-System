@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.features.subscription.application.service;
 
 import com.jame.dev.gymApp.features.subscription.domain.model.MemberShipEntity;
-import com.jame.dev.gymApp.features.subscription.domain.repository.MembershipRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
 import com.jame.dev.gymApp.features.subscription.application.contract.MembershipService;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import lombok.NonNull;
