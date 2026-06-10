@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.features.subscription.domain.repository;
+package com.jame.dev.gymApp.features.subscription.infrastructure.persistence;
 
 import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;

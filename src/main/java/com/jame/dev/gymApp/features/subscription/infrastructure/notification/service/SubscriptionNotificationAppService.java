@@ -4,7 +4,7 @@ import com.jame.dev.gymApp.features.notification.application.contract.EmailServi
 import com.jame.dev.gymApp.features.notification.application.dto.EmailDetails;
 import com.jame.dev.gymApp.features.notification.domain.exception.NotificationException;
 import com.jame.dev.gymApp.features.subscription.domain.model.PeriodEntity;
-import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.SubscriptionRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.notification.model.NotifiableSubscription;
 import com.jame.dev.gymApp.features.subscription.infrastructure.notification.template.HTMLSubscriptionPeriodTemplate;
 import lombok.RequiredArgsConstructor;

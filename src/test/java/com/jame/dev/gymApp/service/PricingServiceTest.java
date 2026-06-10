@@ -2,7 +2,7 @@ package com.jame.dev.gymApp.service;
 
 import com.jame.dev.gymApp.features.subscription.domain.model.MemberShipEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
-import com.jame.dev.gymApp.features.subscription.domain.repository.PricingRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
 import com.jame.dev.gymApp.features.subscription.application.service.PricingApplicationService;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import org.junit.jupiter.api.DisplayName;

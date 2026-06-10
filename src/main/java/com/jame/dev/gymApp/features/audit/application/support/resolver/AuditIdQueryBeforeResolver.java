@@ -6,7 +6,7 @@ import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundEx
 import com.jame.dev.gymApp.features.customer.infrastructure.persistence.CustomerRepository;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNotFoundException;
-import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.SubscriptionRepository;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
 import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;

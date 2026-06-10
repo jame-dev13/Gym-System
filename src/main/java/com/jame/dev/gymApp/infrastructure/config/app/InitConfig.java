@@ -8,7 +8,7 @@ import com.jame.dev.gymApp.features.customer.infrastructure.persistence.Customer
 import com.jame.dev.gymApp.features.subscription.application.contract.MembershipService;
 import com.jame.dev.gymApp.features.subscription.application.contract.PricingService;
 import com.jame.dev.gymApp.features.subscription.domain.model.*;
-import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.SubscriptionRepository;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.features.user.application.contract.UserFactory;
 import com.jame.dev.gymApp.features.user.domain.model.Role;
