@@ -3,7 +3,7 @@ package com.jame.dev.gymApp.features.audit.application.support.resolver;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
 import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
-import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;
+import com.jame.dev.gymApp.features.customer.infrastructure.persistence.CustomerRepository;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionRepository;

@@ -7,7 +7,7 @@ import com.jame.dev.gymApp.features.auth.domain.model.VerificationEntity;
 import com.jame.dev.gymApp.features.auth.domain.exception.VerificationAttemptFailedException;
 import com.jame.dev.gymApp.features.auth.domain.exception.VerificationNotFoundException;
 import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
-import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;
+import com.jame.dev.gymApp.features.customer.infrastructure.persistence.CustomerRepository;
 import com.jame.dev.gymApp.features.user.infrastructure.persistence.RoleRepository;
 import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
 import com.jame.dev.gymApp.features.auth.domain.repository.VerificationRepository;

@@ -9,7 +9,7 @@ import com.jame.dev.gymApp.features.customer.application.contract.CustomerFactor
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
 import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
 import com.jame.dev.gymApp.application.dto.PageDto;
-import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;
+import com.jame.dev.gymApp.features.customer.infrastructure.persistence.CustomerRepository;
 import com.jame.dev.gymApp.features.customer.application.service.CustomerApplicationService;
 import com.jame.dev.gymApp.features.user.domain.model.Role;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerUpdater;
@@ -118,10 +118,10 @@ public class CustomerServiceTest {
    @Test
    @DisplayName("Exists by id and email")
    void existsByIdAndEmail() {
-      when(repo.existsByIdAndUser_EmailAndActiveTrue(anyLong(), anyString())).thenReturn(true);
+      when(repo.existsByIdAndUser_Email(anyLong(), anyString())).thenReturn(true);
       boolean exists = service.exitsByIdAndCustomerEmail(1L, mockDto.email());
       assertTrue(exists);
-      verify(repo).existsByIdAndUser_EmailAndActiveTrue(anyLong(), anyString());
+      verify(repo).existsByIdAndUser_Email(anyLong(), anyString());
    }
 
    @Test
