@@ -1,9 +1,9 @@
 package com.jame.dev.gymApp.features.customer.infrastructure.security;
 
+import com.jame.dev.gymApp.application.contract.IdentityExtractorService;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
-import com.jame.dev.gymApp.features.auth.domain.model.CustomOAuth2User;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerOwnershipService;
-import com.jame.dev.gymApp.features.customer.application.contract.CustomerService;
+import com.jame.dev.gymApp.features.customer.domain.repository.CustomerValidationRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,36 +15,31 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CustomerSecurity implements CustomerOwnershipService {
 
-   private final CustomerService customerService;
+   private final CustomerValidationRepository customerValidationRepository;
+   private final IdentityExtractorService extractorService;
 
    @Override
    public boolean isOwner(final long id, @NonNull final Authentication authentication) {
-      final String authName = getAuthName(authentication);
+      final String authName = extractorService.extract(authentication);
       if (authName == null || authName.isBlank()) {
          return false;
       }
-      return customerService.exitsByIdAndCustomerEmail(id, authName);
+      return customerValidationRepository.existsByIdAndUserEmail(id, authName);
    }
 
    @Override
    public boolean isOwner(final String email, @NonNull final Authentication authentication) {
-      final String authName = getAuthName(authentication);
+      final String authName = extractorService.extract(authentication);
       if(authName == null || authName.isBlank())
          return false;
       return email.equals(authName);
    }
 
    @Override
-   public boolean isOwner(CustomerRequest input, @org.jspecify.annotations.NonNull Authentication authentication) {
-      final String authName = getAuthName(authentication);
+   public boolean isOwner(CustomerRequest input, @NonNull Authentication authentication) {
+      final String authName = extractorService.extract(authentication);
       if(authName == null || authName.isBlank())
          return false;
       return input.email().equals(authName);
-   }
-
-   private String getAuthName(@NonNull final Authentication authentication) {
-      if (authentication.getPrincipal() instanceof CustomOAuth2User user)
-         return user.getUser().email();
-      return authentication.getName();
    }
 }

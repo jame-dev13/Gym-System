@@ -4,7 +4,7 @@ import com.jame.dev.gymApp.application.contract.TokenGeneratorService;
 import com.jame.dev.gymApp.features.auth.application.contract.verification.VerificationService;
 import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
-import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;
+import com.jame.dev.gymApp.features.customer.infrastructure.persistence.CustomerRepository;
 import com.jame.dev.gymApp.features.subscription.application.contract.MembershipService;
 import com.jame.dev.gymApp.features.subscription.application.contract.PricingService;
 import com.jame.dev.gymApp.features.subscription.domain.model.*;

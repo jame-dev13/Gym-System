@@ -13,7 +13,7 @@ import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest
 import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionFactoryDtoInput;
 import com.jame.dev.gymApp.application.dto.PageDto;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
-import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;
+import com.jame.dev.gymApp.features.customer.infrastructure.persistence.CustomerRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.PricingRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionRepository;
 import com.jame.dev.gymApp.features.subscription.application.service.SubscriptionApplicationService;

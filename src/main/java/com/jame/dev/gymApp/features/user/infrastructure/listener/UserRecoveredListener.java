@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.features.user.infrastructure.listener;
 
 import com.jame.dev.gymApp.features.user.domain.event.UserRecoveredEvent;
-import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;
+import com.jame.dev.gymApp.features.customer.infrastructure.persistence.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

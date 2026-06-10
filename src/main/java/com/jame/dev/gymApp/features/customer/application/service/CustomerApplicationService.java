@@ -13,7 +13,7 @@ import com.jame.dev.gymApp.features.customer.application.dto.CustomerFactoryDtoI
 import com.jame.dev.gymApp.features.auth.api.request.RecoveryRequest;
 import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
 import com.jame.dev.gymApp.application.dto.PageDto;
-import com.jame.dev.gymApp.features.customer.domain.repository.CustomerRepository;
+import com.jame.dev.gymApp.features.customer.infrastructure.persistence.CustomerRepository;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerRecoverService;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerService;
 import com.jame.dev.gymApp.application.model.CacheValues;
@@ -84,7 +84,7 @@ public class CustomerApplicationService implements CustomerService, CustomerReco
    @Override
    @Transactional(readOnly = true)
    public boolean exitsByIdAndCustomerEmail(long id, String email) {
-      return repo.existsByIdAndUser_EmailAndActiveTrue(id, email);
+      return repo.existsByIdAndUser_Email(id, email);
    }
 
    @Override
