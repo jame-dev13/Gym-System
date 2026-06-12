@@ -76,6 +76,12 @@ public class VerificationApplicationService implements VerificationService {
    }
 
    @Override
+   public VerificationEntity getByDeactivatedUserEmail(String email) {
+      return verificationRepository.findDeactivatedByUser_Email(email)
+         .orElseThrow(() -> new VerificationNotFoundException("User without verification."));
+   }
+
+   @Override
    @Transactional
    public void update(VerificationEntity verificationEntity, String rawToken) {
       verificationEntity.setToken(tokenHasherService.hashToken(rawToken));

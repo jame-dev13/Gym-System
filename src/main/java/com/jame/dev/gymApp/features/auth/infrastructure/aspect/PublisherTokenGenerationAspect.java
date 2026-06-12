@@ -18,7 +18,7 @@ public class PublisherTokenGenerationAspect {
 
    @AfterReturning(
            pointcut = """
-                   @annotation(com.jame.dev.gymApp.aspects.annotations.aspects.PublishTokenGeneration)
+                   @annotation(com.jame.dev.gymApp.features.auth.infrastructure.annotation.PublishTokenGeneration)
                    && args(email, ..)
                    """,
            returning = "response")

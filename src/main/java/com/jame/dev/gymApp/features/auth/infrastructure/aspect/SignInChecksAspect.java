@@ -18,7 +18,7 @@ public class SignInChecksAspect {
    private final AuthenticationChecksService authenticationChecksService;
    private final VerificationService verificationService;
 
-   @Before("@annotation(com.jame.dev.gymApp.app.auth.infrastructure.annotation.CheckSignIn) && args(dto, ..)")
+   @Before("@annotation(com.jame.dev.gymApp.features.auth.infrastructure.annotation.CheckSignIn) && args(dto, ..)")
    public void publishSignInValidation(final SignInRequest dto) {
       if (!authenticationChecksService.userExists(dto.email())) {
          throw new UserNotFoundException("User not found.");

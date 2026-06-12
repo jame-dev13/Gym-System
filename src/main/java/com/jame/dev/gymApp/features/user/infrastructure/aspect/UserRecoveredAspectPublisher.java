@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class UserRecoveredAspectPublisher {
    private final ApplicationEventPublisher applicationEventPublisher;
 
-   @AfterReturning("@annotation(com.jame.dev.gymApp.app.user.infrastructure.annotations.PublishUserRecovered) && args(id)")
+   @AfterReturning("@annotation(com.jame.dev.gymApp.features.user.infrastructure.annotations.PublishUserRecovered) && args(id)")
    public void publishUserRecovered(long id) {
       applicationEventPublisher.publishEvent(new UserRecoveredEvent(id));
    }

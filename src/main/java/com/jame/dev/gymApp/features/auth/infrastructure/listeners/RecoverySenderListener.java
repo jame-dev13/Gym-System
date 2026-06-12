@@ -27,7 +27,7 @@ public class RecoverySenderListener {
          throw new AccountNotFoundException("Account not found.");
       }
 
-      final VerificationEntity verification = verificationService.getByUserEmail(recipient);
+      final VerificationEntity verification = verificationService.getByDeactivatedUserEmail(recipient);
       verificationService.update(verification, token);
 
       final var emailDetails = new EmailDetails(
