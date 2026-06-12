@@ -16,7 +16,7 @@ public class PublishVerifyOAuthUser {
    private final ApplicationEventPublisher applicationEventPublisher;
 
    @AfterReturning(
-           pointcut = "@annotation(com.jame.dev.gymApp.app.auth.infrastructure.annotation.VerifyOauthUser)",
+           pointcut = "@annotation(com.jame.dev.gymApp.features.auth.infrastructure.annotation.VerifyOauthUser)",
            returning = "result")
    public void publishVerification(final Object result) {
       if (result instanceof CustomOAuth2User user) {

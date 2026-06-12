@@ -10,6 +10,7 @@ public interface VerificationService {
    VerificationEntity save(@NotNull UserEntity user, @NotEmptyNull final String token);
    void verify(@EmailValid final String email, @NotEmptyNull final String rawToken);
    VerificationEntity getByUserEmail(@EmailValid final String email);
+   VerificationEntity getByDeactivatedUserEmail(final String email);
    void verify(@NotNull VerificationEntity verificationEntity, String rawToken);
    void update(final VerificationEntity entity, final String rawToken);
    boolean isVerified(@EmailValid final String email);

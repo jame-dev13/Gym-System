@@ -1,21 +1,21 @@
 package com.jame.dev.gymApp.features.auth.application.service;
 
-import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
-import com.jame.dev.gymApp.features.auth.domain.model.VerificationEntity;
-import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;
+import com.jame.dev.gymApp.application.contract.TokenDBHasherService;
+import com.jame.dev.gymApp.features.auth.application.contract.recovery.AccountRecoveryService;
 import com.jame.dev.gymApp.features.auth.domain.exception.VerificationAttemptFailedException;
 import com.jame.dev.gymApp.features.auth.domain.exception.VerificationNotFoundException;
-import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
+import com.jame.dev.gymApp.features.auth.domain.model.VerificationEntity;
+import com.jame.dev.gymApp.features.auth.domain.repository.VerificationRepository;
 import com.jame.dev.gymApp.features.customer.infrastructure.persistence.CustomerRepository;
+import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
+import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;
+import com.jame.dev.gymApp.features.user.domain.model.Role;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.user.infrastructure.persistence.RoleRepository;
 import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
-import com.jame.dev.gymApp.features.auth.domain.repository.VerificationRepository;
-import com.jame.dev.gymApp.features.auth.application.contract.recovery.AccountRecoveryService;
-import com.jame.dev.gymApp.features.user.domain.model.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +27,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class AccountRecoveryApplicationService implements AccountRecoveryService {
    private final VerificationRepository verificationRepository;
-   private final PasswordEncoder passwordEncoder;
+   private final TokenDBHasherService hasherService;
    private final UserRepository userRepository;
    private final CustomerRepository customerRepository;
    private final RoleMapper roleMapper;
@@ -36,7 +36,7 @@ public class AccountRecoveryApplicationService implements AccountRecoveryService
    private @NonNull VerificationEntity getVerificationEntity(String userEmail, String token) {
       final VerificationEntity VE = verificationRepository.findDeactivatedByUser_Email(userEmail)
               .orElseThrow(() -> new VerificationNotFoundException("Verified user account's not found."));
-      boolean tokenMatch = passwordEncoder.matches(token, VE.getToken());
+      final boolean tokenMatch = hasherService.tokenMatches(token, VE.getToken());
       if (!tokenMatch) {
          throw new VerificationAttemptFailedException("Token mismatch.");
       }
