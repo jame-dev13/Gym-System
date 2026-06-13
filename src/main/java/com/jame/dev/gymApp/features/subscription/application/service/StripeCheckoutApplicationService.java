@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.features.subscription.application.service;
 
 import com.jame.dev.gymApp.features.subscription.api.request.CheckoutRequest;
-import com.jame.dev.gymApp.features.subscription.api.response.CheckoutResponse;
+import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionCheckoutResponse;
 import com.jame.dev.gymApp.features.subscription.application.contract.StripeCheckoutService;
 import com.jame.dev.gymApp.features.subscription.domain.exception.PricingNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.StripeSessionCreationException;
@@ -32,14 +32,14 @@ public class StripeCheckoutApplicationService implements StripeCheckoutService {
 
     @Override
     @Transactional(readOnly = true)
-    public CheckoutResponse createCheckoutSession(CheckoutRequest request, String customerEmail) {
+    public SubscriptionCheckoutResponse createCheckoutSession(CheckoutRequest request) {
         final PricingEntity pricing = pricingRepository
             .findByMemberShipEntity_Membership(request.membership())
             .orElseThrow(() -> new PricingNotFoundException("Pricing not found for membership: " + request.membership()));
 
-        final Session session = buildStripeSession(pricing, request.membership(), customerEmail);
+        final Session session = buildStripeSession(pricing, request.membership(), request.customerEmail());
 
-        return CheckoutResponse.builder()
+        return SubscriptionCheckoutResponse.builder()
             .sessionId(session.getId())
             .sessionUrl(session.getUrl())
             .build();

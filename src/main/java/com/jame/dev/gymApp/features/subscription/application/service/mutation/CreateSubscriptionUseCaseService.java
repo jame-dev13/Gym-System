@@ -58,7 +58,7 @@ public class CreateSubscriptionUseCaseService implements CreateSubscriptionUseCa
             .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
 
         final SubscriptionEntity subscriptionEntity = subscriptionFactory.createFromInput(
-            new SubscriptionFactoryDtoInput(request, customer, pricing, LocalDate.now()));
+            new SubscriptionFactoryDtoInput(customer, pricing, LocalDate.now()));
 
         final SubscriptionEntity subscriptionSaved = subscriptionMutationRepository.save(subscriptionEntity);
 

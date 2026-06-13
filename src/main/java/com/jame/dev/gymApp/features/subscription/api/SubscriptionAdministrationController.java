@@ -6,6 +6,8 @@ import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionRespon
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.*;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetByIdSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetPageSubscriptionUseCase;
+import com.jame.dev.gymApp.features.subscription.domain.event.CompletedCheckoutEvent;
+import com.jame.dev.gymApp.features.subscription.domain.model.PaymentPhysicMeta;
 import com.jame.dev.gymApp.features.subscription.infrastructure.notification.service.SubscriptionNotificationAppService;
 import com.jame.dev.gymApp.infrastructure.annotation.Minimum;
 import com.jame.dev.gymApp.infrastructure.annotation.NotNullObject;
@@ -39,6 +41,7 @@ public class SubscriptionAdministrationController {
    private final FinalizeSubscriptionUseCase subscriptionFinalize;
    private final SoftDeleteSubscriptionByIdUseCase subscriptionSoftDelete;
    private final SubscriptionNotificationAppService subsNotificationAppService;
+   private final CompletedCheckoutUseCase completedCheckoutUseCase;
 
    @GetMapping
    public ResponseEntity<Page<SubscriptionResponse>> getPage(
@@ -53,20 +56,28 @@ public class SubscriptionAdministrationController {
 
    @GetMapping("/{id}")
    public ResponseEntity<SubscriptionResponse> getById(
-           @PathVariable("id") @Minimum final long id) {
+      @PathVariable("id") @Minimum final long id) {
       final SubscriptionResponse response = subscriptionGetById.getById(id);
       return ResponseEntity.ok(response);
    }
 
    @PostMapping
    public ResponseEntity<SubscriptionResponse> create(
-           @RequestBody @Valid @NotNullObject final SubscriptionRequest subscriptionRequest) {
-      final SubscriptionResponse response = subscriptionCreate.create(subscriptionRequest);
+      @RequestBody @Valid @NotNullObject final SubscriptionRequest subscriptionRequest) {
+      final SubscriptionResponse subscription = subscriptionCreate.create(subscriptionRequest);
+      final CompletedCheckoutEvent checkoutEvent = new CompletedCheckoutEvent(
+         PaymentPhysicMeta.SESSION_ID.getValue(),
+         PaymentPhysicMeta.PAYMENT_INTEND_ID.getValue(),
+         PaymentPhysicMeta.STRIPE_SUBSCRIPTION_ID.getValue(),
+         subscription.customerEmail()
+      );
+      completedCheckoutUseCase.execute(checkoutEvent);
       final URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-              .path("/{id}")
-              .buildAndExpand(response.id())
-              .toUri();
-      return ResponseEntity.created(location).body(response);
+         .path("/{id}")
+         .buildAndExpand(subscription.id())
+         .toUri();
+      final SubscriptionResponse body = subscriptionGetById.getById(subscription.id());
+      return ResponseEntity.created(location).body(body);
    }
 
    @PostMapping("/notify")
@@ -77,38 +88,38 @@ public class SubscriptionAdministrationController {
 
    @PutMapping("/{id}")
    public ResponseEntity<SubscriptionResponse> update(
-           @PathVariable("id")
-           @Minimum final long id,
-           @RequestBody
-           @Valid
-           @NotNullObject final SubscriptionRequest subscriptionRequest) {
+      @PathVariable("id")
+      @Minimum final long id,
+      @RequestBody
+      @Valid
+      @NotNullObject final SubscriptionRequest subscriptionRequest) {
       final SubscriptionResponse response = subscriptionUpdate.update(id, subscriptionRequest);
       return ResponseEntity.ok(response);
    }
 
    @PutMapping("/{id}/renew")
    public ResponseEntity<SubscriptionResponse> renew(
-           @PathVariable("id")
-           @Minimum final long id,
-           @RequestBody
-           @Valid
-           @NotNullObject final SubscriptionRequest subscriptionRequest) {
+      @PathVariable("id")
+      @Minimum final long id,
+      @RequestBody
+      @Valid
+      @NotNullObject final SubscriptionRequest subscriptionRequest) {
       final SubscriptionResponse response = subscriptionRenew.renew(id, subscriptionRequest);
       return ResponseEntity.ok(response);
    }
 
    @PatchMapping("/{id}")
    public ResponseEntity<SubscriptionResponse> finalize(
-           @PathVariable("id")
-           @Minimum final long id) {
+      @PathVariable("id")
+      @Minimum final long id) {
       final SubscriptionResponse response = subscriptionFinalize.finalize(id);
       return ResponseEntity.ok(response);
    }
 
    @DeleteMapping("/{id}")
    public ResponseEntity<Void> delete(
-           @PathVariable("id")
-           @Minimum final long id) {
+      @PathVariable("id")
+      @Minimum final long id) {
       subscriptionSoftDelete.softDeleteById(id);
       return ResponseEntity.noContent().build();
    }
