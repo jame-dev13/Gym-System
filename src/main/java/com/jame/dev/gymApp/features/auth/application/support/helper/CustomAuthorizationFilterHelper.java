@@ -33,6 +33,11 @@ public class CustomAuthorizationFilterHelper {
       return uri.startsWith("/auth") || oauth || collaterals;
    }
 
+   public boolean isStripeWebHook(final HttpServletRequest request) {
+      final String uri = request.getRequestURI();
+      return uri.startsWith("/app/v1/checkout/webhook");
+   }
+
    public Map<String, String> extractCookiesFrom(HttpServletRequest request) throws ServletException {
       if (request.getCookies() == null) return Collections.emptyMap();
 
