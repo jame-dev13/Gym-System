@@ -42,7 +42,7 @@ public class ChangeModelResolverHelper {
     static Map<String, ChangesModelSubscription> buildChangesModelSubscription(long entityId, @Nullable SubscriptionRequest input, SubscriptionResponse response) {
       final var changesAfter = ChangesModelSubscription.builder()
          .id(response.id())
-         .customerEmail(response.customer().user().email())
+         .customerEmail(response.customerEmail())
          .price(response.price())
          .membership(response.membership())
          .periods(response.periods())

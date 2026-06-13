@@ -56,6 +56,9 @@ public class SubscriptionEntity extends BaseEntity {
    @Column(name = "finished", nullable = false)
    private boolean finished;
 
+   @Column(name = "paid", nullable = false)
+   private boolean paid = false;
+
    @PostPersist
    private void setStatus() {
       this.finished = false;
@@ -70,12 +73,14 @@ public class SubscriptionEntity extends BaseEntity {
              pricingId=%d,
              active=%b,
              finished=%b
+             isPaid=%b
          }""".formatted(
          super.getId(),
          customer.getId(),
          pricing.getId(),
          active,
-         finished
+         finished,
+         paid
       );
    }
 }

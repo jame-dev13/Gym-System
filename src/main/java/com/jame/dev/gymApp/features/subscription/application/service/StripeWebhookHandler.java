@@ -73,8 +73,7 @@ public class StripeWebhookHandler {
             session.getId(),
             session.getPaymentIntent(),
             session.getSubscription(),
-            customerEmail,
-            Integer.valueOf(pricingIdStr)
+            customerEmail
         ));
 
         return ResponseEntity.ok().build();

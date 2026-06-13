@@ -42,6 +42,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Validated
+@Deprecated
 public class SubscriptionApplicationService implements SubscriptionService {
    private final SubscriptionRepository repo;
    private final CustomerRepository customerRepo;
@@ -108,7 +109,7 @@ public class SubscriptionApplicationService implements SubscriptionService {
          .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
 
       final SubscriptionEntity subscriptionEntity = subscriptionFactory.createFromInput(
-         new SubscriptionFactoryDtoInput(dto, customer, pricing, LocalDate.now()));
+         new SubscriptionFactoryDtoInput(customer, pricing, LocalDate.now()));
 
       final SubscriptionEntity subscriptionSaved = repo.saveAndFlush(subscriptionEntity);
 

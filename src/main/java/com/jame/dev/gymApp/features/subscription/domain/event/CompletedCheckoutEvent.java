@@ -4,6 +4,5 @@ public record CompletedCheckoutEvent(
     String stripeSessionId,
     String stripePaymentIntentId,
     String stripeSubscriptionId,
-    String customerEmail,
-    Integer pricingId
+    String customerEmail
 ) {}

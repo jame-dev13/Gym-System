@@ -4,13 +4,13 @@ import com.jame.dev.gymApp.application.dto.PageDto;
 import com.jame.dev.gymApp.domain.exception.MissMatchException;
 import com.jame.dev.gymApp.domain.exception.NoActiveException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
-import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
-import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
+import com.jame.dev.gymApp.features.notification.domain.exception.NotificationException;
 import com.jame.dev.gymApp.features.subscription.api.SubscriptionAdministrationController;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.dto.PeriodDtoOutput;
+import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CompletedCheckoutUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CreateSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.FinalizeSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.RenewSubscriptionUseCase;
@@ -18,6 +18,7 @@ import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.S
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.UpdateSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetByIdSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetPageSubscriptionUseCase;
+import com.jame.dev.gymApp.features.subscription.domain.event.CompletedCheckoutEvent;
 import com.jame.dev.gymApp.features.subscription.domain.exception.PricingNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.RenewSubscriptionException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNotFoundException;
@@ -25,8 +26,6 @@ import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionUn
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import com.jame.dev.gymApp.features.subscription.domain.model.Period;
 import com.jame.dev.gymApp.features.subscription.infrastructure.notification.service.SubscriptionNotificationAppService;
-import com.jame.dev.gymApp.features.user.api.response.UserResponse;
-import com.jame.dev.gymApp.features.user.domain.model.Role;
 import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.presentation.exception.GlobalExceptionHandler;
 import config.TestConfig;
@@ -55,18 +54,19 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -124,15 +124,17 @@ class SubscriptionAdministrationControllerTest {
    @MockitoBean
    private SubscriptionNotificationAppService subsNotificationAppService;
 
+   @MockitoBean
+   private CompletedCheckoutUseCase completedCheckoutUseCase;
+
    private final String URI_TEMPLATE = "/app/v1/administration/subs";
-   private final CustomerResponse customerResponse = new CustomerResponse(
-      1L, new UserResponse(1L, "dto", "dto@mail", AuthProvider.LOCAL, Set.of(Role.USER)), "25082525"
-   );
+   private final String customerEmail = "user@mail.com";
 
    private final SubscriptionResponse subscriptionResponse = new SubscriptionResponse(
-      1L, customerResponse,
+      1L, customerEmail,
       Membership.ANNUAL, BigDecimal.valueOf(3000d),
-      List.of(new PeriodDtoOutput(1L, Period.ANNUAL, LocalDate.now(), LocalDate.now().plusYears(1))),
+      List.of(new PeriodDtoOutput(Period.ANNUAL, LocalDate.now(), LocalDate.now().plusYears(1))),
+      false,
       false
    );
 
@@ -151,8 +153,8 @@ class SubscriptionAdministrationControllerTest {
                .param("page", "0")
                .param("size", "1")
                .accept(MediaType.APPLICATION_JSON))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content").exists());
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$.content").exists());
          verify(subscriptionGetPage, times(1)).getPage(any(), any());
       }
 
@@ -210,6 +212,8 @@ class SubscriptionAdministrationControllerTest {
       @DisplayName("POST[201] Created")
       void postSubscription() throws Exception {
          given(subscriptionCreate.create(any(SubscriptionRequest.class))).willReturn(subscriptionResponse);
+         doNothing().when(completedCheckoutUseCase).execute(any(CompletedCheckoutEvent.class));
+         given(subscriptionGetById.getById(anyLong())).willReturn(subscriptionResponse);
          mockMvc.perform(post(URI_TEMPLATE)
                .contentType(MediaType.APPLICATION_JSON)
                .content(payload))
@@ -217,6 +221,8 @@ class SubscriptionAdministrationControllerTest {
             .andExpect(jsonPath("$.*").exists())
             .andExpect(jsonPath("$.id").isNotEmpty());
          verify(subscriptionCreate, times(1)).create(any(SubscriptionRequest.class));
+         verify(completedCheckoutUseCase, times(1)).execute(any(CompletedCheckoutEvent.class));
+         verify(subscriptionGetById, times(1)).getById(anyLong());
       }
 
       @Test
@@ -231,6 +237,7 @@ class SubscriptionAdministrationControllerTest {
             .andExpect(jsonPath("$.status").value(409))
             .andExpect(jsonPath("$.code").value("SAVE_OPERATION"));
          verify(subscriptionCreate, times(1)).create(any(SubscriptionRequest.class));
+         verifyNoInteractions(completedCheckoutUseCase);
       }
 
       @Test
@@ -245,6 +252,7 @@ class SubscriptionAdministrationControllerTest {
             .andExpect(jsonPath("$.status").value(409))
             .andExpect(jsonPath("$.code").value("VALIDATION_OPERATION"));
          verify(subscriptionCreate, times(1)).create(any(SubscriptionRequest.class));
+         verifyNoInteractions(completedCheckoutUseCase);
       }
 
       @ParameterizedTest
@@ -299,6 +307,17 @@ class SubscriptionAdministrationControllerTest {
             .andExpect(status().isOk());
          verify(subsNotificationAppService, times(1)).notifySubscriptionEnds();
          verifyNoMoreInteractions(subsNotificationAppService);
+      }
+
+      @Test
+      @DisplayName("POST[401] Unauthorized: notify already done")
+      void notifySubscribersAlreadyDone() throws Exception {
+         doThrow(NotificationException.class).when(subsNotificationAppService).notifySubscriptionEnds();
+         mockMvc.perform(post(URI_TEMPLATE + "/notify"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andExpect(jsonPath("$.code").value("UNSUPPORTED_OPERATION"));
+         verify(subsNotificationAppService, times(1)).notifySubscriptionEnds();
       }
    }
 
@@ -528,11 +547,12 @@ class SubscriptionAdministrationControllerTest {
       @DisplayName("PATCH[200] OK: Subscription finalized")
       void finalizeSubscription() throws Exception {
          SubscriptionResponse finalized = new SubscriptionResponse(
-            1L, customerResponse,
+            1L, customerEmail,
             subscriptionResponse.membership(),
             subscriptionResponse.price(),
             subscriptionResponse.periods(),
-            true
+            true,
+            false
          );
          given(subscriptionFinalize.finalize(anyLong())).willReturn(finalized);
          mockMvc.perform(patch(URI_TEMPLATE + '/' + 1L)

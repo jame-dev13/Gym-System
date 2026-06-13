@@ -1,17 +1,12 @@
 package com.jame.dev.gymApp.mapper;
 
-import com.jame.dev.gymApp.features.customer.application.support.mapper.CustomerMapper;
-import com.jame.dev.gymApp.features.customer.application.support.mapper.CustomerMapperImpl;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
-import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.support.mapper.PeriodMapper;
 import com.jame.dev.gymApp.features.subscription.application.support.mapper.PeriodMapperImpl;
 import com.jame.dev.gymApp.features.subscription.application.support.mapper.SubscriptionMapper;
 import com.jame.dev.gymApp.features.subscription.application.support.mapper.SubscriptionMapperImpl;
 import com.jame.dev.gymApp.features.subscription.domain.model.*;
-import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapperImpl;
-import com.jame.dev.gymApp.features.user.application.support.mapper.UserMapperImpl;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,11 +19,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SubscriptionMapperTest {
-   private final CustomerMapper customerMapper =
-           new CustomerMapperImpl(new UserMapperImpl(new RoleMapperImpl()));
    private final PeriodMapper periodMapper = new PeriodMapperImpl();
    private final SubscriptionMapper subscriptionMapper =
-           new SubscriptionMapperImpl(customerMapper, periodMapper);
+           new SubscriptionMapperImpl(periodMapper);
    private CustomerEntity customer;
    private PricingEntity pricing;
    private SubscriptionEntity subs;
@@ -68,11 +61,9 @@ public class SubscriptionMapperTest {
    @Test
    @DisplayName("To Entity")
    void toEntity() {
-      final SubscriptionRequest dtoInput = new SubscriptionRequest("cmail@mail.com",
-              Membership.MONTHLY);
       final List<PeriodEntity> periods = new ArrayList<>();
 
-      SubscriptionEntity subs = subscriptionMapper.toEntity(dtoInput, customer, pricing, periods);
+      SubscriptionEntity subs = subscriptionMapper.toEntity(customer, pricing, periods);
       assertAll("Not null, properties equals and not finished.",
               () -> assertNotNull(subs, "Should not be null."),
               () -> assertEquals(customer, subs.getCustomer(), "Should be the same."),

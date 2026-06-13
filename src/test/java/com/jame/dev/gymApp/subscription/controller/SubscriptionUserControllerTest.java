@@ -3,27 +3,26 @@ package com.jame.dev.gymApp.subscription.controller;
 import com.jame.dev.gymApp.domain.exception.MissMatchException;
 import com.jame.dev.gymApp.domain.exception.NoActiveException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
-import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
-import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
 import com.jame.dev.gymApp.features.subscription.api.SubscriptionUserController;
+import com.jame.dev.gymApp.features.subscription.api.request.CheckoutRequest;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
+import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionCheckoutResponse;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
+import com.jame.dev.gymApp.features.subscription.application.contract.StripeCheckoutService;
 import com.jame.dev.gymApp.features.subscription.application.dto.PeriodDtoOutput;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CreateSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.FinalizeSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.RenewSubscriptionUseCase;
-import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.UpdateSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetByEmailSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetByIdSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.domain.exception.PricingNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.RenewSubscriptionException;
+import com.jame.dev.gymApp.features.subscription.domain.exception.StripeSessionCreationException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionUnfinishedException;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import com.jame.dev.gymApp.features.subscription.domain.model.Period;
-import com.jame.dev.gymApp.features.user.api.response.UserResponse;
-import com.jame.dev.gymApp.features.user.domain.model.Role;
 import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.presentation.exception.GlobalExceptionHandler;
 import config.TestConfig;
@@ -52,7 +51,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -105,23 +103,22 @@ class SubscriptionUserControllerTest {
    private CreateSubscriptionUseCase subscriptionCreate;
 
    @MockitoBean
-   private UpdateSubscriptionUseCase subscriptionUpdate;
-
-   @MockitoBean
    private RenewSubscriptionUseCase subscriptionRenew;
 
    @MockitoBean
    private FinalizeSubscriptionUseCase subscriptionFinalize;
 
+   @MockitoBean
+   private StripeCheckoutService stripeCheckoutService;
+
    private final String URI_TEMPLATE = "/app/v1/subscriptions";
-   private final CustomerResponse customerResponse = new CustomerResponse(
-      1L, new UserResponse(1L, "dto", "dto@mail", AuthProvider.LOCAL, Set.of(Role.USER)), "25082525"
-   );
+   private final String customerEmail = "user@mail.com";
 
    private final SubscriptionResponse subscriptionResponse = new SubscriptionResponse(
-      1L, customerResponse,
+      1L, customerEmail,
       Membership.ANNUAL, BigDecimal.valueOf(3000d),
-      List.of(new PeriodDtoOutput(1L, Period.ANNUAL, LocalDate.now(), LocalDate.now().plusYears(1))),
+      List.of(new PeriodDtoOutput(Period.ANNUAL, LocalDate.now(), LocalDate.now().plusYears(1))),
+      false,
       false
    );
 
@@ -225,19 +222,43 @@ class SubscriptionUserControllerTest {
       @Test
       @DisplayName("POST[201] Created")
       void create() throws Exception {
+         var checkoutResponse = new SubscriptionCheckoutResponse("session_123", "https://stripe.com/session_123");
+         given(stripeCheckoutService.createCheckoutSession(any(CheckoutRequest.class))).willReturn(checkoutResponse);
          given(subscriptionCreate.create(any(SubscriptionRequest.class))).willReturn(subscriptionResponse);
          mockMvc.perform(post(URI_TEMPLATE)
                .contentType(MediaType.APPLICATION_JSON)
                .content(payload))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.*").exists())
-            .andExpect(jsonPath("$.id").isNotEmpty());
+            .andExpect(jsonPath("$.checkout").exists())
+            .andExpect(jsonPath("$.checkout.sessionUrl").value("https://stripe.com/session_123"))
+            .andExpect(jsonPath("$.subscription").exists())
+            .andExpect(jsonPath("$.subscription.id").isNotEmpty());
+         verify(stripeCheckoutService, times(1)).createCheckoutSession(any(CheckoutRequest.class));
          verify(subscriptionCreate, times(1)).create(any(SubscriptionRequest.class));
+      }
+
+      @Test
+      @DisplayName("POST[500]: Stripe session creation failed")
+      void stripeSessionCreationFailed() throws Exception {
+         given(stripeCheckoutService.createCheckoutSession(any(CheckoutRequest.class)))
+            .willThrow(StripeSessionCreationException.class);
+         mockMvc.perform(post(URI_TEMPLATE)
+               .contentType(MediaType.APPLICATION_JSON)
+               .content(payload))
+            .andExpect(status().isInternalServerError())
+            .andExpect(jsonPath("$.status").value(500))
+            .andExpect(jsonPath("$.code").value("INTERNAL_OPERATION"));
+         verify(stripeCheckoutService, times(1)).createCheckoutSession(any(CheckoutRequest.class));
+         verifyNoInteractions(subscriptionCreate);
       }
 
       @Test
       @DisplayName("POST[409]: Conflict: Subscription already exists")
       void alreadyExists() throws Exception {
+         given(stripeCheckoutService.createCheckoutSession(any(CheckoutRequest.class))).willReturn(
+            new SubscriptionCheckoutResponse("session_123", "https://stripe.com/session_123")
+         );
          given(subscriptionCreate.create(any(SubscriptionRequest.class))).willThrow(AlreadyExistsException.class);
          mockMvc.perform(post(URI_TEMPLATE)
                .contentType(MediaType.APPLICATION_JSON)
@@ -246,12 +267,16 @@ class SubscriptionUserControllerTest {
             .andExpect(jsonPath("$.*").exists())
             .andExpect(jsonPath("$.status").value(409))
             .andExpect(jsonPath("$.code").value("SAVE_OPERATION"));
+         verify(stripeCheckoutService, times(1)).createCheckoutSession(any(CheckoutRequest.class));
          verify(subscriptionCreate, times(1)).create(any(SubscriptionRequest.class));
       }
 
       @Test
       @DisplayName("POST[409]: Conflict: Subscription is deactivated")
       void subscriptionIsDeactivated() throws Exception {
+         given(stripeCheckoutService.createCheckoutSession(any(CheckoutRequest.class))).willReturn(
+            new SubscriptionCheckoutResponse("session_123", "https://stripe.com/session_123")
+         );
          given(subscriptionCreate.create(any(SubscriptionRequest.class))).willThrow(NoActiveException.class);
          mockMvc.perform(post(URI_TEMPLATE)
                .contentType(MediaType.APPLICATION_JSON)
@@ -260,6 +285,7 @@ class SubscriptionUserControllerTest {
             .andExpect(jsonPath("$.*").exists())
             .andExpect(jsonPath("$.status").value(409))
             .andExpect(jsonPath("$.code").value("VALIDATION_OPERATION"));
+         verify(stripeCheckoutService, times(1)).createCheckoutSession(any(CheckoutRequest.class));
          verify(subscriptionCreate, times(1)).create(any(SubscriptionRequest.class));
       }
 
@@ -433,11 +459,12 @@ class SubscriptionUserControllerTest {
       @DisplayName("PATCH[200] OK: Subscription finalized")
       void finalizeSubscription() throws Exception {
          SubscriptionResponse finalized = new SubscriptionResponse(
-            1L, customerResponse,
+            1L, customerEmail,
             subscriptionResponse.membership(),
             subscriptionResponse.price(),
             subscriptionResponse.periods(),
-            true
+            true,
+            false
          );
          given(subscriptionFinalize.finalize(anyLong())).willReturn(finalized);
          mockMvc.perform(patch(URI_TEMPLATE + '/' + 1L)

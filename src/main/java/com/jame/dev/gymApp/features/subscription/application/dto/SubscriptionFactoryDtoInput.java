@@ -8,7 +8,6 @@ import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
 import java.time.LocalDate;
 
 public record SubscriptionFactoryDtoInput(
-        @NotNullObject SubscriptionRequest subDto,
         @NotNullObject CustomerEntity customer,
         @NotNullObject PricingEntity pricing,
         @NotNullObject LocalDate startDate

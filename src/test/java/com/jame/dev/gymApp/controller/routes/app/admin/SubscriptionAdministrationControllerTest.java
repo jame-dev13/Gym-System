@@ -5,7 +5,6 @@ import com.jame.dev.gymApp.application.dto.PageDto;
 import com.jame.dev.gymApp.domain.exception.MissMatchException;
 import com.jame.dev.gymApp.domain.exception.NoActiveException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
-import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
 import com.jame.dev.gymApp.features.subscription.api.SubscriptionAdministrationController;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.dto.PeriodDtoOutput;
@@ -13,7 +12,6 @@ import com.jame.dev.gymApp.features.subscription.domain.exception.PricingNotFoun
 import com.jame.dev.gymApp.features.subscription.domain.exception.RenewSubscriptionException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionUnfinishedException;
-import com.jame.dev.gymApp.features.user.api.response.UserResponse;
 import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
 import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.presentation.exception.GlobalExceptionHandler;
@@ -21,8 +19,6 @@ import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionService;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import com.jame.dev.gymApp.features.subscription.domain.model.Period;
-import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
-import com.jame.dev.gymApp.features.user.domain.model.Role;
 import config.TestConfig;
 import config.TestDataSource;
 import config.TestValidationConfig;
@@ -49,7 +45,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
+
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -61,6 +57,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Deprecated(forRemoval = true)
 @WebMvcTest(
    controllers = SubscriptionAdministrationController.class,
    excludeFilters = {
@@ -90,14 +87,13 @@ public class SubscriptionAdministrationControllerTest {
    private SubscriptionService subscriptionService;
 
    private final String URI_TEMPLATE = "/app/v1/administration/subs";
-   private final CustomerResponse customerResponse = new CustomerResponse(
-      1L, new UserResponse(1L, "dto", "dto@mail", AuthProvider.LOCAL, Set.of(Role.USER)), "25082525"
-   );
+   private final String customerEmail = "user@mail.com";
 
    private final SubscriptionResponse subscriptionResponse = new SubscriptionResponse(
-      1L, customerResponse,
+      1L, customerEmail,
       Membership.ANNUAL, BigDecimal.valueOf(3000d),
-      List.of(new PeriodDtoOutput(1L, Period.ANNUAL, LocalDate.now(), LocalDate.now().plusYears(1))),
+      List.of(new PeriodDtoOutput(Period.ANNUAL, LocalDate.now(), LocalDate.now().plusYears(1))),
+      false,
       false
    );
 
@@ -457,11 +453,12 @@ public class SubscriptionAdministrationControllerTest {
       @DisplayName("PATCH[200] OK: Subscription finalized")
       void finalizeSubscription() throws Exception {
          SubscriptionResponse finalized = new SubscriptionResponse(
-            1L, customerResponse,
+            1L, customerEmail,
             subscriptionResponse.membership(),
             subscriptionResponse.price(),
             subscriptionResponse.periods(),
-            true
+            true,
+            false
          );
          given(subscriptionService.patch(anyLong()))
             .willReturn(finalized);

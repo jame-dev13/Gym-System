@@ -36,7 +36,7 @@ public class SubscriptionApplicationFactory implements SubscriptionFactory {
    public SubscriptionEntity createFromInput(SubscriptionFactoryDtoInput input) {
       final List<PeriodEntity> periods = periodFactory.createPeriodsFrom(input.pricing(), input.startDate());
       final SubscriptionEntity subscriptionEntity =  subscriptionMapper.toEntity(
-              input.subDto(), input.customer(), input.pricing(), periods
+              input.customer(), input.pricing(), periods
       );
       subscriptionEntity.setCreatedAt(Instant.now());
       return subscriptionEntity;

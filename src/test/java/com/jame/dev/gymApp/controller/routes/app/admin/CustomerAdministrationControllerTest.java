@@ -61,7 +61,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
    TestValidationConfig.class,
    TestConfig.class})
 @ImportAutoConfiguration({ValidationAutoConfiguration.class})
-@Deprecated
+@Deprecated(forRemoval = true)
 class CustomerAdministrationControllerTest {
 
    @Autowired
