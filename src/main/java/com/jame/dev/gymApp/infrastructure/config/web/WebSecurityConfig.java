@@ -9,6 +9,7 @@ import com.jame.dev.gymApp.features.auth.infrastructure.oauth2.CustomOAuth2Failu
 import com.jame.dev.gymApp.features.auth.infrastructure.oauth2.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -51,6 +52,7 @@ public class WebSecurityConfig {
             .requestMatchers("/oauth2/**", "/login/oauth2/**", "/oauth2/authorization/**").permitAll()
             .requestMatchers("/error").permitAll()
             .requestMatchers("/favicon.ico").permitAll()
+            .requestMatchers(HttpMethod.POST, "/app/v1/checkout/webhook/stripe").permitAll()
             .anyRequest().authenticated()
          )
          .sessionManagement(session -> session
@@ -95,6 +97,7 @@ public class WebSecurityConfig {
             .requestMatchers("/oauth2/**", "/login/oauth2/**", "/oauth2/authorization/**").permitAll()
             .requestMatchers("/error").permitAll()
             .requestMatchers("/favicon.ico").permitAll()
+            .requestMatchers(HttpMethod.POST, "/app/v1/checkout/webhook/stripe").permitAll()
             .anyRequest().authenticated()
          )
          .headers(headers -> headers
