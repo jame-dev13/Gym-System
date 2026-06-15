@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.features.user.infrastructure.listener;
 
+import com.jame.dev.gymApp.features.customer.domain.repository.CustomerMutationRepository;
 import com.jame.dev.gymApp.features.user.domain.event.UserRecoveredEvent;
-import com.jame.dev.gymApp.features.customer.infrastructure.persistence.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -12,12 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserRecoveredListener {
 
-   private final CustomerRepository customerRepository;
+   private final CustomerMutationRepository customerRepository;
 
    @Transactional
    @EventListener(UserRecoveredEvent.class)
    @Async("taskExecutor")
    public void recoverCustomerAssociated(final UserRecoveredEvent event) {
-      customerRepository.activateByUserId(event.userId());
+      customerRepository.activateCustomerByUserId(event.userId());
    }
 }

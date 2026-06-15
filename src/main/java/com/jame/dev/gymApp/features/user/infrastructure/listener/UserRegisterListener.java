@@ -7,8 +7,8 @@ import com.jame.dev.gymApp.features.auth.domain.model.VerificationEntity;
 import com.jame.dev.gymApp.features.notification.application.contract.EmailService;
 import com.jame.dev.gymApp.features.notification.application.dto.EmailDetails;
 import com.jame.dev.gymApp.features.notification.domain.model.HtmlTemplates;
-import com.jame.dev.gymApp.features.user.application.contract.UserService;
 import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;
+import com.jame.dev.gymApp.features.user.domain.repository.UserQueryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class UserRegisterListener {
-   private final UserService userService;
+   private final UserQueryRepository userQueryRepository;
    private final EmailService emailService;
    private final VerificationService verificationService;
    private final TokenGeneratorService tokenGeneratorService;
@@ -28,7 +28,7 @@ public class UserRegisterListener {
    @Async("taskExecutor")
    public void verifyAndNotify(final UserNotifiableEvent event) {
       final String email = event.email();
-      userService.getUserByEmail(email)
+      userQueryRepository.findByEmail(email)
          .ifPresentOrElse(
             user -> {
                final String rawToken = tokenGeneratorService.generateToken();
