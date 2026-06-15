@@ -13,7 +13,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,11 +63,11 @@ public class RoleMapperTest {
    @Test
    @DisplayName("To Entity")
    void toEntity() {
-      when(roleRepository.findByRole(adminRole)).thenReturn(Optional.of(this.roleAdminEntity));
+      when(roleRepository.getReferenceByRole(adminRole)).thenReturn(this.roleAdminEntity);
 
       final RoleEntity entity = roleMapper.toEntity(this.adminRole, roleRepository);
 
-      verify(roleRepository, times(1)).findByRole(adminRole);
+      verify(roleRepository, times(1)).getReferenceByRole(adminRole);
 
       assertNotNull(entity, "Should not be null.");
       assertEquals(roleAdminEntity, entity, "Role entities should be equals.");
@@ -78,16 +77,16 @@ public class RoleMapperTest {
    @Test
    @DisplayName("Should return an RoleEntity Set")
    void toEntitySet() {
-      when(roleRepository.findByRole(eq(Role.USER)))
-              .thenReturn(Optional.of(roleUserEntity));
-      when(roleRepository.findByRole(eq(Role.ADMIN)))
-              .thenReturn(Optional.of(roleAdminEntity));
+      when(roleRepository.getReferenceByRole(eq(Role.USER)))
+              .thenReturn(roleUserEntity);
+      when(roleRepository.getReferenceByRole(eq(Role.ADMIN)))
+              .thenReturn(roleAdminEntity);
 
       Set<RoleEntity> roleEntitySet = roles.stream()
               .map(r -> roleMapper.toEntity(r, roleRepository))
               .collect(Collectors.toSet());
 
-      verify(roleRepository, atMost(2)).findByRole(roleCaptor.capture());
+      verify(roleRepository, atMost(2)).getReferenceByRole(roleCaptor.capture());
 
       assertNotNull(roleEntitySet, "Role set should not be null.");
       assertEquals(entityRoles, roleEntitySet, "Entities set should be equals.");

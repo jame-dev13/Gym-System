@@ -80,7 +80,7 @@ public class UserAdministrationControllerTest {
 
    private final String URI_TEMPLATE = "/app/v1/administration/users";
    private final UserResponse userDto = new UserResponse(
-       1L, "dto", "dto@mail", AuthProvider.LOCAL, Set.of(Role.USER)
+        1L, "dto", "dto@mail", AuthProvider.LOCAL, Set.of(Role.USER), false, null
    );
 
    @Nested
