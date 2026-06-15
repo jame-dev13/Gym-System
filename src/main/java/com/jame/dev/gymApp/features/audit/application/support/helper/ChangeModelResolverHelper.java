@@ -29,7 +29,7 @@ public class ChangeModelResolverHelper {
    }
 
     static Map<String, ChangesModelCustomer> buildChangesModelCustomer(long entityId, @Nullable CustomerRequest input, CustomerResponse response) {
-      final var changesAfter = new ChangesModelCustomer(response.id(), response.user().email(), response.contact());
+      final var changesAfter = new ChangesModelCustomer(response.id(), response.customerEmail(), response.contact());
       if (input == null) return Map.of(
          "after", changesAfter
       );

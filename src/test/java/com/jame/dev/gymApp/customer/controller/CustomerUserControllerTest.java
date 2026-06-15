@@ -1,7 +1,6 @@
 package com.jame.dev.gymApp.customer.controller;
 
 import com.jame.dev.gymApp.domain.exception.NoActiveException;
-import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
 import com.jame.dev.gymApp.features.customer.api.CustomerUserController;
@@ -13,8 +12,6 @@ import com.jame.dev.gymApp.features.customer.application.usecases.mutation.Updat
 import com.jame.dev.gymApp.features.customer.application.usecases.query.GetByEmailCustomerUseCase;
 import com.jame.dev.gymApp.features.customer.application.usecases.query.GetByIdCustomerUseCase;
 import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
-import com.jame.dev.gymApp.features.user.api.response.UserResponse;
-import com.jame.dev.gymApp.features.user.domain.model.Role;
 import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.presentation.exception.GlobalExceptionHandler;
 import config.TestConfig;
@@ -37,8 +34,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -95,9 +90,13 @@ class CustomerUserControllerTest {
    private SoftDeleteCustomerByIdUseCase softDelete;
 
    private final String URI_TEMPLATE = "/app/v1/customers";
-   private final CustomerResponse customerResponse = new CustomerResponse(
-      1L, new UserResponse(1L, "dto", "dto@mail", AuthProvider.LOCAL, Set.of(Role.USER)), "25082525"
-   );
+   private final CustomerResponse customerResponse = CustomerResponse.builder()
+       .id(1L)
+       .customerName("dto")
+       .customerEmail("dto@mail")
+       .contact("25082525")
+       .isSubscriber(false)
+       .build();
 
    @Nested
    @DisplayName("GET Customer Resources.")

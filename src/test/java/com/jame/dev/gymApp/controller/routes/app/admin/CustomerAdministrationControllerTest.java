@@ -10,11 +10,8 @@ import com.jame.dev.gymApp.domain.exception.NoActiveException;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
 import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
 import com.jame.dev.gymApp.application.dto.PageDto;
-import com.jame.dev.gymApp.features.user.api.response.UserResponse;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerRecoverService;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerService;
-import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
-import com.jame.dev.gymApp.features.user.domain.model.Role;
 import config.TestConfig;
 import config.TestDataSource;
 import config.TestValidationConfig;
@@ -35,8 +32,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
@@ -80,9 +75,13 @@ class CustomerAdministrationControllerTest {
    private CustomerRecoverService recoverService;
 
    private final String URI_TEMPLATE = "/app/v1/administration/customers";
-   private final CustomerResponse customerResponse = new CustomerResponse(
-      1L, new UserResponse(1L, "dto", "dto@mail", AuthProvider.LOCAL, Set.of(Role.USER)), "25082525"
-   );
+   private final CustomerResponse customerResponse = CustomerResponse.builder()
+       .id(1L)
+       .customerName("dto")
+       .customerEmail("dto@mail")
+       .contact("25082525")
+       .isSubscriber(false)
+       .build();
 
    @Nested
    @DisplayName("GET Customer Resources.")
