@@ -11,4 +11,6 @@ public interface CustomerMutationRepository {
    void deleteById(final long id);
 
    void hardDeleteById(final long id);
+
+   void activateCustomerByUserId(long userId);
 }
