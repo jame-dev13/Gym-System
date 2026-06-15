@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -60,7 +59,7 @@ public class UserMapperTest {
               .roles(Set.of(Role.USER))
               .authProvider(AuthProvider.LOCAL)
               .build();
-      when(roleRepository.findByRole(any(Role.class))).thenReturn(Optional.of(userRoleEntity));
+      when(roleRepository.getReferenceByRole(any(Role.class))).thenReturn(userRoleEntity);
 
       final Set<RoleEntity> entitySet = dto.roles()
               .stream()
@@ -68,7 +67,7 @@ public class UserMapperTest {
               .collect(Collectors.toSet());
       final UserEntity userEntity = userMapper.toEntity(dto, entitySet);
 
-      verify(roleRepository, atLeastOnce()).findByRole(any(Role.class));
+      verify(roleRepository, atLeastOnce()).getReferenceByRole(any(Role.class));
       verifyNoMoreInteractions(roleRepository);
 
       assertNotNull(entitySet, "Should not be null.");

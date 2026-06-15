@@ -24,9 +24,15 @@ public interface CustomerMapper extends BaseMapper<CustomerEntity, CustomerRespo
    @Mapping(target = "contact", source = "phoneContact")
    @Mapping(
       target = "isSubscriber",
-      expression = "java(!entity.getSubscriptions().isEmpty())")
+      expression = "java(mapIsSubscriber(entity))")
    @Mapping(target = "subscriptionId", expression = "java(mapSubscriptionId(entity))")
    CustomerResponse toDto(CustomerEntity entity);
+
+   default boolean mapIsSubscriber(CustomerEntity entity) {
+      return Optional.ofNullable(entity.getSubscriptions())
+         .map(subs -> !subs.isEmpty())
+         .orElse(false);
+   }
 
    default @Nullable Long mapSubscriptionId(CustomerEntity entity) {
       return Optional.ofNullable(entity)
