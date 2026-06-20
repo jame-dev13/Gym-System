@@ -30,6 +30,9 @@ dev-build:
 dev-up:
 	docker compose --env-file $(ENV_DEV) -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) up -d
 
+dev-stop:
+	docker compose --env-file $(ENV_DEV) -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) stop --timeout 5
+
 dev-down:
 	docker compose --env-file $(ENV_DEV) -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) down --timeout 5
 

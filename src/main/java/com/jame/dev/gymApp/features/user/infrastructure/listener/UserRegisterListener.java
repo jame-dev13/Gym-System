@@ -4,13 +4,14 @@ import com.jame.dev.gymApp.application.contract.TokenGeneratorService;
 import com.jame.dev.gymApp.features.auth.application.contract.verification.VerificationService;
 import com.jame.dev.gymApp.features.auth.domain.event.UserNotifiableEvent;
 import com.jame.dev.gymApp.features.auth.domain.model.VerificationEntity;
-import com.jame.dev.gymApp.features.notification.application.contract.EmailService;
 import com.jame.dev.gymApp.features.notification.application.dto.EmailDetails;
+import com.jame.dev.gymApp.features.notification.domain.event.EmailDetailsEvent;
 import com.jame.dev.gymApp.features.notification.domain.model.HtmlTemplates;
 import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;
 import com.jame.dev.gymApp.features.user.domain.repository.UserQueryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -20,9 +21,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserRegisterListener {
    private final UserQueryRepository userQueryRepository;
-   private final EmailService emailService;
    private final VerificationService verificationService;
    private final TokenGeneratorService tokenGeneratorService;
+   private final ApplicationEventPublisher applicationEventPublisher;
 
    @EventListener
    @Async("taskExecutor")
@@ -34,15 +35,14 @@ public class UserRegisterListener {
                final String rawToken = tokenGeneratorService.generateToken();
                final VerificationEntity verificationSaved = verificationService.save(user, rawToken);
                verificationService.verify(verificationSaved, rawToken);
-               final var emailDetails = new EmailDetails(
-                  email,
-                  HtmlTemplates.adminTemplate(
+               final var emailDetails = EmailDetails.builder()
+                  .subject("Welcome")
+                  .msgBody(HtmlTemplates.adminTemplate(
                      email,
-                     event.rawPassword()),
-                  "Welcome."
-               );
-               emailService.sendSimpleEmail(emailDetails);
-
+                     event.rawPassword()))
+                  .recipient(email)
+                  .build();
+               applicationEventPublisher.publishEvent(new EmailDetailsEvent(emailDetails));
             },
             () -> {
                throw new UserEntityNotFoundException("User not found.");
