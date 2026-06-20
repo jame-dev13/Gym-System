@@ -56,7 +56,7 @@ public class CustomerUserController {
    }
 
    @PreAuthorize("@customerSecurity.isOwner(#email, authentication)")
-   @GetMapping("/user/{email}")
+   @GetMapping("/{email}/user")
    public ResponseEntity<CustomerResponse> getCurrentByEmail(
       @PathVariable("email")
       @EmailValid final String email) {
