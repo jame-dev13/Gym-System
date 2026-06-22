@@ -17,40 +17,49 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
+
 import static com.jame.dev.gymApp.application.model.CacheValues.SUBSCRIPTIONS;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CompletedCheckoutUseCaseService implements CompletedCheckoutUseCase {
-    private final SubscriptionQueryRepository subscriptionQueryRepository;
-    private final PaymentMutationRepository paymentMutationRepository;
-    private final PaymentFactory paymentFactory;
-    private final ApplicationEventPublisher eventPublisher;
+   private final SubscriptionQueryRepository subscriptionQueryRepository;
+   private final PaymentMutationRepository paymentMutationRepository;
+   private final PaymentFactory paymentFactory;
+   private final ApplicationEventPublisher eventPublisher;
 
-    @Override
-    @Transactional
-    @CacheEvict(value = SUBSCRIPTIONS, allEntries = true)
-    public void execute(CompletedCheckoutEvent event) {
-        final SubscriptionEntity subscription = subscriptionQueryRepository.findByCustomerEmail(event.customerEmail())
-           .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not found for: " + event.customerEmail()));
+   @Override
+   @Transactional
+   @CacheEvict(value = SUBSCRIPTIONS, allEntries = true)
+   public void execute(CompletedCheckoutEvent event) {
+      final SubscriptionEntity subscription = subscriptionQueryRepository.findByCustomerEmail(event.customerEmail())
+         .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not found for: " + event.customerEmail()));
 
-        final StripeSessionPaymentEvent paymentEvent = StripeSessionPaymentEvent.builder()
-           .sessionId(event.stripeSessionId())
-           .intentId(event.stripePaymentIntentId())
-           .subscriptionId(event.stripeSubscriptionId())
-           .subscriptionEntity(subscription)
-           .isPhysicSession(false)
-           .build();
+      Optional.ofNullable(subscription.getPayments())
+         .filter(Predicate.not(List::isEmpty))
+         .map(List::getLast)
+         .ifPresent(payment -> payment.setStatus(PaymentStatus.FINALIZED));
 
-        final PaymentEntity payment = paymentFactory.from(paymentEvent);
+      final StripeSessionPaymentEvent paymentEvent = StripeSessionPaymentEvent.builder()
+         .sessionId(event.stripeSessionId())
+         .intentId(event.stripePaymentIntentId())
+         .subscriptionId(event.stripeSubscriptionId())
+         .subscriptionEntity(subscription)
+         .isPhysicSession(false)
+         .build();
 
-        final PaymentEntity paymentEntity = paymentMutationRepository.save(payment);
+      final PaymentEntity payment = paymentFactory.from(paymentEvent);
 
-        subscription.setPaid(paymentEntity.getStatus() == PaymentStatus.COMPLETED);
-        //eventPublisher.publishEvent(event);
+      final PaymentEntity paymentEntity = paymentMutationRepository.save(payment);
 
-        log.info("Checkout completed: session={}, subscription={}, customer={}",
-            event.stripeSessionId(), subscription.getId(), event.customerEmail());
-    }
+      subscription.setPaid(paymentEntity.getStatus() == PaymentStatus.COMPLETED);
+      //eventPublisher.publishEvent(event);
+
+      log.info("Checkout completed: session={}, subscription={}, customer={}",
+         event.stripeSessionId(), subscription.getId(), event.customerEmail());
+   }
 }
