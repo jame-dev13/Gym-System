@@ -65,7 +65,7 @@ public class SubscriptionUserController {
       final SubscriptionCheckoutResponse checkoutResponse = stripeCheckoutService.createCheckoutSession(
          new CheckoutRequest(input.membership(), input.customerEmail())
       );
-
+      
       final SubscriptionResponse subscription = subscriptionCreate.create(input);
 
       final URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -80,14 +80,22 @@ public class SubscriptionUserController {
 
    @PreAuthorize("@subscriptionSecurity.isOwner(#id, authentication)")
    @PutMapping("/{id}")
-   public ResponseEntity<SubscriptionResponse> renew(
+   public ResponseEntity<SubscriptionSessionResponse> renew(
       @PathVariable("id")
       @Minimum final long id,
       @Valid
       @RequestBody
       @NotNullObject final SubscriptionRequest input) {
-      final SubscriptionResponse response = subscriptionRenew.renew(id, input);
-      return ResponseEntity.ok(response);
+
+      final SubscriptionCheckoutResponse checkoutResponse = stripeCheckoutService.createCheckoutSession(
+         new CheckoutRequest(input.membership(), input.customerEmail())
+      );
+
+      final SubscriptionResponse subscription = subscriptionRenew.renew(id, input);
+
+      final SubscriptionSessionResponse body = new SubscriptionSessionResponse(checkoutResponse, subscription);
+
+      return ResponseEntity.ok(body);
    }
 
    @PreAuthorize("@subscriptionSecurity.isOwner(#id, authentication)")

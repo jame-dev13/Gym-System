@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.features.subscription.domain.model;
 
 import com.jame.dev.gymApp.domain.model.BaseEntity;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -50,14 +51,20 @@ public class SubscriptionEntity extends BaseEntity {
          name = "fk_subscription_period_id",
          foreignKeyDefinition = "FOREIGN KEY (subscription_id) REFERENCES subscriptions(id) ON DELETE CASCADE"
       )
-   )
-   private List<PeriodEntity> subscriptionPeriods = new LinkedList<>();
+    )
+    private List<PeriodEntity> subscriptionPeriods = new LinkedList<>();
 
-   @Column(name = "finished", nullable = false)
-   private boolean finished;
+    @OneToMany(mappedBy = "subscription", fetch = FetchType.LAZY,
+               cascade = {CascadeType.MERGE, CascadeType.REFRESH})
+    @JsonIgnore
+    @Builder.Default
+    private List<PaymentEntity> payments = new LinkedList<>();
 
-   @Column(name = "paid", nullable = false)
-   private boolean paid = false;
+    @Column(name = "finished", nullable = false)
+    private boolean finished;
+
+    @Column(name = "paid", nullable = false)
+    private boolean paid = false;
 
    @PostPersist
    private void setStatus() {
