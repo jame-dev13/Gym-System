@@ -35,18 +35,20 @@ public class AppConfig {
    public KeyGenerator pageKeyGenerator() {
       return (ignoredTarget, ignoredMethod, params) -> {
          final StringBuilder sb = new StringBuilder();
-         for (Object param : params) {
-            if(param == null) continue;
-            if(param instanceof Pageable pag) {
-               sb.append(pag.getPageNumber())
-                  .append(":");
-               sb.append(pag.getPageSize())
-                  .append(":sort=");
-               sb.append(pag.getSort());
-            }
-
-            if(param instanceof String s) {
-               sb.append(":").append(s);
+         for (int i = 0; i < params.length; i++) {
+            if (i > 0) sb.append("|");
+            final Object param = params[i];
+            if (param == null) {
+               sb.append("null");
+            } else if (param instanceof Pageable pag) {
+               sb.append("page:").append(pag.getPageNumber())
+                  .append(":").append(pag.getPageSize())
+                  .append(":sort=").append(pag.getSort());
+            } else if (param instanceof String s) {
+               sb.append("str:").append(s);
+            } else {
+               sb.append(param.getClass().getSimpleName())
+                  .append(":").append(param);
             }
          }
          return sb.toString();

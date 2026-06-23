@@ -9,6 +9,8 @@ import com.jame.dev.gymApp.features.subscription.application.contract.StripeChec
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CreateSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.FinalizeSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.RenewSubscriptionUseCase;
+import com.jame.dev.gymApp.application.dto.PageDto;
+import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetAllSubscriptionsByCustomerEmailUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetByEmailSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetByIdSubscriptionUseCase;
 import com.jame.dev.gymApp.infrastructure.annotation.EmailValid;
@@ -16,6 +18,11 @@ import com.jame.dev.gymApp.infrastructure.annotation.Minimum;
 import com.jame.dev.gymApp.infrastructure.annotation.NotNullObject;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -32,6 +39,7 @@ import java.net.URI;
 public class SubscriptionUserController {
    private final GetByIdSubscriptionUseCase subscriptionGetById;
    private final GetByEmailSubscriptionUseCase subscriptionGetByEmail;
+   private final GetAllSubscriptionsByCustomerEmailUseCase subscriptionGetAllByCustomerEmail;
    private final CreateSubscriptionUseCase subscriptionCreate;
    private final RenewSubscriptionUseCase subscriptionRenew;
    private final FinalizeSubscriptionUseCase subscriptionFinalize;
@@ -53,6 +61,17 @@ public class SubscriptionUserController {
       @EmailValid final String email) {
       final SubscriptionResponse response = subscriptionGetByEmail.getByEmail(email);
       return ResponseEntity.ok(response);
+   }
+
+   @PreAuthorize("@subscriptionSecurity.isOwner(#customerEmail, authentication)")
+   @GetMapping(params = "customerEmail")
+   public ResponseEntity<Page<SubscriptionResponse>> getAllByCustomerEmail(
+      @RequestParam(value = "customerEmail")
+      @EmailValid final String customerEmail,
+      @PageableDefault(sort = "id", direction = Sort.Direction.DESC) final Pageable pageable) {
+      final PageDto<SubscriptionResponse> page = subscriptionGetAllByCustomerEmail.getAllByCustomerEmail(customerEmail, pageable);
+      final Page<SubscriptionResponse> responsePage = new PageImpl<>(page.content(), pageable, page.totalElements());
+      return ResponseEntity.ok(responsePage);
    }
 
    @PreAuthorize("@subscriptionSecurity.isOwner(#input, authentication)")

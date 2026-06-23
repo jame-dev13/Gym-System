@@ -4,6 +4,8 @@ import com.jame.dev.gymApp.domain.repository.CustomJpaRepository;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +20,8 @@ public interface SubscriptionRepository extends CustomJpaRepository<Subscription
       WHERE u.email = :email AND s.active = true
       """)
    Optional<SubscriptionEntity> findByCustomerEmail(@Param("email") @NonNull final String email);
+
+   Page<SubscriptionEntity> findAllByCustomer_User_Email(String email, Pageable pageable);
 
    boolean existsByIdAndCustomer_User_Email(long id, String email);
 

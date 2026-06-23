@@ -36,4 +36,9 @@ public class SubscriptionQueryJpaRepositoryAdapter implements SubscriptionQueryR
    public Optional<SubscriptionEntity> findByCustomerEmail(String email) {
       return subscriptionRepository.findByCustomerEmail(email);
    }
+
+   @Override
+   public Page<SubscriptionEntity> findAllByCustomerEmail(String email, Pageable pageable) {
+      return subscriptionRepository.findAllByCustomer_User_Email(email, pageable);
+   }
 }
