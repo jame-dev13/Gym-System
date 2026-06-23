@@ -18,4 +18,6 @@ public interface SubscriptionQueryRepository {
 
    Optional<SubscriptionEntity> findByCustomerEmail(final String email);
 
+   Page<SubscriptionEntity> findAllByCustomerEmail(final String email, final Pageable pageable);
+
 }

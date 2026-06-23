@@ -14,6 +14,7 @@ import com.jame.dev.gymApp.features.subscription.application.dto.PeriodDtoOutput
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CreateSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.FinalizeSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.RenewSubscriptionUseCase;
+import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetAllSubscriptionsByCustomerEmailUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetByEmailSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetByIdSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.domain.exception.PricingNotFoundException;
@@ -107,6 +108,9 @@ class SubscriptionUserControllerTest {
 
    @MockitoBean
    private FinalizeSubscriptionUseCase subscriptionFinalize;
+
+   @MockitoBean
+   private GetAllSubscriptionsByCustomerEmailUseCase subscriptionGetAllByCustomerEmail;
 
    @MockitoBean
    private StripeCheckoutService stripeCheckoutService;
