@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.features.subscription.api;
 
 import com.jame.dev.gymApp.application.dto.PageDto;
+import com.jame.dev.gymApp.features.subscription.api.request.PaymentRequest;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.*;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/app/v1/administration/subs")
@@ -40,6 +42,7 @@ public class SubscriptionAdministrationController {
    private final RenewSubscriptionUseCase subscriptionRenew;
    private final FinalizeSubscriptionUseCase subscriptionFinalize;
    private final SoftDeleteSubscriptionByIdUseCase subscriptionSoftDelete;
+   private final CreatePaymentUseCase createPaymentUseCase;
    private final SubscriptionNotificationAppService subsNotificationAppService;
    private final CompletedCheckoutUseCase completedCheckoutUseCase;
 
@@ -64,19 +67,33 @@ public class SubscriptionAdministrationController {
    @PostMapping
    public ResponseEntity<SubscriptionResponse> create(
       @RequestBody @Valid @NotNullObject final SubscriptionRequest subscriptionRequest) {
+
       final SubscriptionResponse subscription = subscriptionCreate.create(subscriptionRequest);
-      final CompletedCheckoutEvent checkoutEvent = new CompletedCheckoutEvent(
-         PaymentPhysicMeta.SESSION_ID.getValue(),
-         PaymentPhysicMeta.PAYMENT_INTEND_ID.getValue(),
-         PaymentPhysicMeta.STRIPE_SUBSCRIPTION_ID.getValue(),
-         subscription.customerEmail()
-      );
-      completedCheckoutUseCase.execute(checkoutEvent);
       final URI location = ServletUriComponentsBuilder.fromCurrentRequest()
          .path("/{id}")
          .buildAndExpand(subscription.id())
          .toUri();
+
+      final CompletedCheckoutEvent checkoutEvent = new CompletedCheckoutEvent(
+         UUID.randomUUID().toString(),
+         PaymentPhysicMeta.PAYMENT_INTEND_ID.getValue(),
+         PaymentPhysicMeta.STRIPE_SUBSCRIPTION_ID.getValue(),
+         subscription.customerEmail());
+
+      createPaymentUseCase.create(
+         PaymentRequest.builder()
+            .sessionId(checkoutEvent.stripeSessionId())
+            .intentId(checkoutEvent.stripePaymentIntentId())
+            .subscriptionSessionId(checkoutEvent.stripeSubscriptionId())
+            .isPhysical(true)
+            .subscriptionId(subscription.id())
+            .build()
+      );
+
+      completedCheckoutUseCase.execute(checkoutEvent);
+
       final SubscriptionResponse body = subscriptionGetById.getById(subscription.id());
+
       return ResponseEntity.created(location).body(body);
    }
 

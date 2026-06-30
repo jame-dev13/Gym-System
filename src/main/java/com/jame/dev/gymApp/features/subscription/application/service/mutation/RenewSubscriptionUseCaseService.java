@@ -46,6 +46,7 @@ public class RenewSubscriptionUseCaseService implements RenewSubscriptionUseCase
 
         subscriptionUpdater.applyRenew(subscriptionEntity, pricing);
         final SubscriptionEntity subscriptionRenewed = subscriptionMutationRepository.save(subscriptionEntity);
+
         return subscriptionFactory.createFromEntity(subscriptionRenewed);
     }
 }

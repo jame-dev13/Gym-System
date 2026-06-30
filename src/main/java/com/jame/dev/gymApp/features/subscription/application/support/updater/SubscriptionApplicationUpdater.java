@@ -45,6 +45,7 @@ public class SubscriptionApplicationUpdater implements SubscriptionUpdater {
       subscriptionEntity.setPricing(pricing);
       subscriptionEntity.setSubscriptionPeriods(periods);
       subscriptionEntity.setFinished(false);
+      subscriptionEntity.setPaid(false);
       subscriptionEntity.setUpdatedAt(Instant.now());
    }
 }

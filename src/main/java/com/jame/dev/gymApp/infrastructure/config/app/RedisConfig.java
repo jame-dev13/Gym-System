@@ -118,7 +118,7 @@ public class RedisConfig {
       scanner.findCandidateComponents("com.jame.dev.gymApp").forEach(beanDefinition -> {
          try {
             Class<?> clazz = Class.forName(beanDefinition.getBeanClassName());
-            if (clazz.isRecord() && clazz.getName().contains(".dto.")) {
+            if (clazz.isRecord()) {
                mapper.addMixIn(clazz, DefaultMixInDto.class);
             }
          } catch (ClassNotFoundException e) {
@@ -134,7 +134,7 @@ public class RedisConfig {
       scanner.findCandidateComponents(basePackage).forEach(beanDefinition -> {
          try {
             Class<?> clazz = Class.forName(beanDefinition.getBeanClassName());
-            if (clazz.isRecord() && clazz.getName().contains(".dto.")) {
+            if (clazz.isRecord()) {
                mapper.addMixIn(clazz, DefaultMixInDto.class);
             }
          } catch (ClassNotFoundException e) {

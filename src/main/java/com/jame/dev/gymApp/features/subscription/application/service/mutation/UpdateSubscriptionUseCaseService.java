@@ -20,35 +20,44 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
+
 @Service
 @RequiredArgsConstructor
 public class UpdateSubscriptionUseCaseService implements UpdateSubscriptionUseCase {
-    private final SubscriptionQueryRepository subscriptionQueryRepository;
-    private final PricingRepository pricingRepository;
-    private final SubscriptionUpdater subscriptionUpdater;
-    private final SubscriptionMutationRepository subscriptionMutationRepository;
-    private final SubscriptionFactory subscriptionFactory;
+   private final SubscriptionQueryRepository subscriptionQueryRepository;
+   private final PricingRepository pricingRepository;
+   private final SubscriptionUpdater subscriptionUpdater;
+   private final SubscriptionMutationRepository subscriptionMutationRepository;
+   private final SubscriptionFactory subscriptionFactory;
 
-    @Override
-    @Transactional
-    @CacheEvictSubscriptions
-    @AuditLog(
-        action = AuditLogAction.UPDATE,
-        entityType = AuditLogEntityType.SUBSCRIPTION,
-        input = "#request",
-        entityId = "#id",
-        result = "#result"
-    )
-    public SubscriptionResponse update(long id, SubscriptionRequest request) {
-        final SubscriptionEntity subscriptionEntity = subscriptionQueryRepository.findById(id)
-            .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
+   @Override
+   @Transactional
+   @CacheEvictSubscriptions
+   @AuditLog(
+      action = AuditLogAction.UPDATE,
+      entityType = AuditLogEntityType.SUBSCRIPTION,
+      input = "#request",
+      entityId = "#id",
+      result = "#result"
+   )
+   public SubscriptionResponse update(long id, SubscriptionRequest request) {
+      final SubscriptionEntity subscriptionEntity = subscriptionQueryRepository.findById(id)
+         .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
 
-        final PricingEntity pricingEntity = pricingRepository.findByMemberShipEntity_Membership(request.membership())
-            .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
+      final PricingEntity pricingEntity = pricingRepository.findByMemberShipEntity_Membership(request.membership())
+         .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
 
-        subscriptionUpdater.apply(subscriptionEntity, pricingEntity);
-        final SubscriptionEntity subscriptionModified = subscriptionMutationRepository.save(subscriptionEntity);
+      subscriptionUpdater.apply(subscriptionEntity, pricingEntity);
+      final SubscriptionEntity subscriptionModified = subscriptionMutationRepository.save(subscriptionEntity);
 
-        return subscriptionFactory.createFromEntity(subscriptionModified);
-    }
+      Optional.ofNullable(subscriptionModified.getPayments())
+         .filter(Predicate.not(List::isEmpty))
+         .map(List::getLast)
+         .ifPresent(s -> s.setAmount(pricingEntity.getPrice()));
+
+      return subscriptionFactory.createFromEntity(subscriptionModified);
+   }
 }

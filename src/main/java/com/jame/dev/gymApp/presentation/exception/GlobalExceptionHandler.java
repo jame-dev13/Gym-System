@@ -274,23 +274,23 @@ public class GlobalExceptionHandler {
          ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
    }
 
-    @ExceptionHandler(SubscriptionUnfinishedException.class)
-    public ResponseEntity<ApiErrorResponse> handleSubscriptionUnfinishedException(
-       SubscriptionUnfinishedException ex,
-       HttpServletRequest request
-    ) {
-       return responseFactory.buildResponse(new InputError(
-          ex, request, HttpStatus.CONFLICT, ErrorCodes.UPDATE));
-    }
+   @ExceptionHandler(SubscriptionUnfinishedException.class)
+   public ResponseEntity<ApiErrorResponse> handleSubscriptionUnfinishedException(
+      SubscriptionUnfinishedException ex,
+      HttpServletRequest request
+   ) {
+      return responseFactory.buildResponse(new InputError(
+         ex, request, HttpStatus.CONFLICT, ErrorCodes.UPDATE));
+   }
 
-    @ExceptionHandler(StripeSessionCreationException.class)
-    public ResponseEntity<ApiErrorResponse> handleStripeSessionCreationException(
-       StripeSessionCreationException ex,
-       HttpServletRequest request
-    ) {
-       return responseFactory.buildResponse(new InputError(
-          ex, request, HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.INTERNAL));
-    }
+   @ExceptionHandler(StripeSessionException.class)
+   public ResponseEntity<ApiErrorResponse> handleStripeSessionCreationException(
+      StripeSessionException ex,
+      HttpServletRequest request
+   ) {
+      return responseFactory.buildResponse(new InputError(
+         ex, request, HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.INTERNAL));
+   }
 
    @ExceptionHandler(MissMatchException.class)
    public ResponseEntity<ApiErrorResponse> handleMissMatchException(
@@ -432,6 +432,15 @@ public class GlobalExceptionHandler {
    @ExceptionHandler(EventPublisherException.class)
    public ResponseEntity<ApiErrorResponse> handleEventPublisherException(
       EventPublisherException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.CONFLICT, ErrorCodes.UNSUPPORTED));
+   }
+
+   @ExceptionHandler(StateException.class)
+   public ResponseEntity<ApiErrorResponse> handleStateException(
+      StateException ex, HttpServletRequest request
    ) {
       return responseFactory
          .buildResponse(new InputError(

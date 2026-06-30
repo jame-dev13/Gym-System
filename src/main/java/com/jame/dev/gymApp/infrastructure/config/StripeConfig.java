@@ -14,5 +14,8 @@ public class StripeConfig {
     @PostConstruct
     public void init() {
         Stripe.apiKey = secretKey;
+        Stripe.setConnectTimeout(5000);
+        Stripe.setReadTimeout(10_000);
+        Stripe.setMaxNetworkRetries(2);
     }
 }
