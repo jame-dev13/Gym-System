@@ -14,6 +14,7 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Mapper(componentModel = "spring", uses = UserMapper.class, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface CustomerMapper extends BaseMapper<CustomerEntity, CustomerResponse> {
@@ -30,15 +31,18 @@ public interface CustomerMapper extends BaseMapper<CustomerEntity, CustomerRespo
 
    default boolean mapIsSubscriber(CustomerEntity entity) {
       return Optional.ofNullable(entity.getSubscriptions())
-         .map(subs -> !subs.isEmpty())
+         .filter(Predicate.not(List::isEmpty))
+         .map(List::getLast)
+         .map(SubscriptionEntity::isActive)
          .orElse(false);
    }
 
    default @Nullable Long mapSubscriptionId(CustomerEntity entity) {
       return Optional.ofNullable(entity)
          .map(CustomerEntity::getSubscriptions)
-         .filter(subs -> !subs.isEmpty())
+         .filter(Predicate.not(List::isEmpty))
          .map(List::getLast)
+         .filter(SubscriptionEntity::isActive)
          .map(SubscriptionEntity::getId)
          .orElse(null);
    }

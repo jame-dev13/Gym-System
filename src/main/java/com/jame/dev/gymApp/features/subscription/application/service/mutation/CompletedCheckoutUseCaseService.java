@@ -1,65 +1,55 @@
 package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 
-import com.jame.dev.gymApp.features.subscription.application.support.factory.PaymentFactory;
+import com.jame.dev.gymApp.application.model.CacheValues;
+import com.jame.dev.gymApp.domain.exception.EntityNotFoundException;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CompletedCheckoutUseCase;
 import com.jame.dev.gymApp.features.subscription.domain.event.CompletedCheckoutEvent;
-import com.jame.dev.gymApp.features.subscription.domain.event.StripeSessionPaymentEvent;
-import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.model.PaymentEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.PaymentStatus;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentMutationRepository;
-import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
+import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentQueryRepository;
+import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
-
-import static com.jame.dev.gymApp.application.model.CacheValues.SUBSCRIPTIONS;
+import java.time.Instant;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CompletedCheckoutUseCaseService implements CompletedCheckoutUseCase {
-   private final SubscriptionQueryRepository subscriptionQueryRepository;
    private final PaymentMutationRepository paymentMutationRepository;
-   private final PaymentFactory paymentFactory;
-   private final ApplicationEventPublisher eventPublisher;
+   private final PaymentQueryRepository paymentQueryRepository;
+   private final SubscriptionMutationRepository subscriptionMutationRepository;
 
    @Override
    @Transactional
-   @CacheEvict(value = SUBSCRIPTIONS, allEntries = true)
+   @Caching(
+      evict = {
+         @CacheEvict(value = CacheValues.SUBSCRIPTIONS, allEntries = true),
+         @CacheEvict(value = CacheValues.SUBSCRIPTION, allEntries = true)
+      }
+   )
    public void execute(CompletedCheckoutEvent event) {
-      final SubscriptionEntity subscription = subscriptionQueryRepository.findByCustomerEmail(event.customerEmail())
-         .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not found for: " + event.customerEmail()));
+      final PaymentEntity paymentEntity = paymentQueryRepository.findByStripeSessionId(event.stripeSessionId())
+         .orElseThrow(() -> new EntityNotFoundException("Payment not found"));
 
-      Optional.ofNullable(subscription.getPayments())
-         .filter(Predicate.not(List::isEmpty))
-         .map(List::getLast)
-         .ifPresent(payment -> payment.setStatus(PaymentStatus.FINALIZED));
+      paymentEntity.setStatus(PaymentStatus.COMPLETED);
+      paymentEntity.setUpdatedAt(Instant.now());
 
-      final StripeSessionPaymentEvent paymentEvent = StripeSessionPaymentEvent.builder()
-         .sessionId(event.stripeSessionId())
-         .intentId(event.stripePaymentIntentId())
-         .subscriptionId(event.stripeSubscriptionId())
-         .subscriptionEntity(subscription)
-         .isPhysicSession(false)
-         .build();
-
-      final PaymentEntity payment = paymentFactory.from(paymentEvent);
-
-      final PaymentEntity paymentEntity = paymentMutationRepository.save(payment);
-
-      subscription.setPaid(paymentEntity.getStatus() == PaymentStatus.COMPLETED);
-      //eventPublisher.publishEvent(event);
+      final PaymentEntity paymentSaved = paymentMutationRepository.save(paymentEntity);
+      final SubscriptionEntity subscription = paymentSaved.getSubscription();
+      subscription.setPaid(true);
+      subscriptionMutationRepository.save(subscription);
 
       log.info("Checkout completed: session={}, subscription={}, customer={}",
          event.stripeSessionId(), subscription.getId(), event.customerEmail());
+      log.info("Subscription is Paid: {}", subscription.isPaid());
+      log.info("Payment status: {}", paymentSaved.getStatus());
    }
 }

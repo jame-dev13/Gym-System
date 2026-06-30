@@ -6,7 +6,9 @@ import lombok.Builder;
 
 @Builder
 public record SubscriptionCheckoutResponse(
-    @JsonIgnore String sessionId,
-    @JsonProperty("sessionUrl") String sessionUrl
+   @JsonProperty("sessionUrl") String sessionUrl,
+   @JsonIgnore String sessionId,
+   @JsonIgnore String paymentIndent,
+   @JsonIgnore String paymentSubscription
 ) {
 }

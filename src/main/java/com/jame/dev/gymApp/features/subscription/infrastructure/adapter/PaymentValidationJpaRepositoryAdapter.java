@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.infrastructure.adapter;
 
+import com.jame.dev.gymApp.features.subscription.domain.model.PaymentStatus;
 import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentValidationRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PaymentRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,8 +12,7 @@ public class PaymentValidationJpaRepositoryAdapter implements PaymentValidationR
    private final PaymentRepository paymentRepository;
 
    @Override
-   public boolean existsBySessionId(String sessionId) {
-      return paymentRepository.existsByStripeSessionId(sessionId);
+   public boolean existsBySessionIdAndPaymentStatus(String sessionId, PaymentStatus paymentStatus) {
+      return paymentRepository.existsByStripeSessionIdAndStatus(sessionId, paymentStatus);
    }
-
 }
