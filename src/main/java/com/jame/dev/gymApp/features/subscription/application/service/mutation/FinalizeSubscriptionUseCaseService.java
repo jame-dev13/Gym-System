@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 
+import com.jame.dev.gymApp.application.model.CacheValues;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
@@ -11,9 +12,10 @@ import com.jame.dev.gymApp.features.subscription.domain.model.PaymentStatus;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
-import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.CacheEvictSubscriptions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+
+import static com.jame.dev.gymApp.application.model.CacheValues.SUBSCRIPTION;
+import static com.jame.dev.gymApp.application.model.CacheValues.SUBSCRIPTIONS;
 
 @Slf4j
 @Service
@@ -32,7 +37,22 @@ public class FinalizeSubscriptionUseCaseService implements FinalizeSubscriptionU
 
    @Override
    @Transactional
-   @CacheEvictSubscriptions
+   @Caching(evict = {
+      @CacheEvict(
+         value = SUBSCRIPTIONS,
+         allEntries = true,
+         beforeInvocation = true,
+         cacheManager = "redisCacheManager"),
+      @CacheEvict(
+         value = SUBSCRIPTION,
+         key = "#id",
+         cacheManager = "redisCacheManager"
+      ),
+      @CacheEvict(
+         value = CacheValues.PAYMENTS, allEntries = true,
+         cacheManager = "redisCacheManager"
+      )
+   })
    @AuditLog(
       action = AuditLogAction.UPDATE,
       entityType = AuditLogEntityType.SUBSCRIPTION,
@@ -51,7 +71,7 @@ public class FinalizeSubscriptionUseCaseService implements FinalizeSubscriptionU
          .ifPresent(p -> {
             p.setStatus(PaymentStatus.FINALIZED);
             p.setUpdatedAt(updatedAt);
-            p.setActive(false);
+            //p.setActive(false);
             log.info("check payment.");
          });
 

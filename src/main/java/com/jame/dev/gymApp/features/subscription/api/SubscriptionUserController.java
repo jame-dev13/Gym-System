@@ -76,13 +76,13 @@ public class SubscriptionUserController {
       return ResponseEntity.ok(response);
    }
 
-   @PreAuthorize("@subscriptionSecurity.isOwner(#customerEmail, authentication)")
-   @GetMapping(params = "customerEmail")
+   @GetMapping("/current")
    public ResponseEntity<Page<SubscriptionResponse>> getAllByCustomerEmail(
-      @RequestParam(value = "customerEmail")
-      @EmailValid final String customerEmail,
-      @PageableDefault(sort = "id", direction = Sort.Direction.DESC) final Pageable pageable) {
-      final PageDto<SubscriptionResponse> page = subscriptionGetAllByCustomerEmail.getAllByCustomerEmail(customerEmail, pageable);
+      @PageableDefault(sort = "id", direction = Sort.Direction.DESC)
+      final Pageable pageable,
+      final Authentication authentication) {
+      final String principal = extractorService.extract(authentication);
+      final PageDto<SubscriptionResponse> page = subscriptionGetAllByCustomerEmail.getAllByCustomerEmail(principal, pageable);
       final Page<SubscriptionResponse> responsePage = new PageImpl<>(page.content(), pageable, page.totalElements());
       return ResponseEntity.ok(responsePage);
    }
