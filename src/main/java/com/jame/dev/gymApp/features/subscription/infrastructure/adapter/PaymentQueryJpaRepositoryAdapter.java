@@ -5,6 +5,8 @@ import com.jame.dev.gymApp.features.subscription.domain.model.PaymentStatus;
 import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentQueryRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -16,7 +18,12 @@ import java.util.Optional;
 public class PaymentQueryJpaRepositoryAdapter implements PaymentQueryRepository {
     private final PaymentRepository paymentRepository;
 
-    @Override
+   @Override
+   public Page<PaymentEntity> findPaymentPage(Long customerId, Pageable pageable) {
+      return paymentRepository.findAll(customerId, pageable);
+   }
+
+   @Override
     public Optional<PaymentEntity> findById(long id) {
         return paymentRepository.findById(id);
     }

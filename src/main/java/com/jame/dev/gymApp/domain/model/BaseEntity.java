@@ -50,4 +50,8 @@ public abstract class BaseEntity {
       return getClass().hashCode();
    }
 
+   @PrePersist
+   public void setCreatedAt() {
+      this.createdAt = Instant.now();
+   }
 }

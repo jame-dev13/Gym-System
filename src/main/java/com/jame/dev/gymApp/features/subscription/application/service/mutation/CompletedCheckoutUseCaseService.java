@@ -32,7 +32,8 @@ public class CompletedCheckoutUseCaseService implements CompletedCheckoutUseCase
    @Caching(
       evict = {
          @CacheEvict(value = CacheValues.SUBSCRIPTIONS, allEntries = true),
-         @CacheEvict(value = CacheValues.SUBSCRIPTION, allEntries = true)
+         @CacheEvict(value = CacheValues.SUBSCRIPTION, allEntries = true),
+         @CacheEvict(value = CacheValues.PAYMENTS, allEntries = true)
       }
    )
    public void execute(CompletedCheckoutEvent event) {
