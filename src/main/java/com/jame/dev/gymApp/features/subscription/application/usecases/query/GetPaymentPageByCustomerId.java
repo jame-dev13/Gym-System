@@ -5,5 +5,5 @@ import com.jame.dev.gymApp.features.subscription.api.response.PaymentResponse;
 import org.springframework.data.domain.Pageable;
 
 public interface GetPaymentPageByCustomerId {
-   PageDto<PaymentResponse> getPageByCustomerId(final Long customerId, final Pageable pageable);
+   PageDto<PaymentResponse> getPageByCustomerId(final Long customerId, final String search, final Pageable pageable);
 }

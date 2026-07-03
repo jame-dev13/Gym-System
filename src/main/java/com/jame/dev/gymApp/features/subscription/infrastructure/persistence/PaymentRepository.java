@@ -25,11 +25,27 @@ public interface PaymentRepository extends CustomJpaRepository<PaymentEntity, Lo
    @NativeQuery(value = """
       SELECT p.*
       FROM payments p
-      WHERE p.customer_id = :customerId
+      WHERE p.customer_id = :customerId AND
+      (
+        :search IS NULL OR TRIM(:search) = '' OR
+        CAST(p.amount AS TEXT) ILIKE CONCAT('%', :search, '%') OR
+        CAST(p.payment_method AS TEXT) ILIKE CONCAT('%', :search , '%') OR
+        CAST(p.status AS TEXT) ILIKE CONCAT('%', :search , '%')
+      )
       """,
       countQuery = """
-         SELECT COUNT(*) FROM payments p
-         WHERE p.customer_id = :customerId
+               SELECT COUNT(*) FROM payments p
+               WHERE p.customer_id = :customerId AND
+            (
+              :search IS NULL OR TRIM(:search) = '' OR
+              CAST(p.amount AS TEXT) ILIKE CONCAT('%', :search, '%') OR
+              CAST(p.payment_method AS TEXT) ILIKE CONCAT('%', :search , '%') OR
+              CAST(p.status AS TEXT) ILIKE CONCAT('%', :search , '%')
+            )
          """)
-   Page<PaymentEntity> findAll(@Param("customerId") final Long customerId, final Pageable pageable);
+   Page<PaymentEntity> findAll(
+      @Param("customerId") final Long customerId,
+      @Param("search") final String search,
+      final Pageable pageable
+   );
 }

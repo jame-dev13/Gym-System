@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.features.subscription.domain.model;
+package com.jame.dev.gymApp.features.subscription.infrastructure.sort.model;
 
 import lombok.Getter;
 

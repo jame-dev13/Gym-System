@@ -7,6 +7,7 @@ import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetP
 import com.jame.dev.gymApp.features.subscription.domain.model.PaymentEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentQueryRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.payment.mapper.PaymentMapper;
+import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class GetPaymentPageByCustomerIdUseCaseService implements GetPaymentPageByCustomerId {
    private final PaymentQueryRepository paymentQueryRepository;
    private final PaymentMapper paymentMapper;
+   private final SortPropertyResolver paymentSortResolver;
 
    @Override
    @Cacheable(
@@ -27,8 +29,9 @@ public class GetPaymentPageByCustomerIdUseCaseService implements GetPaymentPageB
       keyGenerator = "pageKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
-   public PageDto<PaymentResponse> getPageByCustomerId(Long customerId, Pageable pageable) {
-      final Page<PaymentEntity> entityPage = paymentQueryRepository.findPaymentPage(customerId, pageable);
+   public PageDto<PaymentResponse> getPageByCustomerId(Long customerId, String search, Pageable pageable) {
+      final Pageable pageableWrapped = paymentSortResolver.resolve(pageable);
+      final Page<PaymentEntity> entityPage = paymentQueryRepository.findPaymentPage(customerId, search, pageableWrapped);
       final var content = entityPage.getContent().stream()
          .map(paymentMapper::toResponse)
          .toList();
