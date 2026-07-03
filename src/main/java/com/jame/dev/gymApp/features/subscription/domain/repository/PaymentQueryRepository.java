@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface PaymentQueryRepository {
 
-   Page<PaymentEntity> findPaymentPage(final Long customerId, final Pageable pageable);
+   Page<PaymentEntity> findPaymentPage(final Long customerId, final String search, final Pageable pageable);
 
     Optional<PaymentEntity> findById(final long id);
 

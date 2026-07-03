@@ -12,10 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/app/v1/subscribers/payments")
@@ -29,12 +26,16 @@ public class PaymentUserController {
    @GetMapping("/{customerId}/customers")
    public ResponseEntity<Page<PaymentResponse>> getPaymentPageByCustomerId(
       @Minimum
-      @PathVariable("customerId") final long customerId,
+      @PathVariable("customerId")
+      final long customerId,
+      @RequestParam(name = "search", required = false)
+      final String search,
       @PageableDefault(
          sort = "id",
          direction = Sort.Direction.DESC
-      ) final Pageable pageable) {
-      final var pageDto = getPaymentPageByCustomerId.getPageByCustomerId(customerId, pageable);
+      )
+      final Pageable pageable) {
+      final var pageDto = getPaymentPageByCustomerId.getPageByCustomerId(customerId, search, pageable);
       final Page<PaymentResponse> page = new PageImpl<>(pageDto.content(), pageable, pageDto.totalElements());
       return ResponseEntity.ok(page);
    }

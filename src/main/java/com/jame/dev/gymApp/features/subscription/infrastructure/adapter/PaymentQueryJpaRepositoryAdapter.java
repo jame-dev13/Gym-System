@@ -19,8 +19,8 @@ public class PaymentQueryJpaRepositoryAdapter implements PaymentQueryRepository 
     private final PaymentRepository paymentRepository;
 
    @Override
-   public Page<PaymentEntity> findPaymentPage(Long customerId, Pageable pageable) {
-      return paymentRepository.findAll(customerId, pageable);
+   public Page<PaymentEntity> findPaymentPage(Long customerId, String search, Pageable pageable) {
+      return paymentRepository.findAll(customerId, search, pageable);
    }
 
    @Override

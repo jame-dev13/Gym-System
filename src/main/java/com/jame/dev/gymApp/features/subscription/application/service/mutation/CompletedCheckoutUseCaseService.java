@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 
 import com.jame.dev.gymApp.application.model.CacheValues;
 import com.jame.dev.gymApp.domain.exception.EntityNotFoundException;
+import com.jame.dev.gymApp.features.metrics.infrastructure.annotations.EvictPaymentMetrics;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CompletedCheckoutUseCase;
 import com.jame.dev.gymApp.features.subscription.domain.event.CompletedCheckoutEvent;
 import com.jame.dev.gymApp.features.subscription.domain.model.PaymentEntity;
@@ -36,6 +37,7 @@ public class CompletedCheckoutUseCaseService implements CompletedCheckoutUseCase
          @CacheEvict(value = CacheValues.PAYMENTS, allEntries = true)
       }
    )
+   @EvictPaymentMetrics
    public void execute(CompletedCheckoutEvent event) {
       final PaymentEntity paymentEntity = paymentQueryRepository.findByStripeSessionId(event.stripeSessionId())
          .orElseThrow(() -> new EntityNotFoundException("Payment not found"));

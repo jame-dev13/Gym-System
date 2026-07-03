@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 
 import com.jame.dev.gymApp.application.model.CacheValues;
+import com.jame.dev.gymApp.features.metrics.infrastructure.annotations.EvictPaymentMetrics;
 import com.jame.dev.gymApp.features.subscription.api.request.PaymentRequest;
 import com.jame.dev.gymApp.features.subscription.application.support.factory.PaymentFactory;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CreatePaymentUseCase;
@@ -25,6 +26,7 @@ public class CreatePaymentUseCaseService implements CreatePaymentUseCase {
    @Override
    @Transactional
    @CacheEvict(value = CacheValues.PAYMENTS, allEntries = true)
+   @EvictPaymentMetrics
    public void create(PaymentRequest paymentRequest) {
       final SubscriptionEntity subscriptionEntity = subscriptionQueryRepository.findById(paymentRequest.subscriptionId())
          .orElseThrow(() -> new SubscriptionNotFoundException("Subscription not found for id: " + paymentRequest.subscriptionId()));

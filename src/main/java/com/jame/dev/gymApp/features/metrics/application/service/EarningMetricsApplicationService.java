@@ -7,6 +7,7 @@ import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMembershipTypeD
 import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMonth;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class EarningMetricsApplicationService implements EarningMetricsService {
    private final EarningMetricsRepository repo;
 

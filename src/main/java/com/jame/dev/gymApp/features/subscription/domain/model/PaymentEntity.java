@@ -16,7 +16,8 @@ import java.math.BigDecimal;
 @Builder
 @Table(name = "payments", indexes = {
    @Index(name = "idx_payment_stripe_session_id", columnList = "stripe_session_id"),
-   @Index(name = "idx_payment_customer_id", columnList = "customer_id")
+   @Index(name = "idx_payment_customer_id", columnList = "customer_id"),
+   @Index(name= "idx_payment_created_at", columnList = "created_at")
 })
 @SQLDelete(sql = "UPDATE payments SET active = false, deleted_at = NOW() WHERE id = ?")
 public class PaymentEntity extends BaseEntity {

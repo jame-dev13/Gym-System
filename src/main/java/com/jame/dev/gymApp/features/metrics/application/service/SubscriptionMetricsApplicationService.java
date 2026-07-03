@@ -7,12 +7,14 @@ import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMonthDto;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SubscriptionMetricsApplicationService implements SubscriptionMetricsService {
    private final SubscriptionMetricsRepository repo;
 
