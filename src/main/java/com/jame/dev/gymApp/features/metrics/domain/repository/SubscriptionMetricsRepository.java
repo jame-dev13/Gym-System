@@ -1,50 +1,54 @@
 package com.jame.dev.gymApp.features.metrics.domain.repository;
 
-import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
+import com.jame.dev.gymApp.features.metrics.api.response.TotalSubscriptions;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMembership;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMonthDto;
 import com.jame.dev.gymApp.features.metrics.infrastructure.query.MetricsRepository;
-import org.springframework.data.jpa.repository.Query;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
+import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public interface SubscriptionMetricsRepository extends
-        MetricsRepository<SubscriptionEntity, Long> {
+   MetricsRepository<SubscriptionEntity, Long> {
 
-   long countDistinctByActiveTrueAndFinishedFalse();
+   @NativeQuery("SELECT DISTINCT COUNT(*) AS total FROM subscriptions WHERE paid = true")
+   TotalSubscriptions countAllSubscriptionDistinct();
 
-   @Query("""
-           SELECT COUNT(s) FROM SubscriptionEntity s
-           WHERE s.active = true
-           AND EXISTS (
-               SELECT 1 FROM s.subscriptionPeriods p
-               WHERE p.startPeriod < :now
-           )
-           """)
-   long countByStartDateBefore(@Param("now") LocalDate now);
+   @NativeQuery("""
+      SELECT
+         DISTINCT COUNT(s) as total
+      FROM subscriptions s
+      INNER JOIN subscription_periods sp ON sp.subscription_id = s.id
+      INNER JOIN periods p ON p.id = sp.period_id
+      WHERE s.paid = true AND p.start_period <= :now
+      """)
+   TotalSubscriptions countByStartDateBefore(@Param("now") LocalDate now);
 
-   @Query("""
-           SELECT new com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMonthDto(
-               CAST(FUNCTION('TO_CHAR', p.startPeriod, 'FMMonth') AS string) AS month,
-               COUNT(s) as total
-           )
-           FROM SubscriptionEntity s
-           JOIN s.subscriptionPeriods p
-           WHERE s.active = true AND s.finished = false
-           GROUP BY FUNCTION('TO_CHAR', p.startPeriod, 'FMMonth')
-           ORDER BY MIN(p.startPeriod)
-           """)
+   @NativeQuery("""
+      SELECT
+          CAST(TO_CHAR(p.start_period, 'FMMon') AS varchar(4)) AS month,
+          COUNT(s) AS total
+      FROM subscriptions s
+      LEFT JOIN subscription_periods sp ON sp.subscription_id = s.id
+      INNER JOIN periods p ON p.id = sp.period_id
+      WHERE s.paid = true
+      GROUP BY TO_CHAR(p.start_period, 'FMMon')
+      ORDER BY MIN(p.start_period)
+      """)
    List<SubsPerMonthDto> countSubsByMonth();
 
-   @Query("""
-           SELECT
-           m.membership, COUNT(s)
-           FROM SubscriptionEntity s
-           JOIN s.pricing.memberShipEntity m
-           GROUP BY m.membership
-           ORDER BY m.membership ASC
-           """)
+   @NativeQuery("""
+      SELECT
+        CAST(m.membership as varchar(15)) AS membership,
+        COUNT(s) AS subsCount
+      FROM subscriptions s
+      INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
+      INNER JOIN memberships m ON m.id = mp.membership_id
+      GROUP BY m.membership
+      ORDER BY m.membership DESC
+      """)
    List<SubsPerMembership> countSubsByMembership();
 }

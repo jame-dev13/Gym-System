@@ -6,7 +6,6 @@ import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.features.metrics.application.contract.EarningMetricsService;
 import com.jame.dev.gymApp.features.metrics.domain.model.MonthTotal;
 import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMembershipTypeDto;
-import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +79,7 @@ class EarningMetricsControllerTest {
    void getTotalPerMembershipType() throws Exception {
       final String URI = URI_TEMPLATE + "/memberships";
       when(service.getTotalPerMembershipType()).thenReturn(List.of(
-              new TotalPerMembershipTypeDto(Membership.MONTHLY, BigDecimal.valueOf(3_000d))
+              new TotalPerMembershipTypeDto("MONTHLY", BigDecimal.valueOf(3_000d))
       ));
 
       this.mockMvc.perform(get(URI)

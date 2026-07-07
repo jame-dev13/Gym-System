@@ -7,6 +7,8 @@ import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException
 import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerQueryRepository;
+import com.jame.dev.gymApp.features.metrics.infrastructure.annotations.EvictEarningMetrics;
+import com.jame.dev.gymApp.features.metrics.infrastructure.annotations.EvictSubscriptionMetrics;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
@@ -39,6 +41,8 @@ public class CreateSubscriptionUseCaseService implements CreateSubscriptionUseCa
     @Override
     @Transactional
     @CacheEvict(value = SUBSCRIPTIONS, allEntries = true)
+    @EvictEarningMetrics
+    @EvictSubscriptionMetrics
     @AuditLog(
         action = AuditLogAction.INSERT,
         entityType = AuditLogEntityType.SUBSCRIPTION,

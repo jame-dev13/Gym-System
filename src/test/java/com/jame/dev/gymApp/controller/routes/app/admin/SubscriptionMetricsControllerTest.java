@@ -6,7 +6,6 @@ import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.features.metrics.application.contract.SubscriptionMetricsService;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMembership;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMonthDto;
-import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +79,7 @@ class SubscriptionMetricsControllerTest {
    void getSubsPerMembership() throws Exception {
       final String URI = URI_TEMPLATE + "/memberships";
       when(service.getSubscriptionsPerMembership()).thenReturn(List.of(
-              new SubsPerMembership(Membership.MONTHLY, 2L)
+              new SubsPerMembership("MONTHLY", 2L)
       ));
 
       mockMvc.perform(get(URI)

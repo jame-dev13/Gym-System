@@ -5,7 +5,6 @@ import com.jame.dev.gymApp.features.metrics.domain.repository.SubscriptionMetric
 import com.jame.dev.gymApp.features.metrics.application.service.SubscriptionMetricsApplicationService;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMembership;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMonthDto;
-import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,7 +69,7 @@ public class SubscriptionMetricsServiceTest {
    @DisplayName("Should return a list of subs by Memberships.")
    void subsByMemberships() {
       when(repo.countSubsByMembership())
-              .thenReturn(List.of(new SubsPerMembership(Membership.MONTHLY, 2L)));
+              .thenReturn(List.of(new SubsPerMembership("MONTHLY", 2L)));
 
       final List<SubsPerMembership> membershipCountList = service.getSubscriptionsPerMembership();
 
