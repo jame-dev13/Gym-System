@@ -3,6 +3,8 @@ package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
+import com.jame.dev.gymApp.features.metrics.infrastructure.annotations.EvictEarningMetrics;
+import com.jame.dev.gymApp.features.metrics.infrastructure.annotations.EvictSubscriptionMetrics;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
@@ -36,6 +38,8 @@ public class UpdateSubscriptionUseCaseService implements UpdateSubscriptionUseCa
    @Override
    @Transactional
    @CacheEvictSubscriptions
+   @EvictEarningMetrics
+   @EvictSubscriptionMetrics
    @AuditLog(
       action = AuditLogAction.UPDATE,
       entityType = AuditLogEntityType.SUBSCRIPTION,

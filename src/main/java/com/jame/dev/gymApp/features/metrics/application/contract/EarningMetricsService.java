@@ -1,16 +1,15 @@
 package com.jame.dev.gymApp.features.metrics.application.contract;
 
-import com.jame.dev.gymApp.features.metrics.domain.model.MonthTotal;
+import com.jame.dev.gymApp.features.metrics.api.response.TotalEarned;
+import com.jame.dev.gymApp.features.metrics.api.response.TotalPerMonthResponse;
 import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMembershipTypeDto;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 public interface EarningMetricsService {
-   BigDecimal getTotal();
+   TotalEarned getTotal();
 
-   Map<Integer, List<MonthTotal>> getTotalPerMonth();
+   List<TotalPerMonthResponse> getTotalPerMonth();
 
    List<TotalPerMembershipTypeDto> getTotalPerMembershipType();
 }

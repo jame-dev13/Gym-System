@@ -1,11 +1,14 @@
 package com.jame.dev.gymApp.features.metrics.application.service;
 
-import com.jame.dev.gymApp.features.metrics.domain.repository.SubscriptionMetricsRepository;
+import com.jame.dev.gymApp.features.metrics.api.response.TotalSubscriptions;
 import com.jame.dev.gymApp.features.metrics.application.contract.SubscriptionMetricsService;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMembership;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMonthDto;
+import com.jame.dev.gymApp.features.metrics.domain.repository.SubscriptionMetricsRepository;
+import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheSubsMetricsValues;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,27 +22,34 @@ public class SubscriptionMetricsApplicationService implements SubscriptionMetric
    private final SubscriptionMetricsRepository repo;
 
    @Override
-   public long getTotalSubscriptions() {
-      return repo.countDistinctByActiveTrueAndFinishedFalse();
+   @Cacheable(
+      value = CacheSubsMetricsValues.SUBSCRIPTION_TOTAL, unless = "#result == null"
+   )
+   public TotalSubscriptions getTotalSubscriptions() {
+      return repo.countAllSubscriptionDistinct();
    }
 
    @Override
-   public long getSubscriptionsBefore(@NonNull LocalDate date) {
+   @Cacheable(
+      value = CacheSubsMetricsValues.SUBSCRIPTION_TOTAL_BEFORE, unless = "#result == null"
+   )
+   public TotalSubscriptions getSubscriptionsBefore(@NonNull LocalDate date) {
       return repo.countByStartDateBefore(date);
    }
 
-
    @Override
+   @Cacheable(
+      value = CacheSubsMetricsValues.SUBSCRIPTION_TOTAL_PER_MONTH, unless = "#result == null || #result.isEmpty()"
+   )
    public List<SubsPerMonthDto> getSubscriptionsPerMonth() {
-      return returnList(repo.countSubsByMonth());
+      return repo.countSubsByMonth();
    }
 
    @Override
+   @Cacheable(
+      value = CacheSubsMetricsValues.SUBSCRIPTION_TOTAL_PER_MEMBERSHIP, unless = "#result == null || #result.isEmpty()"
+   )
    public List<SubsPerMembership> getSubscriptionsPerMembership() {
-       return returnList(repo.countSubsByMembership());
-   }
-
-   private <T> List<T> returnList(List<T> list) {
-      return (list.isEmpty()) ? List.of() : list;
+      return repo.countSubsByMembership();
    }
 }

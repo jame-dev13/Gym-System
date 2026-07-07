@@ -4,7 +4,6 @@ import com.jame.dev.gymApp.features.metrics.domain.repository.EarningMetricsRepo
 import com.jame.dev.gymApp.features.metrics.application.service.EarningMetricsApplicationService;
 import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMembershipTypeDto;
 import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMonth;
-import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,7 +61,7 @@ public class EarningMetricsServiceTest {
    @DisplayName("Should get total earned ")
    void getEarningsPerMembership(){
       when(repo.calculateTotalPerMembership()).thenReturn(
-              List.of(new TotalPerMembershipTypeDto(Membership.MONTHLY, BigDecimal.valueOf(9_000d)))
+              List.of(new TotalPerMembershipTypeDto("MONTHLY", BigDecimal.valueOf(9_000d)))
       );
 
       final List<TotalPerMembershipTypeDto> membershipTypeList = service.getTotalPerMembershipType();
