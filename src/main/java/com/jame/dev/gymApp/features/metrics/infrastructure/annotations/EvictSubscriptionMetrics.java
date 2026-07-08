@@ -14,7 +14,9 @@ import java.lang.annotation.*;
    @CacheEvict(value = CacheSubsMetricsValues.SUBSCRIPTION_TOTAL, allEntries = true, cacheManager = "redisCacheManager"),
    @CacheEvict(value = CacheSubsMetricsValues.SUBSCRIPTION_TOTAL_BEFORE, allEntries = true, cacheManager = "redisCacheManager"),
    @CacheEvict(value = CacheSubsMetricsValues.SUBSCRIPTION_TOTAL_PER_MEMBERSHIP, allEntries = true, cacheManager = "redisCacheManager"),
-   @CacheEvict(value = CacheSubsMetricsValues.SUBSCRIPTION_TOTAL_PER_MONTH, allEntries = true, cacheManager = "redisCacheManager")
+   @CacheEvict(value = CacheSubsMetricsValues.SUBSCRIPTION_TOTAL_PER_MONTH, allEntries = true, cacheManager = "redisCacheManager"),
+   @CacheEvict(value = CacheSubsMetricsValues.SUBSCRIPTION_RANKING, allEntries = true, cacheManager = "redisCacheManager"),
+   @CacheEvict(value = CacheSubsMetricsValues.SUBSCRIPTION_PERIOD_RANKING, allEntries = true, cacheManager = "redisCacheManager"),
 })
 public @interface EvictSubscriptionMetrics {
 }

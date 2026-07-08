@@ -14,7 +14,8 @@ import java.lang.annotation.*;
 @Caching(evict = {
    @CacheEvict(value = CacheEarningMetricValues.EARNING_TOTAL, allEntries = true, cacheManager = "redisCacheManager"),
    @CacheEvict(value = CacheEarningMetricValues.EARNING_PER_MONTH, allEntries = true, cacheManager = "redisCacheManager"),
-   @CacheEvict(value = CacheEarningMetricValues.EARNING_MEMBERSHIP_TYPE, allEntries = true, cacheManager = "redisCacheManager")
+   @CacheEvict(value = CacheEarningMetricValues.EARNING_MEMBERSHIP_TYPE, allEntries = true, cacheManager = "redisCacheManager"),
+   @CacheEvict(value = CacheEarningMetricValues.EARNING_PERIODICAL, allEntries = true, cacheManager = "redisCacheManager"),
 })
 public @interface EvictEarningMetrics {
 }

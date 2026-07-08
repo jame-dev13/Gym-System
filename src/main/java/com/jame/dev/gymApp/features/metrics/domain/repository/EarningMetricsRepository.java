@@ -3,6 +3,7 @@ package com.jame.dev.gymApp.features.metrics.domain.repository;
 import com.jame.dev.gymApp.features.metrics.api.response.TotalEarned;
 import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMembershipTypeDto;
 import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMonth;
+import com.jame.dev.gymApp.features.metrics.domain.model.YearPeriodicalEarning;
 import com.jame.dev.gymApp.features.metrics.infrastructure.query.MetricsRepository;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import org.springframework.data.jpa.repository.NativeQuery;
@@ -13,7 +14,7 @@ public interface EarningMetricsRepository extends MetricsRepository<Subscription
 
    @NativeQuery("""
            SELECT
-             COALESCE(SUM(mp.price), 0) as total
+              DISTINCT COALESCE(SUM(mp.price), 0) as total
            FROM subscriptions s
            INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
            WHERE s.paid = true
@@ -52,4 +53,23 @@ public interface EarningMetricsRepository extends MetricsRepository<Subscription
            ORDER BY m.membership DESC
            """)
    List<TotalPerMembershipTypeDto> calculateTotalPerMembership();
+
+   @NativeQuery("""
+      SELECT
+        CAST(EXTRACT(YEAR FROM p.start_period) AS INTEGER) AS year,
+        CAST(
+           UPPER(
+             CONCAT(TO_CHAR(p.start_period, 'FMMon'), ' - ', TO_CHAR(p.end_period, 'FMMon'))) AS varchar(12)
+           ) AS period,
+        CAST(p.period AS varchar(12)) AS membership,
+        COALESCE(SUM(mp.price), 0) AS totalEarned,
+        RANK() OVER (ORDER BY COALESCE(SUM(mp.price), 0) DESC, EXTRACT(YEAR FROM p.start_period) DESC) AS rank
+      FROM subscriptions s
+      INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
+      INNER JOIN subscription_periods sp ON sp.subscription_id = s.id
+      INNER JOIN periods p ON p.id = sp.period_id
+      WHERE s.paid = true
+      GROUP BY p.start_period, p.end_period, p.period
+      """)
+   List<YearPeriodicalEarning> calculatePeriodicalEarnings();
 }

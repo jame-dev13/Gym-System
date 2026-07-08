@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.metrics.api;
 
+import com.jame.dev.gymApp.features.metrics.api.response.PeriodicalEarningByYearResponse;
 import com.jame.dev.gymApp.features.metrics.api.response.TotalEarned;
 import com.jame.dev.gymApp.features.metrics.api.response.TotalPerMonthResponse;
 import com.jame.dev.gymApp.features.metrics.application.contract.EarningMetricsService;
@@ -31,5 +32,10 @@ public class EarningMetricsController {
    @GetMapping("/memberships")
    public ResponseEntity<List<TotalPerMembershipTypeDto>> getTotalPerMembershipType() {
       return ResponseEntity.ok(service.getTotalPerMembershipType());
+   }
+
+   @GetMapping("/rankings/periods")
+   public ResponseEntity<List<PeriodicalEarningByYearResponse>> getPeriodicalEarningsByYearRanking() {
+      return ResponseEntity.ok(service.getPeriodicalEarnings());
    }
 }

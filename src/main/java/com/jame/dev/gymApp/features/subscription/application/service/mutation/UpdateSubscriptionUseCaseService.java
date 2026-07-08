@@ -55,13 +55,12 @@ public class UpdateSubscriptionUseCaseService implements UpdateSubscriptionUseCa
          .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
 
       subscriptionUpdater.apply(subscriptionEntity, pricingEntity);
-      final SubscriptionEntity subscriptionModified = subscriptionMutationRepository.save(subscriptionEntity);
 
-      Optional.ofNullable(subscriptionModified.getPayments())
+      Optional.ofNullable(subscriptionEntity.getPayments())
          .filter(Predicate.not(List::isEmpty))
          .map(List::getLast)
          .ifPresent(s -> s.setAmount(pricingEntity.getPrice()));
 
-      return subscriptionFactory.createFromEntity(subscriptionModified);
+      return subscriptionFactory.createFromEntity(subscriptionMutationRepository.save(subscriptionEntity));
    }
 }
