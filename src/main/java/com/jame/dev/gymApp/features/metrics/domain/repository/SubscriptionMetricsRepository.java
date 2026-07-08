@@ -1,5 +1,7 @@
 package com.jame.dev.gymApp.features.metrics.domain.repository;
 
+import com.jame.dev.gymApp.features.metrics.api.response.MembershipRanking;
+import com.jame.dev.gymApp.features.metrics.domain.model.PeriodSubscribersRanking;
 import com.jame.dev.gymApp.features.metrics.api.response.TotalSubscriptions;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMembership;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMonthDto;
@@ -14,8 +16,44 @@ import java.util.List;
 public interface SubscriptionMetricsRepository extends
    MetricsRepository<SubscriptionEntity, Long> {
 
-   @NativeQuery("SELECT DISTINCT COUNT(*) AS total FROM subscriptions WHERE paid = true")
+   @NativeQuery("SELECT DISTINCT COUNT(s) AS total FROM subscriptions s WHERE paid = true")
    TotalSubscriptions countAllSubscriptionDistinct();
+
+   @NativeQuery(
+      """
+      SELECT
+          m.membership AS membership,
+          COUNT(m.membership) AS subsCount,
+          RANK() OVER (ORDER BY COUNT(*) DESC, COALESCE(SUM(mp.price), 0) DESC) AS rank
+      FROM subscriptions s
+      INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
+      INNER JOIN memberships m ON m.id = mp.membership_id
+      WHERE s.paid = true
+      GROUP BY m.membership
+      """)
+   List<MembershipRanking> calculateMembershipRanking();
+
+   @NativeQuery("""
+      SELECT
+         CAST(EXTRACT(YEAR FROM p.start_period) AS INTEGER) AS year,
+         CAST(UPPER(CONCAT(
+            TO_CHAR(
+               p.start_period, 'FMMon'),
+               ' - ',
+               TO_CHAR(p.end_period, 'FMMon')
+               )) AS VARCHAR(10)) AS period,
+         CAST(p.period AS varchar(10)) AS subscriptionType,
+         COUNT(s) AS subscriptionCount,
+         RANK() OVER (ORDER BY COUNT(s) DESC, COALESCE(SUM(mp.price), 0) DESC, EXTRACT(YEAR FROM p.start_period) DESC) AS rank
+      FROM subscriptions s
+      INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
+      INNER JOIN memberships m ON m.id = mp.membership_id
+      INNER JOIN subscription_periods sp ON sp.subscription_id = s.id
+      INNER JOIN periods p ON p.id = sp.period_id
+      WHERE s.paid = true
+      GROUP BY p.start_period, p.end_period, p.period
+      """)
+   List<PeriodSubscribersRanking> calculatePeriodWithMostSubscribers();
 
    @NativeQuery("""
       SELECT
