@@ -5,9 +5,10 @@ import com.jame.dev.gymApp.features.auth.application.contract.verification.Verif
 import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.customer.infrastructure.persistence.CustomerRepository;
-import com.jame.dev.gymApp.features.subscription.application.contract.MembershipService;
-import com.jame.dev.gymApp.features.subscription.application.contract.PricingService;
 import com.jame.dev.gymApp.features.subscription.domain.model.*;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PaymentRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.SubscriptionRepository;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.features.user.application.contract.UserFactory;
@@ -51,7 +52,6 @@ public class InitConfig {
    private String passwordUser;
 
    private final Random random = new Random();
-   private final List<String> ORDER = List.of("biweekly", "monthly", "quarterly", "annual");
    private final Map<String, BigDecimal> prices = Map.ofEntries(
       Map.entry("biweekly", BigDecimal.valueOf(150.00d)),
       Map.entry("monthly", BigDecimal.valueOf(300.00d)),
@@ -73,11 +73,12 @@ public class InitConfig {
 
    @Bean
    @Priority(1)
-   public CommandLineRunner runnerInitUsersAndCustomers(final UserRepository userRepository,
-                                                        final UserFactory userFactory,
-                                                        final CustomerRepository customerRepository,
-                                                        final TokenGeneratorService tokenService,
-                                                        final VerificationService verificationService) {
+   public CommandLineRunner runnerInitUsersAndCustomers(
+      final UserRepository userRepository,
+      final UserFactory userFactory,
+      final CustomerRepository customerRepository,
+      final TokenGeneratorService tokenService,
+      final VerificationService verificationService) {
       return args -> {
          final var admin = UserRequest.builder()
             .name("admin")
@@ -108,23 +109,18 @@ public class InitConfig {
 
    @Bean
    @Priority(2)
-   public CommandLineRunner runnerMembershipsAndPrices(final MembershipService membershipService, final PricingService pricingService) {
+   public CommandLineRunner runnerMembershipsAndPrices(
+      final MembershipRepository membershipRepository,
+      final PricingRepository pricingRepository) {
       return args -> {
 
-         final Map<String, MemberShipEntity> memberships = new LinkedHashMap<>();
-         ORDER.forEach(name -> {
-            final Membership type = Membership.valueOf(name.toUpperCase());
-            final MemberShipEntity entity = membershipService.save(new MemberShipEntity(null, type));
-            memberships.put(name, entity);
+         prices.forEach((membership, price) -> {
+            final Membership type = Membership.valueOf(membership.toUpperCase());
+            final MemberShipEntity memberShipEntity = membershipRepository.saveAndFlush(new MemberShipEntity(null, type));
+            final PricingEntity pricingEntity = pricingRepository.saveAndFlush(new PricingEntity(null, memberShipEntity, price));
+            pricingMap.putIfAbsent(type, pricingEntity);
          });
 
-         ORDER.forEach(name -> {
-            final MemberShipEntity membership = memberships.get(name);
-            final BigDecimal price = prices.get(name);
-
-            final var pricingEntity = pricingService.save(new PricingEntity(null, membership, price));
-            pricingMap.putIfAbsent(pricingEntity.getMemberShipEntity().getMembership(), pricingEntity);
-         });
          log.info("Runner MembershipAndPrices end execution.");
       };
    }
@@ -137,7 +133,8 @@ public class InitConfig {
       final TokenGeneratorService tokenGeneratorService,
       final VerificationService verificationService,
       final CustomerRepository customerRepository,
-      final SubscriptionRepository subscriptionRepository
+      final SubscriptionRepository subscriptionRepository,
+      final PaymentRepository paymentRepository
    ) {
       return args -> {
          log.info("Runner CreationOfUsersCustomersAndSubscriptions start execution.");
@@ -153,6 +150,8 @@ public class InitConfig {
                //Subscriptions
                final var subscription = createSubscription(customerEntity);
                subscriptionRepository.save(subscription);
+
+               paymentRepository.saveAndFlush(createPaymentEntity(subscription));
             });
          log.info("Runner CreationOfUsersCustomersAndSubscriptions end execution.");
       };
@@ -182,6 +181,20 @@ public class InitConfig {
          .subscriptionPeriods(List.of(new PeriodEntity(periods[randomIdx], LocalDate.now())))
          .finished(random.nextBoolean())
          .paid(true)
+         .build();
+   }
+
+   private PaymentEntity createPaymentEntity(final SubscriptionEntity subscriptionEntity) {
+      return PaymentEntity.builder()
+         .stripeSessionId(UUID.randomUUID().toString())
+         .stripePaymentIntentId(PaymentPhysicMeta.PAYMENT_INTEND_ID.getValue())
+         .stripeSubscriptionId(PaymentPhysicMeta.STRIPE_SUBSCRIPTION_ID.getValue())
+         .amount(subscriptionEntity.getPricing().getPrice())
+         .currency("mx")
+         .status(PaymentStatus.COMPLETED)
+         .paymentMethod(PaymentMethod.PHYSIC)
+         .subscription(subscriptionEntity)
+         .customer(subscriptionEntity.getCustomer())
          .build();
    }
 

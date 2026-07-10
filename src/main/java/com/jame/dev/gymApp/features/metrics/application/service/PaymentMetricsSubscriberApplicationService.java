@@ -2,7 +2,7 @@ package com.jame.dev.gymApp.features.metrics.application.service;
 
 import com.jame.dev.gymApp.features.metrics.api.response.AnnualResumeResponse;
 import com.jame.dev.gymApp.features.metrics.api.response.TotalInvestment;
-import com.jame.dev.gymApp.features.metrics.application.contract.PaymentMetricsService;
+import com.jame.dev.gymApp.features.metrics.application.contract.PaymentMetricsSubscriberService;
 import com.jame.dev.gymApp.features.metrics.domain.model.MonthTotal;
 import com.jame.dev.gymApp.features.metrics.domain.repository.PaymentMetricsRepository;
 import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CachePaymentMetricsValues;
@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PaymentMetricsSubscriberService implements PaymentMetricsService {
+public class PaymentMetricsSubscriberApplicationService implements PaymentMetricsSubscriberService {
    private final PaymentMetricsRepository paymentMetricsRepository;
 
    @Override
