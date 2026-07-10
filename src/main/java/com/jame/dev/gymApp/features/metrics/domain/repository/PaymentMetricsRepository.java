@@ -20,7 +20,6 @@ public interface PaymentMetricsRepository extends MetricsRepository<PaymentEntit
       """)
    TotalInvestment calculateTotalAmountExpended(@Param("customerId") long customerId);
 
-
    @NativeQuery("""
       SELECT
           COUNT(*) AS totalPaymentsMade,
@@ -38,6 +37,20 @@ public interface PaymentMetricsRepository extends MetricsRepository<PaymentEntit
 
    @NativeQuery("""
       SELECT
+          COUNT(*) AS totalPaymentsMade,
+          COALESCE(SUM(p.amount), 0) AS totalExpend,
+          COALESCE(ROUND(AVG(p.amount), 2), 0) AS avergare,
+          COUNT(*) FILTER ( WHERE p.payment_method = 'ELECTRONIC' ) as electronicPaymentsDone,
+          COUNT(*) FILTER ( WHERE p.payment_method = 'PHYSIC' ) as physicPaymentsDone
+      FROM payments p
+      WHERE
+          p.created_at >= DATE_TRUNC('year', CURRENT_DATE) AND
+          p.created_at < date_trunc('year', CURRENT_DATE) + INTERVAL '1 year'
+      """)
+   AnnualResumeResponse calculateAnnualResume();
+
+   @NativeQuery("""
+      SELECT
           TO_CHAR(MAKE_DATE(EXTRACT(YEAR FROM CURRENT_DATE)::int, m.month_number, 1), 'Mon') AS month,
           COALESCE(SUM(p.amount), 0) AS total
       FROM generate_series(1, 12) AS m(month_number)
@@ -51,4 +64,19 @@ public interface PaymentMetricsRepository extends MetricsRepository<PaymentEntit
       ORDER BY m.month_number
       """)
    List<MonthTotal> calculatePaymentEvolutionAlongMonths(@Param("customerId") long customerId);
+
+   @NativeQuery("""
+      SELECT
+          TO_CHAR(MAKE_DATE(EXTRACT(YEAR FROM CURRENT_DATE)::int, m.month_number, 1), 'Mon') AS month,
+          COALESCE(SUM(p.amount), 0) AS total
+      FROM generate_series(1, 12) AS m(month_number)
+      LEFT JOIN payments p
+          ON EXTRACT(MONTH FROM p.created_at) = m.month_number
+          AND p.amount > 0
+          AND p.created_at >= DATE_TRUNC('year', CURRENT_DATE)
+          AND p.created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '1 year'
+      GROUP BY m.month_number
+      ORDER BY m.month_number
+      """)
+   List<MonthTotal> calculatePaymentEvolutionAlongMonths();
 }

@@ -2,7 +2,7 @@ package com.jame.dev.gymApp.features.metrics.api;
 
 import com.jame.dev.gymApp.features.metrics.api.response.AnnualResumeResponse;
 import com.jame.dev.gymApp.features.metrics.api.response.TotalInvestment;
-import com.jame.dev.gymApp.features.metrics.application.contract.PaymentMetricsService;
+import com.jame.dev.gymApp.features.metrics.application.contract.PaymentMetricsSubscriberService;
 import com.jame.dev.gymApp.features.metrics.domain.model.MonthTotal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ import java.util.List;
 @PreAuthorize("hasRole('USER')")
 public class PaymentSubscriberMetricsController {
 
-   private final PaymentMetricsService paymentMetricsService;
+   private final PaymentMetricsSubscriberService paymentMetricsService;
 
    @PreAuthorize("@customerSecurity.isOwner(#customerId, authentication)")
    @GetMapping("/{customerId}/investments")

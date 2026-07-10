@@ -6,7 +6,7 @@ import com.jame.dev.gymApp.features.metrics.domain.model.MonthTotal;
 
 import java.util.List;
 
-public interface PaymentMetricsService {
+public interface PaymentMetricsSubscriberService {
 
    TotalInvestment getTotalExpend(final long customerId);
    AnnualResumeResponse getAnnualResume(final long customerId);
