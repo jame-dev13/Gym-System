@@ -29,8 +29,6 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
-import java.util.Collection;
-import java.util.Map;
 
 @Slf4j
 @Configuration
@@ -114,13 +112,13 @@ public class RedisConfig {
 
 
    private void registerMixIns(ObjectMapper mapper) {
-      ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+      final ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
       scanner.addIncludeFilter(new AssignableTypeFilter(Object.class));
 
       scanner.findCandidateComponents("com.jame.dev.gymApp").forEach(beanDefinition -> {
          try {
-            Class<?> clazz = Class.forName(beanDefinition.getBeanClassName());
-            if (clazz.isRecord() || clazz.isAssignableFrom(Map.class) || clazz.isAssignableFrom(Collection.class)) {
+            final Class<?> clazz = Class.forName(beanDefinition.getBeanClassName());
+            if (clazz.isRecord()) {
                mapper.addMixIn(clazz, DefaultMixInDto.class);
             }
          } catch (ClassNotFoundException e) {

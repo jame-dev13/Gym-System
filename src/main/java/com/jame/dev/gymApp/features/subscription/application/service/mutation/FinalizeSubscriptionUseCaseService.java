@@ -4,6 +4,7 @@ import com.jame.dev.gymApp.application.model.CacheValues;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
+import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.FinalizeSubscriptionUseCase;
@@ -38,8 +39,10 @@ public class FinalizeSubscriptionUseCaseService implements FinalizeSubscriptionU
    @CacheEvictSubscriptions
    @Caching(evict = {
       @CacheEvict(
-         value = CacheValues.PAYMENTS, allEntries = true,
-         cacheManager = "redisCacheManager"
+         value = CacheValues.PAYMENTS, allEntries = true, cacheManager = "redisCacheManager"
+      ),
+      @CacheEvict(
+         value = CacheEvolutionMetricsValues.DOWNING_SUBSCRIBERS, allEntries = true, cacheManager = "redisCacheManager"
       )
    })
    @AuditLog(
@@ -50,23 +53,19 @@ public class FinalizeSubscriptionUseCaseService implements FinalizeSubscriptionU
    )
    public SubscriptionResponse finalize(long id) {
       final Instant updatedAt = Instant.now();
-      log.info("[HIT]: finalize use case.");
       final SubscriptionEntity subscription = subscriptionQueryRepository.findById(id)
          .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
-      log.info("Subscription retrieved.");
+
       Optional.ofNullable(subscription.getPayments())
          .filter(Predicate.not(List::isEmpty))
          .map(List::getLast)
          .ifPresent(p -> {
             p.setStatus(PaymentStatus.FINALIZED);
             p.setUpdatedAt(updatedAt);
-            //p.setActive(false);
-            log.info("check payment.");
          });
 
       subscription.setFinished(true);
       subscription.setUpdatedAt(updatedAt);
-      log.info("subscription updated.");
       return subscriptionFactory.createFromEntity(subscriptionMutationRepository.save(subscription));
    }
 }

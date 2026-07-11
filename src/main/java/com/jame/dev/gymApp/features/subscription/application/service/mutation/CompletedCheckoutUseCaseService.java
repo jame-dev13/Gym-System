@@ -3,6 +3,7 @@ package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 import com.jame.dev.gymApp.application.model.CacheValues;
 import com.jame.dev.gymApp.domain.exception.EntityNotFoundException;
 import com.jame.dev.gymApp.features.metrics.infrastructure.annotations.EvictPaymentMetrics;
+import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CompletedCheckoutUseCase;
 import com.jame.dev.gymApp.features.subscription.domain.event.CompletedCheckoutEvent;
 import com.jame.dev.gymApp.features.subscription.domain.model.PaymentEntity;
@@ -32,9 +33,11 @@ public class CompletedCheckoutUseCaseService implements CompletedCheckoutUseCase
    @Transactional
    @Caching(
       evict = {
-         @CacheEvict(value = CacheValues.SUBSCRIPTIONS, allEntries = true),
-         @CacheEvict(value = CacheValues.SUBSCRIPTION, allEntries = true),
-         @CacheEvict(value = CacheValues.PAYMENTS, allEntries = true)
+         @CacheEvict(value = CacheValues.SUBSCRIPTIONS, allEntries = true, cacheManager = "redisCacheManager"),
+         @CacheEvict(value = CacheValues.SUBSCRIPTION, allEntries = true, cacheManager = "redisCacheManager"),
+         @CacheEvict(value = CacheValues.PAYMENTS, allEntries = true, cacheManager = "redisCacheManager"),
+         @CacheEvict(value = CacheEvolutionMetricsValues.JOINING_SUBSCRIBERS, allEntries = true, cacheManager = "redisCacheManager"),
+         @CacheEvict(value = CacheEvolutionMetricsValues.BILLINGS, allEntries = true, cacheManager = "redisCacheManager")
       }
    )
    @EvictPaymentMetrics
