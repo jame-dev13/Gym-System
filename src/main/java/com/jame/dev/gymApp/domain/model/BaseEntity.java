@@ -54,4 +54,9 @@ public abstract class BaseEntity {
    public void setCreatedAt() {
       this.createdAt = Instant.now();
    }
+
+   @PreRemove
+   public void setDeletedAt() {
+      this.deletedAt = Instant.now();
+   }
 }

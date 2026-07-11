@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.customer.infrastructure.annotations;
 
+import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 
@@ -24,6 +25,11 @@ import static com.jame.dev.gymApp.application.model.CacheValues.*;
    @CacheEvict(
       value = CUSTOMER,
       key = "#id",
+      cacheManager = "redisCacheManager"
+   ),
+   @CacheEvict(
+      value = CacheEvolutionMetricsValues.DOWNING_CUSTOMERS,
+      allEntries = true,
       cacheManager = "redisCacheManager"
    )
 })

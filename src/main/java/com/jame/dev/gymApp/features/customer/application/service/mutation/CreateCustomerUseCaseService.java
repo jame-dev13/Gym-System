@@ -11,9 +11,11 @@ import com.jame.dev.gymApp.features.customer.application.support.validator.Custo
 import com.jame.dev.gymApp.features.customer.application.usecases.mutation.CreateCustomerUseCase;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerMutationRepository;
+import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,25 +24,30 @@ import static com.jame.dev.gymApp.application.model.CacheValues.CUSTOMERS;
 @Service
 @RequiredArgsConstructor
 public class CreateCustomerUseCaseService implements CreateCustomerUseCase {
-    private final CustomerMutationRepository customerMutationRepository;
-    private final CustomerValidator customerValidator;
-    private final CustomerFactory customerFactory;
+   private final CustomerMutationRepository customerMutationRepository;
+   private final CustomerValidator customerValidator;
+   private final CustomerFactory customerFactory;
 
-    @Override
-    @Transactional
-    @CacheEvict(value = CUSTOMERS, allEntries = true)
-    @AuditLog(
-        action = AuditLogAction.INSERT,
-        entityType = AuditLogEntityType.CUSTOMER,
-        entityId = "#result.id",
-        input = "#request",
-        result = "#result"
-    )
-    public CustomerResponse create(CustomerRequest request) {
-        final UserEntity user = customerValidator.validateUserBeforeCreation(request);
-        final CustomerEntity customerEntity = customerFactory
-            .createFromInput(new CustomerFactoryDtoInput(user, request));
-        final CustomerEntity customerSaved = customerMutationRepository.save(customerEntity);
-        return customerFactory.createFromEntity(customerSaved);
-    }
+   @Override
+   @Transactional
+   @Caching(
+      evict = {
+         @CacheEvict(value = CUSTOMERS, allEntries = true, cacheManager = "redisCacheManager"),
+         @CacheEvict(value = CacheEvolutionMetricsValues.JOINING_CUSTOMERS, allEntries = true, cacheManager = "redisCacheManager")
+      }
+   )
+   @AuditLog(
+      action = AuditLogAction.INSERT,
+      entityType = AuditLogEntityType.CUSTOMER,
+      entityId = "#result.id",
+      input = "#request",
+      result = "#result"
+   )
+   public CustomerResponse create(CustomerRequest request) {
+      final UserEntity user = customerValidator.validateUserBeforeCreation(request);
+      final CustomerEntity customerEntity = customerFactory
+         .createFromInput(new CustomerFactoryDtoInput(user, request));
+      final CustomerEntity customerSaved = customerMutationRepository.save(customerEntity);
+      return customerFactory.createFromEntity(customerSaved);
+   }
 }
