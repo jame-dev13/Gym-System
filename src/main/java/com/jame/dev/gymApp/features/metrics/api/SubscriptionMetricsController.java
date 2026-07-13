@@ -1,11 +1,11 @@
 package com.jame.dev.gymApp.features.metrics.api;
 
-import com.jame.dev.gymApp.features.metrics.api.response.MembershipRanking;
-import com.jame.dev.gymApp.features.metrics.api.response.PeriodRankingPerYear;
+import com.jame.dev.gymApp.features.metrics.api.response.MembershipRankingsResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.PeriodRankingsResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.SubscriptionsPerMembershipResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.SubscriptionsPerMonthResponse;
 import com.jame.dev.gymApp.features.metrics.api.response.TotalSubscriptions;
 import com.jame.dev.gymApp.features.metrics.application.contract.SubscriptionMetricsService;
-import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMembership;
-import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMonthDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("/app/v1/administration/metrics/subs")
@@ -29,12 +28,12 @@ public class SubscriptionMetricsController {
    }
 
    @GetMapping("/rankings/memberships")
-   public ResponseEntity<List<MembershipRanking>> getMembershipRankings() {
+   public ResponseEntity<MembershipRankingsResponse> getMembershipRankings() {
       return ResponseEntity.ok(service.getMembershipRanking());
    }
 
    @GetMapping("/rankings/periods")
-   public ResponseEntity<List<PeriodRankingPerYear>> getPeriodRankings() {
+   public ResponseEntity<PeriodRankingsResponse> getPeriodRankings() {
       return ResponseEntity.ok(service.getPeriodRanking());
    }
 
@@ -44,12 +43,12 @@ public class SubscriptionMetricsController {
    }
 
    @GetMapping("/memberships")
-   public ResponseEntity<List<SubsPerMembership>> getSubsPerMembership() {
+   public ResponseEntity<SubscriptionsPerMembershipResponse> getSubsPerMembership() {
       return ResponseEntity.ok(service.getSubscriptionsPerMembership());
    }
 
    @GetMapping("/months")
-   public ResponseEntity<List<SubsPerMonthDto>> getSubsPerMonth() {
+   public ResponseEntity<SubscriptionsPerMonthResponse> getSubsPerMonth() {
       return ResponseEntity.ok(service.getSubscriptionsPerMonth());
    }
 }

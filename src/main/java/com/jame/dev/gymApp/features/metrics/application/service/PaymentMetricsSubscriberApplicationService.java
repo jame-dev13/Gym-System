@@ -1,17 +1,15 @@
 package com.jame.dev.gymApp.features.metrics.application.service;
 
 import com.jame.dev.gymApp.features.metrics.api.response.AnnualResumeResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.InvestmentMonthEvolutionResponse;
 import com.jame.dev.gymApp.features.metrics.api.response.TotalInvestment;
 import com.jame.dev.gymApp.features.metrics.application.contract.PaymentMetricsSubscriberService;
-import com.jame.dev.gymApp.features.metrics.domain.model.MonthTotal;
 import com.jame.dev.gymApp.features.metrics.domain.repository.PaymentMetricsRepository;
 import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CachePaymentMetricsValues;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 
 @Service
@@ -43,10 +41,10 @@ public class PaymentMetricsSubscriberApplicationService implements PaymentMetric
    @Override
    @Cacheable(
       value = CachePaymentMetricsValues.EVOLUTION,
-      unless = "#result == null || #result.isEmpty()",
+      unless = "#result == null || #result.content.isEmpty()",
       key = "#customerId"
    )
-   public List<MonthTotal> getInvestmentMonthEvolution(long customerId) {
-      return paymentMetricsRepository.calculatePaymentEvolutionAlongMonths(customerId);
+   public InvestmentMonthEvolutionResponse getInvestmentMonthEvolution(long customerId) {
+      return new InvestmentMonthEvolutionResponse(paymentMetricsRepository.calculatePaymentEvolutionAlongMonths(customerId));
    }
 }

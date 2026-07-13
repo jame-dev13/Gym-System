@@ -4,6 +4,9 @@ import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthoriza
 import com.jame.dev.gymApp.features.metrics.api.SubscriptionMetricsController;
 import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.features.metrics.application.contract.SubscriptionMetricsService;
+import com.jame.dev.gymApp.features.metrics.api.response.SubscriptionsPerMembershipResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.SubscriptionsPerMonthResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.TotalSubscriptions;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMembership;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMonthDto;
 import org.junit.jupiter.api.DisplayName;
@@ -46,7 +49,7 @@ class SubscriptionMetricsControllerTest {
    @DisplayName("Should return the total subscriptions active and unfinished.")
    void getTotalSubscriptions() throws Exception {
       final String URI = URI_TEMPLATE + "/totals";
-      when(service.getTotalSubscriptions()).thenReturn(10L);
+      when(service.getTotalSubscriptions()).thenReturn(new TotalSubscriptions(10L));
 
       mockMvc.perform(get(URI)
               .accept(MediaType.APPLICATION_JSON))
@@ -62,7 +65,7 @@ class SubscriptionMetricsControllerTest {
    void getTotalBefore() throws Exception {
       final String URI = URI_TEMPLATE + '/' + LocalDate.now() + "/before";
       when(service.getSubscriptionsBefore(any(LocalDate.class)))
-              .thenReturn(2L);
+              .thenReturn(new TotalSubscriptions(2L));
 
       mockMvc.perform(get(URI)
               .param("date", LocalDate.now().toString())
@@ -78,14 +81,14 @@ class SubscriptionMetricsControllerTest {
    @DisplayName("Should return a list of subs grouped by memberships.")
    void getSubsPerMembership() throws Exception {
       final String URI = URI_TEMPLATE + "/memberships";
-      when(service.getSubscriptionsPerMembership()).thenReturn(List.of(
-              new SubsPerMembership("MONTHLY", 2L)
-      ));
+      when(service.getSubscriptionsPerMembership()).thenReturn(
+              new SubscriptionsPerMembershipResponse(List.of(new SubsPerMembership("MONTHLY", 2L)))
+      );
 
       mockMvc.perform(get(URI)
               .accept(MediaType.APPLICATION_JSON))
               .andExpect(status().isOk())
-              .andExpect(jsonPath("$.[0]").exists());
+              .andExpect(jsonPath("$.content[0]").exists());
       verify(service, atLeastOnce()).getSubscriptionsPerMembership();
       verifyNoMoreInteractions(service);
    }
@@ -94,14 +97,14 @@ class SubscriptionMetricsControllerTest {
    @DisplayName("Should return a list of subs grouped by months.")
    void getSubsPerMonth() throws Exception {
       final String URI = URI_TEMPLATE + "/months";
-      when(service.getSubscriptionsPerMonth()).thenReturn(List.of(
-              new SubsPerMonthDto("December", 10L)
-      ));
+      when(service.getSubscriptionsPerMonth()).thenReturn(
+              new SubscriptionsPerMonthResponse(List.of(new SubsPerMonthDto("December", 10L)))
+      );
 
       mockMvc.perform(get(URI)
               .accept(MediaType.APPLICATION_JSON))
               .andExpect(status().isOk())
-              .andExpect(jsonPath("$.[0]").exists());
+              .andExpect(jsonPath("$.content[0]").exists());
       verify(service, atLeastOnce()).getSubscriptionsPerMonth();
       verifyNoMoreInteractions(service);
    }

@@ -1,8 +1,6 @@
 package com.jame.dev.gymApp.features.metrics.application.service;
 
-import com.jame.dev.gymApp.features.metrics.api.response.PeriodicalEarningByYearResponse;
-import com.jame.dev.gymApp.features.metrics.api.response.TotalEarned;
-import com.jame.dev.gymApp.features.metrics.api.response.TotalPerMonthResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.*;
 import com.jame.dev.gymApp.features.metrics.application.contract.EarningMetricsService;
 import com.jame.dev.gymApp.features.metrics.domain.model.*;
 import com.jame.dev.gymApp.features.metrics.domain.repository.EarningMetricsRepository;
@@ -33,59 +31,61 @@ public class EarningMetricsApplicationService implements EarningMetricsService {
    @Override
    @Cacheable(
       value = CacheEarningMetricValues.EARNING_PER_MONTH,
-      unless = "#result == null || #result.isEmpty()"
+      unless = "#result == null || #result.content.isEmpty()"
    )
-   public List<TotalPerMonthResponse> getTotalPerMonth() {
-      final List<TotalPerMonth> totalPerMonthDtoList = repo.calculateTotalPerMonth();
-      return totalPerMonthDtoList.stream()
-         .collect(Collectors.groupingBy(
-            TotalPerMonth::year,
-            Collectors.mapping(
-               dto ->
-                  new MonthTotal(dto.month(), dto.total()),
-               Collectors.toUnmodifiableList()
-            )
-         ))
-         .entrySet()
-         .stream()
-         .map(entry -> new TotalPerMonthResponse(entry.getKey(), entry.getValue()))
-         .toList();
+   public EarningsByMonthResponse getTotalPerMonth() {
+      return new EarningsByMonthResponse(
+         repo.calculateTotalPerMonth().stream()
+            .collect(Collectors.groupingBy(
+               TotalPerMonth::year,
+               Collectors.mapping(
+                  dto -> new MonthTotal(dto.month(), dto.total()),
+                  Collectors.toUnmodifiableList()
+               )
+            ))
+            .entrySet()
+            .stream()
+            .map(entry -> new TotalPerMonthResponse(entry.getKey(), entry.getValue()))
+            .toList()
+      );
    }
 
    @Override
    @Cacheable(
       value = CacheEarningMetricValues.EARNING_MEMBERSHIP_TYPE,
-      unless = "#result == null || #result.isEmpty()"
+      unless = "#result == null || #result.content.isEmpty()"
    )
-   public List<TotalPerMembershipTypeDto> getTotalPerMembershipType() {
-      final List<TotalPerMembershipTypeDto> dtoList = repo.calculateTotalPerMembership();
-      return dtoList.isEmpty() ? List.of() : dtoList;
+   public EarningsByMembershipTypeResponse getTotalPerMembershipType() {
+      final var dtoList = repo.calculateTotalPerMembership();
+      return new EarningsByMembershipTypeResponse(dtoList.isEmpty() ? List.of() : dtoList);
    }
 
    @Override
    @Cacheable(
       value = CacheEarningMetricValues.EARNING_PERIODICAL,
-      unless = "#result == null || #result.isEmpty()"
+      unless = "#result == null || #result.content.isEmpty()"
    )
-   public List<PeriodicalEarningByYearResponse> getPeriodicalEarnings() {
-      return repo.calculatePeriodicalEarnings()
-         .stream()
-         .collect(
-            Collectors.groupingBy(
-               YearPeriodicalEarning::year,
-               Collectors.mapping(
-                  data -> PeriodicalEarning.builder()
-                     .totalEarned(data.totalEarned())
-                     .membership(data.membership())
-                     .period(data.period())
-                     .rank(data.rank())
-                     .build(),
-                  Collectors.toUnmodifiableList()
-               )
-            ))
-         .entrySet()
-         .stream()
-         .map(data -> new PeriodicalEarningByYearResponse(data.getKey(), data.getValue()))
-         .toList();
+   public PeriodicalEarningsResponse getPeriodicalEarnings() {
+      return new PeriodicalEarningsResponse(
+         repo.calculatePeriodicalEarnings()
+            .stream()
+            .collect(
+               Collectors.groupingBy(
+                  YearPeriodicalEarning::year,
+                  Collectors.mapping(
+                     data -> PeriodicalEarning.builder()
+                        .totalEarned(data.totalEarned())
+                        .membership(data.membership())
+                        .period(data.period())
+                        .rank(data.rank())
+                        .build(),
+                     Collectors.toUnmodifiableList()
+                  )
+               ))
+            .entrySet()
+            .stream()
+            .map(data -> new PeriodicalEarningByYearResponse(data.getKey(), data.getValue()))
+            .toList()
+      );
    }
 }
