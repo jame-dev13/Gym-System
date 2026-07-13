@@ -1,17 +1,15 @@
 package com.jame.dev.gymApp.features.metrics.api;
 
-import com.jame.dev.gymApp.features.metrics.api.response.PeriodicalEarningByYearResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.EarningsByMembershipTypeResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.EarningsByMonthResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.PeriodicalEarningsResponse;
 import com.jame.dev.gymApp.features.metrics.api.response.TotalEarned;
-import com.jame.dev.gymApp.features.metrics.api.response.TotalPerMonthResponse;
 import com.jame.dev.gymApp.features.metrics.application.contract.EarningMetricsService;
-import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMembershipTypeDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/app/v1/administration/metrics/earnings")
@@ -25,17 +23,17 @@ public class EarningMetricsController {
    }
 
    @GetMapping("/months")
-   public ResponseEntity<List<TotalPerMonthResponse>> getTotalPerMonth() {
+   public ResponseEntity<EarningsByMonthResponse> getTotalPerMonth() {
       return ResponseEntity.ok(service.getTotalPerMonth());
    }
 
    @GetMapping("/memberships")
-   public ResponseEntity<List<TotalPerMembershipTypeDto>> getTotalPerMembershipType() {
+   public ResponseEntity<EarningsByMembershipTypeResponse> getTotalPerMembershipType() {
       return ResponseEntity.ok(service.getTotalPerMembershipType());
    }
 
    @GetMapping("/rankings/periods")
-   public ResponseEntity<List<PeriodicalEarningByYearResponse>> getPeriodicalEarningsByYearRanking() {
+   public ResponseEntity<PeriodicalEarningsResponse> getPeriodicalEarningsByYearRanking() {
       return ResponseEntity.ok(service.getPeriodicalEarnings());
    }
 }

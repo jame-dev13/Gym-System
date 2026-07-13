@@ -1,9 +1,9 @@
 package com.jame.dev.gymApp.features.metrics.api;
 
 import com.jame.dev.gymApp.features.metrics.api.response.AnnualResumeResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.InvestmentMonthEvolutionResponse;
 import com.jame.dev.gymApp.features.metrics.api.response.TotalInvestment;
 import com.jame.dev.gymApp.features.metrics.application.contract.PaymentMetricsSubscriberService;
-import com.jame.dev.gymApp.features.metrics.domain.model.MonthTotal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RequestMapping("/app/v1/subscribers/metrics")
 @RestController
@@ -40,7 +38,7 @@ public class PaymentSubscriberMetricsController {
 
    @PreAuthorize("@customerSecurity.isOwner(#customerId, authentication)")
    @GetMapping("/{customerId}/evolution")
-   public ResponseEntity<List<MonthTotal>> getMonthInvestmentEvolution(
+   public ResponseEntity<InvestmentMonthEvolutionResponse> getMonthInvestmentEvolution(
       @PathVariable("customerId") long customerId
    ) {
       return ResponseEntity.ok(paymentMetricsService.getInvestmentMonthEvolution(customerId));

@@ -2,6 +2,9 @@ package com.jame.dev.gymApp.metrics.service;
 
 import com.jame.dev.gymApp.features.metrics.domain.repository.EarningMetricsRepository;
 import com.jame.dev.gymApp.features.metrics.application.service.EarningMetricsApplicationService;
+import com.jame.dev.gymApp.features.metrics.api.response.EarningsByMembershipTypeResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.EarningsByMonthResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.TotalEarned;
 import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMembershipTypeDto;
 import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMonth;
 import org.junit.jupiter.api.DisplayName;
@@ -31,15 +34,15 @@ public class EarningMetricsServiceTest {
    @DisplayName("Should get the total earned")
    void getAllEarnings(){
       when(repo.calculateTotalEarned())
-              .thenReturn(BigDecimal.valueOf(10_000d));
+              .thenReturn(new TotalEarned(BigDecimal.valueOf(10_000d)));
 
-      final BigDecimal total = service.getTotal();
+      final TotalEarned total = service.getTotal();
 
       verify(repo, atLeastOnce()).calculateTotalEarned();
       verifyNoMoreInteractions(repo);
 
       assertNotNull(total, "Total should not be null");
-      assertTrue(total.doubleValue() >= 0d, "Total should not be negative");
+      assertTrue(total.total().doubleValue() >= 0d, "Total should not be negative");
    }
 
    @Test
@@ -49,12 +52,12 @@ public class EarningMetricsServiceTest {
               List.of(new TotalPerMonth(2025, "December", BigDecimal.valueOf(2000d)))
       );
 
-      final var totalPerMonthList = service.getTotalPerMonth();
+      final EarningsByMonthResponse totalPerMonthResponse = service.getTotalPerMonth();
 
       verify(repo, atLeastOnce()).calculateTotalPerMonth();
       verifyNoMoreInteractions(repo);
 
-      assertNotNull(totalPerMonthList, "List should not be null.");
+      assertNotNull(totalPerMonthResponse, "Response should not be null.");
    }
 
    @Test
@@ -64,11 +67,11 @@ public class EarningMetricsServiceTest {
               List.of(new TotalPerMembershipTypeDto("MONTHLY", BigDecimal.valueOf(9_000d)))
       );
 
-      final List<TotalPerMembershipTypeDto> membershipTypeList = service.getTotalPerMembershipType();
+      final EarningsByMembershipTypeResponse membershipTypeResponse = service.getTotalPerMembershipType();
 
       verify(repo, atLeastOnce()).calculateTotalPerMembership();
       verifyNoMoreInteractions(repo);
 
-      assertNotNull(membershipTypeList, "List should not be null.");
+      assertNotNull(membershipTypeResponse, "Response should not be null.");
    }
 }

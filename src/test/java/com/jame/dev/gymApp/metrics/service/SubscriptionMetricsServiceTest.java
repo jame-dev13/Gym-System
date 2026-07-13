@@ -3,6 +3,9 @@ package com.jame.dev.gymApp.metrics.service;
 
 import com.jame.dev.gymApp.features.metrics.domain.repository.SubscriptionMetricsRepository;
 import com.jame.dev.gymApp.features.metrics.application.service.SubscriptionMetricsApplicationService;
+import com.jame.dev.gymApp.features.metrics.api.response.SubscriptionsPerMembershipResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.SubscriptionsPerMonthResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.TotalSubscriptions;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMembership;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMonthDto;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +21,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,14 +36,14 @@ public class SubscriptionMetricsServiceTest {
    @Test
    @DisplayName("Should return the count of all active and unfinished subscriptions")
    void allSubs() {
-      when(repo.countDistinctByActiveTrueAndFinishedFalse()).thenReturn(2L);
+      when(repo.countAllSubscriptionDistinct()).thenReturn(new TotalSubscriptions(2L));
 
-      final long count = service.getTotalSubscriptions();
+      final TotalSubscriptions result = service.getTotalSubscriptions();
 
-      verify(repo, times(1)).countDistinctByActiveTrueAndFinishedFalse();
+      verify(repo, times(1)).countAllSubscriptionDistinct();
       verifyNoMoreInteractions(repo);
 
-      assertTrue(count >= 0, "Should return 0 or any long value greater then 0.");
+      assertNotNull(result, "Result should not be null.");
    }
 
    @Captor
@@ -52,9 +54,9 @@ public class SubscriptionMetricsServiceTest {
    void subsBeforeDate() {
       final LocalDate date = LocalDate.of(2025, 12, 13);
       when(repo.countByStartDateBefore(any(LocalDate.class)))
-              .thenReturn(3L);
+              .thenReturn(new TotalSubscriptions(3L));
 
-      final long count = service.getSubscriptionsBefore(date);
+      final TotalSubscriptions result = service.getSubscriptionsBefore(date);
 
       verify(repo, times(1)).countByStartDateBefore(dateCaptor.capture());
       verifyNoMoreInteractions(repo);
@@ -62,7 +64,7 @@ public class SubscriptionMetricsServiceTest {
       final LocalDate dateValue = dateCaptor.getValue();
 
       assertNotNull(dateValue, "Date should not be null.");
-      assertTrue(count >= 0, "Should return 0 or any long value greater then 0.");
+      assertNotNull(result, "Result should not be null.");
    }
 
    @Test
@@ -71,12 +73,12 @@ public class SubscriptionMetricsServiceTest {
       when(repo.countSubsByMembership())
               .thenReturn(List.of(new SubsPerMembership("MONTHLY", 2L)));
 
-      final List<SubsPerMembership> membershipCountList = service.getSubscriptionsPerMembership();
+      final SubscriptionsPerMembershipResponse membershipCountList = service.getSubscriptionsPerMembership();
 
       verify(repo, times(1)).countSubsByMembership();
       verifyNoMoreInteractions(repo);
 
-      assertNotNull(membershipCountList, "List should not be null.");
+      assertNotNull(membershipCountList, "Response should not be null.");
    }
 
    @Test
@@ -85,11 +87,11 @@ public class SubscriptionMetricsServiceTest {
       when(repo.countSubsByMonth())
               .thenReturn(List.of(new SubsPerMonthDto("December", 2L)));
 
-      final List<SubsPerMonthDto> monthDtoList = service.getSubscriptionsPerMonth();
+      final SubscriptionsPerMonthResponse monthDtoList = service.getSubscriptionsPerMonth();
 
       verify(repo, times(1)).countSubsByMonth();
       verifyNoMoreInteractions(repo);
 
-      assertNotNull(monthDtoList, "List should not be null.");
+      assertNotNull(monthDtoList, "Response should not be null.");
    }
 }

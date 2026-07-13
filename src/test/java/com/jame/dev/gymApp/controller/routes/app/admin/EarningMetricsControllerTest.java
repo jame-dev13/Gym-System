@@ -4,6 +4,10 @@ import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthoriza
 import com.jame.dev.gymApp.features.metrics.api.EarningMetricsController;
 import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.features.metrics.application.contract.EarningMetricsService;
+import com.jame.dev.gymApp.features.metrics.api.response.EarningsByMembershipTypeResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.EarningsByMonthResponse;
+import com.jame.dev.gymApp.features.metrics.api.response.TotalEarned;
+import com.jame.dev.gymApp.features.metrics.api.response.TotalPerMonthResponse;
 import com.jame.dev.gymApp.features.metrics.domain.model.MonthTotal;
 import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMembershipTypeDto;
 import org.junit.jupiter.api.DisplayName;
@@ -19,7 +23,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -47,7 +50,7 @@ class EarningMetricsControllerTest {
    @DisplayName("Should return the total earned.")
    void getTotalEarnings() throws Exception {
       final String URI = URI_TEMPLATE + "/total";
-      when(service.getTotal()).thenReturn(BigDecimal.valueOf(10_000d));
+      when(service.getTotal()).thenReturn(new TotalEarned(BigDecimal.valueOf(10_000d)));
 
       mockMvc.perform(get(URI)
                       .accept(MediaType.APPLICATION_JSON))
@@ -62,14 +65,15 @@ class EarningMetricsControllerTest {
    @DisplayName("Should return the list of months and his total earned.")
    void getTotalPerMonth() throws Exception {
       final String URI = URI_TEMPLATE + "/months";
-      var returnData = Map.of(2026, List.of(
-              new MonthTotal( "December", BigDecimal.valueOf(3_000d))));
+      var returnData = new EarningsByMonthResponse(List.of(
+              new TotalPerMonthResponse(2026, List.of(
+                      new MonthTotal("December", BigDecimal.valueOf(3_000d))))));
       when(service.getTotalPerMonth()).thenReturn(returnData);
 
       this.mockMvc.perform(get(URI)
                       .accept(MediaType.APPLICATION_JSON))
               .andExpect(status().isOk())
-              .andExpect(jsonPath("$.*").exists());
+              .andExpect(jsonPath("$.content").isArray());
       verify(service, atLeastOnce()).getTotalPerMonth();
       verifyNoMoreInteractions(service);
    }
@@ -78,14 +82,16 @@ class EarningMetricsControllerTest {
    @DisplayName("Should return the list of memberships and his total earned")
    void getTotalPerMembershipType() throws Exception {
       final String URI = URI_TEMPLATE + "/memberships";
-      when(service.getTotalPerMembershipType()).thenReturn(List.of(
-              new TotalPerMembershipTypeDto("MONTHLY", BigDecimal.valueOf(3_000d))
-      ));
+      when(service.getTotalPerMembershipType()).thenReturn(
+              new EarningsByMembershipTypeResponse(List.of(
+                      new TotalPerMembershipTypeDto("MONTHLY", BigDecimal.valueOf(3_000d))
+              ))
+      );
 
       this.mockMvc.perform(get(URI)
                       .accept(MediaType.APPLICATION_JSON))
               .andExpect(status().isOk())
-              .andExpect(jsonPath("$.[0]").exists());
+              .andExpect(jsonPath("$.content[0]").exists());
       verify(service, atLeastOnce()).getTotalPerMembershipType();
       verifyNoMoreInteractions(service);
    }
