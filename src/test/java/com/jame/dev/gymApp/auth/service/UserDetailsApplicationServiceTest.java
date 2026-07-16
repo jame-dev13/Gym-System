@@ -1,12 +1,12 @@
 package com.jame.dev.gymApp.auth.service;
 
+import com.jame.dev.gymApp.domain.exception.NoActiveException;
 import com.jame.dev.gymApp.features.auth.application.service.UserDetailsApplicationService;
+import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
+import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;
 import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
-import com.jame.dev.gymApp.domain.exception.NoActiveException;
-import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;
-import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
-import com.jame.dev.gymApp.features.user.application.contract.UserService;
+import com.jame.dev.gymApp.features.user.domain.repository.UserQueryRepository;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.DisplayName;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 class UserDetailsApplicationServiceTest {
 
    @Mock
-   UserService userService;
+   UserQueryRepository userQueryRepository;
    @Mock
    RoleMapper roleMapper;
 
@@ -46,7 +46,7 @@ class UserDetailsApplicationServiceTest {
       UserEntity userEntity = mock(UserEntity.class);
       Collection<GrantedAuthority> authorities = Set.of(mock(GrantedAuthority.class));
 
-      given(userService.getUserByEmail(email)).willReturn(Optional.of(userEntity));
+      given(userQueryRepository.findByEmail(email)).willReturn(Optional.of(userEntity));
       given(userEntity.isActive()).willReturn(true);
       given(userEntity.getRoles()).willReturn(Set.of(new RoleEntity()));
       given(roleMapper.entityToGrantedAuthorities(any())).willReturn(authorities);
@@ -58,7 +58,7 @@ class UserDetailsApplicationServiceTest {
       assertNotNull(result);
       assertEquals(email, result.getUsername());
       assertTrue(result.isEnabled());
-      verify(userService).getUserByEmail(email);
+      verify(userQueryRepository).findByEmail(email);
       verify(roleMapper).entityToGrantedAuthorities(any());
    }
 
@@ -66,7 +66,7 @@ class UserDetailsApplicationServiceTest {
    @DisplayName("Should throw UserEntityNotFoundException when user does not exist")
    void loadUserByUsernameShouldThrowExceptionWhenUserNotFound() {
       String email = "nonexistent@test.com";
-      given(userService.getUserByEmail(email)).willReturn(Optional.empty());
+      given(userQueryRepository.findByEmail(email)).willReturn(Optional.empty());
 
       assertThrowsExactly(UserEntityNotFoundException.class, () -> service.loadUserByUsername(email));
 
@@ -79,7 +79,7 @@ class UserDetailsApplicationServiceTest {
       String email = "inactive@test.com";
       UserEntity userEntity = mock(UserEntity.class);
 
-      given(userService.getUserByEmail(email)).willReturn(Optional.of(userEntity));
+      given(userQueryRepository.findByEmail(email)).willReturn(Optional.of(userEntity));
       given(userEntity.isActive()).willReturn(false);
 
       assertThrowsExactly(NoActiveException.class, () -> service.loadUserByUsername(email));

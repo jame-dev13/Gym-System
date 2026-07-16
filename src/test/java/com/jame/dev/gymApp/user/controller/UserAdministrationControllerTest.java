@@ -7,6 +7,7 @@ import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException
 import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
 import com.jame.dev.gymApp.features.user.api.UserAdministrationController;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
+import com.jame.dev.gymApp.features.user.api.request.UserUpdateRequest;
 import com.jame.dev.gymApp.features.user.api.response.UserMinimalInfoResponse;
 import com.jame.dev.gymApp.features.user.api.response.UserResponse;
 import com.jame.dev.gymApp.features.user.application.usecases.mutation.*;
@@ -305,7 +306,7 @@ class UserAdministrationControllerTest {
          @Test
          @DisplayName("PUT[200] OK: Editing user")
          void putUser() throws Exception {
-            given(updateUserUseCase.update(anyLong(), any(UserRequest.class))).willReturn(userDto);
+            given(updateUserUseCase.update(anyLong(), any(UserUpdateRequest.class))).willReturn(userDto);
 
             mockMvc.perform(put(URI_TEMPLATE + "/1")
                   .accept(MediaType.APPLICATION_JSON)
@@ -314,13 +315,13 @@ class UserAdministrationControllerTest {
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.*").exists());
 
-            then(updateUserUseCase).should(times(1)).update(anyLong(), any(UserRequest.class));
+            then(updateUserUseCase).should(times(1)).update(anyLong(), any(UserUpdateRequest.class));
          }
 
          @Test
          @DisplayName("PUT[404] Not Found")
          void userNotFound() throws Exception {
-            given(updateUserUseCase.update(anyLong(), any(UserRequest.class)))
+            given(updateUserUseCase.update(anyLong(), any(UserUpdateRequest.class)))
                .willThrow(UserNotFoundException.class);
 
             mockMvc.perform(put(URI_TEMPLATE + "/1")
@@ -331,7 +332,7 @@ class UserAdministrationControllerTest {
                .andExpect(jsonPath("$.*").exists())
                .andExpect(jsonPath("$.status").value(404));
 
-            then(updateUserUseCase).should(times(1)).update(anyLong(), any(UserRequest.class));
+            then(updateUserUseCase).should(times(1)).update(anyLong(), any(UserUpdateRequest.class));
          }
 
          @ParameterizedTest

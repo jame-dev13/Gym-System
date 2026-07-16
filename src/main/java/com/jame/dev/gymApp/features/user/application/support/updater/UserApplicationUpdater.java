@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.features.user.application.support.updater;
 
 import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
+import com.jame.dev.gymApp.features.user.api.request.UserUpdateRequest;
 import com.jame.dev.gymApp.features.user.application.contract.UserUpdater;
 import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
@@ -28,5 +29,12 @@ public class UserApplicationUpdater implements UserUpdater {
       userEntity.setPassword(passwordFinal);
       userEntity.setProvider(AuthProvider.LOCAL != dto.authProvider() ? AuthProvider.LOCAL : dto.authProvider());
       userEntity.setRoles(roleMapper.toEntitySet(dto.roles(), roleRepository));
+   }
+
+   @Override
+   public void apply(UserEntity userEntity, UserUpdateRequest userUpdateRequest) {
+      userEntity.setName(userUpdateRequest.name());
+      userEntity.setEmail(userUpdateRequest.email());
+      userEntity.setRoles(roleMapper.toEntitySet(userUpdateRequest.roles(), roleRepository));
    }
 }

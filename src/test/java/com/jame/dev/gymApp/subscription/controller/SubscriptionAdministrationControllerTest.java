@@ -26,7 +26,6 @@ import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionUn
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import com.jame.dev.gymApp.features.subscription.domain.model.Period;
 import com.jame.dev.gymApp.features.subscription.infrastructure.notification.service.SubscriptionNotificationAppService;
-import com.jame.dev.gymApp.features.subscription.infrastructure.stripe.session.model.CheckoutCompletionMode;
 import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.presentation.exception.GlobalExceptionHandler;
 import config.TestConfig;

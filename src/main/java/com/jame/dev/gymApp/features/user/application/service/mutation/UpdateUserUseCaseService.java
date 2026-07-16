@@ -3,7 +3,7 @@ package com.jame.dev.gymApp.features.user.application.service.mutation;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
-import com.jame.dev.gymApp.features.user.api.request.UserRequest;
+import com.jame.dev.gymApp.features.user.api.request.UserUpdateRequest;
 import com.jame.dev.gymApp.features.user.api.response.UserResponse;
 import com.jame.dev.gymApp.features.user.application.contract.UserFactory;
 import com.jame.dev.gymApp.features.user.application.contract.UserUpdater;
@@ -35,9 +35,9 @@ public class UpdateUserUseCaseService implements UpdateUserUseCase {
       entityId = "#id",
       result = "#result"
    )
-   public UserResponse update(long id, UserRequest request) {
+   public UserResponse update(long id, UserUpdateRequest request) {
       final UserEntity userEntity = userQueryRepository.findById(id)
-         .orElseThrow(() -> new UserEntityNotFoundException("UserEntity with id: '%d' Not found ".formatted(id)));
+         .orElseThrow(() -> new UserEntityNotFoundException("User Not found for id: " + id));
       userUpdater.apply(userEntity, request);
       final UserEntity userUpdated = userMutationRepository.save(userEntity);
       return userFactory.createFromEntity(userUpdated);
