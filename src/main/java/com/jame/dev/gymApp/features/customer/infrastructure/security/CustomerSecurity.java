@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.customer.infrastructure.security;
 
-import com.jame.dev.gymApp.application.contract.IdentityExtractorService;
+import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerOwnershipService;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerValidationRepository;

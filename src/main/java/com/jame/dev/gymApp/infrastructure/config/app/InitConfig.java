@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.infrastructure.config.app;
 
-import com.jame.dev.gymApp.application.contract.TokenGeneratorService;
+import com.jame.dev.gymApp.infrastructure.security.token.TokenGeneratorService;
 import com.jame.dev.gymApp.features.auth.application.contract.verification.VerificationService;
 import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;

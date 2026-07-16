@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.auth.infrastructure.listeners;
 
-import com.jame.dev.gymApp.application.contract.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
 import com.jame.dev.gymApp.features.auth.domain.event.RecoverySenderEvent;
 import com.jame.dev.gymApp.features.auth.domain.exception.AccountNotFoundException;
 import com.jame.dev.gymApp.features.auth.domain.exception.VerificationNotFoundException;

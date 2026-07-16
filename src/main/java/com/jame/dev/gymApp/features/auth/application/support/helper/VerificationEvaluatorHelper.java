@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.auth.application.support.helper;
 
-import com.jame.dev.gymApp.application.contract.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
 import com.jame.dev.gymApp.features.auth.domain.exception.VerificationAttemptFailedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

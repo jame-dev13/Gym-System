@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.application.contract;
+package com.jame.dev.gymApp.infrastructure.security.hash;
 
 public interface TokenDBHasherService {
    String hashToken(final String rawToken);

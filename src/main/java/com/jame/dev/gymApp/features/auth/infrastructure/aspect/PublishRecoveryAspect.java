@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.auth.infrastructure.aspect;
 
-import com.jame.dev.gymApp.application.contract.TokenGeneratorService;
+import com.jame.dev.gymApp.infrastructure.security.token.TokenGeneratorService;
 import com.jame.dev.gymApp.domain.exception.EventPublisherException;
 import com.jame.dev.gymApp.features.auth.api.request.RecoveryRequest;
 import com.jame.dev.gymApp.features.auth.domain.event.RecoverySenderEvent;

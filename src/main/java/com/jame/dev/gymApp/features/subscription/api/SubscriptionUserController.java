@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.api;
 
-import com.jame.dev.gymApp.application.contract.IdentityExtractorService;
+import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
 import com.jame.dev.gymApp.application.dto.PageDto;
 import com.jame.dev.gymApp.features.subscription.api.request.PaymentRequest;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
