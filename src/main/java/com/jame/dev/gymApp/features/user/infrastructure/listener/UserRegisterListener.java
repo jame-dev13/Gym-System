@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.user.infrastructure.listener;
 
-import com.jame.dev.gymApp.application.contract.TokenGeneratorService;
+import com.jame.dev.gymApp.infrastructure.security.token.TokenGeneratorService;
 import com.jame.dev.gymApp.features.auth.application.contract.verification.VerificationService;
 import com.jame.dev.gymApp.features.auth.domain.event.UserNotifiableEvent;
 import com.jame.dev.gymApp.features.auth.domain.model.VerificationEntity;

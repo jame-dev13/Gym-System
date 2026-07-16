@@ -11,7 +11,7 @@ import com.jame.dev.gymApp.features.auth.api.request.TokenIdResetPasswordRequest
 import com.jame.dev.gymApp.features.auth.api.request.PasswordResetRequest;
 import com.jame.dev.gymApp.features.auth.domain.repository.OneTimeTokenRepository;
 import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
-import com.jame.dev.gymApp.application.contract.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
 import com.jame.dev.gymApp.features.auth.application.service.OneTimeTokenApplicationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

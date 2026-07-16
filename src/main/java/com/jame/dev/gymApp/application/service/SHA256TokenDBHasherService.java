@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.application.service;
 
-import com.jame.dev.gymApp.application.contract.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;

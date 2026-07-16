@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.features.auth.infrastructure.listeners;
 
-import com.jame.dev.gymApp.application.contract.TokenDBHasherService;
-import com.jame.dev.gymApp.application.contract.TokenGeneratorService;
+import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.token.TokenGeneratorService;
 import com.jame.dev.gymApp.features.auth.application.support.factory.VerificationFactory;
 import com.jame.dev.gymApp.features.auth.domain.event.VerifyOauthUserEvent;
 import com.jame.dev.gymApp.features.auth.domain.exception.VerificationAttemptFailedException;

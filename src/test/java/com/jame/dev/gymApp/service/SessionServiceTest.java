@@ -6,7 +6,7 @@ import com.jame.dev.gymApp.features.auth.domain.exception.IllegalSubjectAuthenti
 import com.jame.dev.gymApp.features.auth.application.support.factory.AuthResponsesFactory;
 import com.jame.dev.gymApp.features.auth.application.contract.JwtService;
 import com.jame.dev.gymApp.features.auth.api.response.SessionResponse;
-import com.jame.dev.gymApp.application.contract.IdentityExtractorService;
+import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
 import com.jame.dev.gymApp.features.auth.application.service.SessionApplicationService;
 import com.jame.dev.gymApp.features.user.domain.model.Role;
 import org.junit.jupiter.api.DisplayName;

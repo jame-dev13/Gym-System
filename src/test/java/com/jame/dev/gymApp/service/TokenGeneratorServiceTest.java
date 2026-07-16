@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.application.contract.TokenGeneratorService;
+import com.jame.dev.gymApp.infrastructure.security.token.TokenGeneratorService;
 import com.jame.dev.gymApp.application.service.TokenApplicationGeneratorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;

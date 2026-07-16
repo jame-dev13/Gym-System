@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.application.contract;
+package com.jame.dev.gymApp.infrastructure.security.owner;
 
 import lombok.NonNull;
 import org.springframework.security.core.Authentication;

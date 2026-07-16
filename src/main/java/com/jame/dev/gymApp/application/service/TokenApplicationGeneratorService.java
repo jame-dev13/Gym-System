@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.application.service;
 
-import com.jame.dev.gymApp.application.contract.TokenGeneratorService;
+import com.jame.dev.gymApp.infrastructure.security.token.TokenGeneratorService;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
