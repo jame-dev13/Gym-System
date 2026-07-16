@@ -213,7 +213,7 @@ class SubscriptionUserControllerTest {
       @Test
       @DisplayName("POST[201] Created")
       void create() throws Exception {
-         var checkoutResponse = new SubscriptionCheckoutResponse("session_123", "https://stripe.com/session_123");
+         var checkoutResponse = mock(SubscriptionCheckoutResponse.class);
          given(stripeCheckoutService.createCheckoutSessionFrom(any(SubscriptionRequest.class))).willReturn(checkoutResponse);
          given(subscriptionCreate.create(any(SubscriptionRequest.class))).willReturn(subscriptionResponse);
          mockMvc.perform(post(URI_TEMPLATE)
@@ -247,9 +247,9 @@ class SubscriptionUserControllerTest {
       @Test
       @DisplayName("POST[409]: Conflict: Subscription already exists")
       void alreadyExists() throws Exception {
-         given(stripeCheckoutService.createCheckoutSessionFrom(any(SubscriptionRequest.class))).willReturn(
-            new SubscriptionCheckoutResponse("session_123", "https://stripe.com/session_123")
-         );
+         var response = mock(SubscriptionCheckoutResponse.class);
+         given(stripeCheckoutService.createCheckoutSessionFrom(any(SubscriptionRequest.class)))
+            .willReturn(response);
          given(subscriptionCreate.create(any(SubscriptionRequest.class))).willThrow(AlreadyExistsException.class);
          mockMvc.perform(post(URI_TEMPLATE)
                .contentType(MediaType.APPLICATION_JSON)
@@ -265,9 +265,9 @@ class SubscriptionUserControllerTest {
       @Test
       @DisplayName("POST[409]: Conflict: Subscription is deactivated")
       void subscriptionIsDeactivated() throws Exception {
-         given(stripeCheckoutService.createCheckoutSessionFrom(any(SubscriptionRequest.class))).willReturn(
-            new SubscriptionCheckoutResponse("session_123", "https://stripe.com/session_123")
-         );
+         var response = mock(SubscriptionCheckoutResponse.class);
+         given(stripeCheckoutService.createCheckoutSessionFrom(any(SubscriptionRequest.class)))
+            .willReturn(response);
          given(subscriptionCreate.create(any(SubscriptionRequest.class))).willThrow(NoActiveException.class);
          mockMvc.perform(post(URI_TEMPLATE)
                .contentType(MediaType.APPLICATION_JSON)

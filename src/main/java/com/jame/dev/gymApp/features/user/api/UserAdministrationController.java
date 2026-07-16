@@ -3,6 +3,7 @@ package com.jame.dev.gymApp.features.user.api;
 import com.jame.dev.gymApp.application.dto.PageDto;
 import com.jame.dev.gymApp.features.auth.infrastructure.annotation.PublishVerifyAndNotifyUser;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
+import com.jame.dev.gymApp.features.user.api.request.UserUpdateRequest;
 import com.jame.dev.gymApp.features.user.api.response.UserMinimalInfoResponse;
 import com.jame.dev.gymApp.features.user.api.response.UserResponse;
 import com.jame.dev.gymApp.features.user.application.usecases.mutation.*;
@@ -90,7 +91,7 @@ public class UserAdministrationController {
       @Minimum final long id,
       @RequestBody
       @Valid
-      @NotNullObject final UserRequest userRequest) {
+      @NotNullObject final UserUpdateRequest userRequest) {
       return ResponseEntity.ok(updateUserUseCase.update(id, userRequest));
    }
 

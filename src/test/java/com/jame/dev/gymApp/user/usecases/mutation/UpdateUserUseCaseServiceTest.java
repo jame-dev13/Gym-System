@@ -1,7 +1,6 @@
 package com.jame.dev.gymApp.user.usecases.mutation;
 
-import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
-import com.jame.dev.gymApp.features.user.api.request.UserRequest;
+import com.jame.dev.gymApp.features.user.api.request.UserUpdateRequest;
 import com.jame.dev.gymApp.features.user.api.response.UserResponse;
 import com.jame.dev.gymApp.features.user.application.contract.UserFactory;
 import com.jame.dev.gymApp.features.user.application.contract.UserUpdater;
@@ -51,11 +50,9 @@ class UpdateUserUseCaseServiceTest {
     @Captor
     private ArgumentCaptor<UserEntity> userEntityCaptor;
 
-    private final UserRequest request = UserRequest.builder()
+    private final UserUpdateRequest request = UserUpdateRequest.builder()
             .name("John Updated")
             .email("john@mail.com")
-            .password("newsecret")
-            .authProvider(AuthProvider.LOCAL)
             .roles(Set.of(Role.USER))
             .build();
 
@@ -67,7 +64,7 @@ class UpdateUserUseCaseServiceTest {
         var response = mock(UserResponse.class);
 
         given(userQueryRepository.findById(anyLong())).willReturn(Optional.of(entity));
-        willDoNothing().given(userUpdater).apply(any(UserEntity.class), any(UserRequest.class));
+        willDoNothing().given(userUpdater).apply(any(UserEntity.class), any(UserUpdateRequest.class));
         given(userMutationRepository.save(any(UserEntity.class))).willReturn(savedEntity);
         given(userFactory.createFromEntity(any(UserEntity.class))).willReturn(response);
 
@@ -75,7 +72,7 @@ class UpdateUserUseCaseServiceTest {
 
         assertNotNull(result);
         verify(userQueryRepository).findById(anyLong());
-        verify(userUpdater).apply(any(UserEntity.class), any(UserRequest.class));
+        verify(userUpdater).apply(any(UserEntity.class), any(UserUpdateRequest.class));
         verify(userMutationRepository).save(userEntityCaptor.capture());
         verify(userFactory).createFromEntity(any(UserEntity.class));
         assertSame(entity, userEntityCaptor.getValue());

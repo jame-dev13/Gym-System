@@ -1,8 +1,10 @@
 package com.jame.dev.gymApp.features.user.application.contract;
 
-import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
-import com.jame.dev.gymApp.application.contract.Updatable;
+import com.jame.dev.gymApp.features.user.api.request.UserUpdateRequest;
+import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 
-public interface UserUpdater extends Updatable<UserEntity, UserRequest> {
+public interface UserUpdater {
+   void apply(UserEntity userEntity, UserUpdateRequest userUpdateRequest);
+   void apply(UserEntity userEntity, UserRequest request);
 }
