@@ -179,8 +179,7 @@ public class InitConfig {
          .customer(customer)
          .pricing(pricingMap.get(memberships[randomIdx]))
          .subscriptionPeriods(List.of(new PeriodEntity(periods[randomIdx], LocalDate.now())))
-         .finished(random.nextBoolean())
-         .paid(true)
+         .status(SubscriptionStatus.PAID)
          .build();
    }
 

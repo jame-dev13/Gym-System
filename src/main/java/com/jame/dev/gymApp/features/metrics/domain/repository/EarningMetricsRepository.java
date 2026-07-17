@@ -17,7 +17,7 @@ public interface EarningMetricsRepository extends MetricsRepository<Subscription
               DISTINCT COALESCE(SUM(mp.price), 0) as total
            FROM subscriptions s
            INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
-           WHERE s.paid = true
+           WHERE s.status = 'PAID'
            """)
    TotalEarned calculateTotalEarned();
 
@@ -30,7 +30,7 @@ public interface EarningMetricsRepository extends MetricsRepository<Subscription
            INNER JOIN subscription_periods sp ON sp.subscription_id = s.id
            INNER JOIN periods p ON p.id = sp.period_id
            INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
-           WHERE s.paid = true
+           WHERE s.status = 'PAID'
            GROUP BY
                EXTRACT(YEAR FROM p.start_period),
                EXTRACT(MONTH FROM p.start_period),
@@ -48,7 +48,7 @@ public interface EarningMetricsRepository extends MetricsRepository<Subscription
            FROM subscriptions s
            INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
            INNER JOIN memberships m ON m.id = mp.membership_id
-           WHERE s.paid = true
+           WHERE s.status = 'PAID'
            GROUP BY m.membership
            ORDER BY m.membership DESC
            """)
@@ -68,7 +68,7 @@ public interface EarningMetricsRepository extends MetricsRepository<Subscription
       INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
       INNER JOIN subscription_periods sp ON sp.subscription_id = s.id
       INNER JOIN periods p ON p.id = sp.period_id
-      WHERE s.paid = true
+      WHERE s.status = 'PAID'
       GROUP BY p.start_period, p.end_period, p.period
       """)
    List<YearPeriodicalEarning> calculatePeriodicalEarnings();

@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SubscriptionMapperTest {
    private final PeriodMapper periodMapper = new PeriodMapperImpl();
    private final SubscriptionMapper subscriptionMapper =
-           new SubscriptionMapperImpl(periodMapper);
+           new SubscriptionMapperImpl();
    private CustomerEntity customer;
    private PricingEntity pricing;
    private SubscriptionEntity subs;
@@ -41,7 +41,7 @@ public class SubscriptionMapperTest {
               .customer(customer)
               .pricing(pricing)
               .subscriptionPeriods(List.of(new PeriodEntity()))
-              .finished(false)
+              .status(SubscriptionStatus.PAID)
               .build();
    }
 
@@ -55,7 +55,7 @@ public class SubscriptionMapperTest {
               () -> assertNotNull(dto, "Should not be null."),
               () -> assertEquals(price, dto.price(), "Should be the same."),
               () -> assertEquals(membership, dto.membership(), "Should be the same."),
-              () -> assertFalse(dto.finished(), "Should not be finished."));
+              () -> assertEquals(SubscriptionStatus.PAID, dto.status(), "Status should be equals."));
    }
 
    @Test
@@ -69,6 +69,6 @@ public class SubscriptionMapperTest {
               () -> assertEquals(customer, subs.getCustomer(), "Should be the same."),
               () -> assertEquals(pricing, subs.getPricing(), "Should be the same."),
               () -> assertEquals(periods, subs.getSubscriptionPeriods(), "Should be the same."),
-              () -> assertFalse(subs.isFinished(), "Should be finished."));
+              () -> assertEquals(SubscriptionStatus.PAID, subs.getStatus(), "Status should be equals."));
    }
 }

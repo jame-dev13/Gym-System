@@ -9,6 +9,7 @@ import com.jame.dev.gymApp.features.subscription.domain.event.CompletedCheckoutE
 import com.jame.dev.gymApp.features.subscription.domain.model.PaymentEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.PaymentStatus;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
 import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentQueryRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
@@ -50,12 +51,11 @@ public class CompletedCheckoutUseCaseService implements CompletedCheckoutUseCase
 
       final PaymentEntity paymentSaved = paymentMutationRepository.save(paymentEntity);
       final SubscriptionEntity subscription = paymentSaved.getSubscription();
-      subscription.setPaid(true);
+      subscription.setStatus(SubscriptionStatus.PAID);
       subscriptionMutationRepository.save(subscription);
 
       log.info("Checkout completed: session={}, subscription={}, customer={}",
          event.stripeSessionId(), subscription.getId(), event.customerEmail());
-      log.info("Subscription is Paid: {}", subscription.isPaid());
       log.info("Payment status: {}", paymentSaved.getStatus());
    }
 }

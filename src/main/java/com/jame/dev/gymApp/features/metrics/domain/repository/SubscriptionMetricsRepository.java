@@ -16,7 +16,7 @@ import java.util.List;
 public interface SubscriptionMetricsRepository extends
    MetricsRepository<SubscriptionEntity, Long> {
 
-   @NativeQuery("SELECT DISTINCT COUNT(s) AS total FROM subscriptions s WHERE paid = true")
+   @NativeQuery("SELECT DISTINCT COUNT(s) AS total FROM subscriptions s WHERE status = 'PAID'")
    TotalSubscriptions countAllSubscriptionDistinct();
 
    @NativeQuery(
@@ -28,7 +28,7 @@ public interface SubscriptionMetricsRepository extends
       FROM subscriptions s
       INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
       INNER JOIN memberships m ON m.id = mp.membership_id
-      WHERE s.paid = true
+      WHERE s.status = 'PAID'
       GROUP BY m.membership
       """)
    List<MembershipRanking> calculateMembershipRanking();
@@ -50,7 +50,7 @@ public interface SubscriptionMetricsRepository extends
       INNER JOIN memberships m ON m.id = mp.membership_id
       INNER JOIN subscription_periods sp ON sp.subscription_id = s.id
       INNER JOIN periods p ON p.id = sp.period_id
-      WHERE s.paid = true
+      WHERE s.status = 'PAID'
       GROUP BY p.start_period, p.end_period, p.period
       """)
    List<PeriodSubscribersRanking> calculatePeriodWithMostSubscribers();
@@ -61,7 +61,7 @@ public interface SubscriptionMetricsRepository extends
       FROM subscriptions s
       INNER JOIN subscription_periods sp ON sp.subscription_id = s.id
       INNER JOIN periods p ON p.id = sp.period_id
-      WHERE s.paid = true AND p.start_period <= :now
+      WHERE s.status = 'PAID' AND p.start_period <= :now
       """)
    TotalSubscriptions countByStartDateBefore(@Param("now") LocalDate now);
 
@@ -72,7 +72,7 @@ public interface SubscriptionMetricsRepository extends
       FROM subscriptions s
       LEFT JOIN subscription_periods sp ON sp.subscription_id = s.id
       INNER JOIN periods p ON p.id = sp.period_id
-      WHERE s.paid = true
+      WHERE s.status = 'PAID'
       GROUP BY TO_CHAR(p.start_period, 'FMMon')
       ORDER BY MIN(p.start_period)
       """)

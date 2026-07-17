@@ -46,7 +46,7 @@ public class ChangeModelResolverHelper {
          .price(response.price())
          .membership(response.membership())
          .periods(response.periods())
-         .finished(response.finished())
+         .status(response.status())
          .build();
 
       if (input == null) return Map.of(
@@ -60,7 +60,7 @@ public class ChangeModelResolverHelper {
             .price(null)
             .membership(input.membership())
             .periods(null)
-            .finished(null)
+            .status(null)
             .build(),
          "after", changesAfter
       );

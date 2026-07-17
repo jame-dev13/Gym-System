@@ -10,12 +10,7 @@ import com.jame.dev.gymApp.features.subscription.api.SubscriptionAdministrationC
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.dto.PeriodDtoOutput;
-import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CompletedCheckoutUseCase;
-import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CreateSubscriptionUseCase;
-import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.FinalizeSubscriptionUseCase;
-import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.RenewSubscriptionUseCase;
-import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.SoftDeleteSubscriptionByIdUseCase;
-import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.UpdateSubscriptionUseCase;
+import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.*;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetByIdSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetPageSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.domain.event.CompletedCheckoutEvent;
@@ -25,6 +20,7 @@ import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNo
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionUnfinishedException;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import com.jame.dev.gymApp.features.subscription.domain.model.Period;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
 import com.jame.dev.gymApp.features.subscription.infrastructure.notification.service.SubscriptionNotificationAppService;
 import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.presentation.exception.GlobalExceptionHandler;
@@ -125,6 +121,10 @@ class SubscriptionAdministrationControllerTest {
    @MockitoBean
    private CompletedCheckoutUseCase completedCheckoutUseCase;
 
+   @MockitoBean
+   private CreatePaymentUseCase createPaymentUseCase;
+
+
    private final String URI_TEMPLATE = "/app/v1/administration/subs";
    private final String customerEmail = "user@mail.com";
 
@@ -132,8 +132,7 @@ class SubscriptionAdministrationControllerTest {
       1L, customerEmail,
       Membership.ANNUAL, BigDecimal.valueOf(3000d),
       List.of(new PeriodDtoOutput(Period.ANNUAL, LocalDate.now(), LocalDate.now().plusYears(1))),
-      false,
-      false
+      SubscriptionStatus.PAID
    );
 
    @Nested
@@ -209,8 +208,8 @@ class SubscriptionAdministrationControllerTest {
       @Test
       @DisplayName("POST[201] Created")
       void postSubscription() throws Exception {
-         given(subscriptionCreate.create(any(SubscriptionRequest.class))).willReturn(subscriptionResponse);
          doNothing().when(completedCheckoutUseCase).execute(any(CompletedCheckoutEvent.class));
+         given(subscriptionCreate.create(any(SubscriptionRequest.class))).willReturn(subscriptionResponse);
          given(subscriptionGetById.getById(anyLong())).willReturn(subscriptionResponse);
          mockMvc.perform(post(URI_TEMPLATE)
                .contentType(MediaType.APPLICATION_JSON)
@@ -220,6 +219,7 @@ class SubscriptionAdministrationControllerTest {
             .andExpect(jsonPath("$.id").isNotEmpty());
          verify(subscriptionCreate, times(1)).create(any(SubscriptionRequest.class));
          verify(completedCheckoutUseCase, times(1)).execute(any(CompletedCheckoutEvent.class));
+         verify(createPaymentUseCase, times(1)).create(any());
          verify(subscriptionGetById, times(1)).getById(anyLong());
       }
 
@@ -549,8 +549,7 @@ class SubscriptionAdministrationControllerTest {
             subscriptionResponse.membership(),
             subscriptionResponse.price(),
             subscriptionResponse.periods(),
-            true,
-            false
+            SubscriptionStatus.FINALIZED
          );
          given(subscriptionFinalize.finalize(anyLong())).willReturn(finalized);
          mockMvc.perform(patch(URI_TEMPLATE + '/' + 1L)

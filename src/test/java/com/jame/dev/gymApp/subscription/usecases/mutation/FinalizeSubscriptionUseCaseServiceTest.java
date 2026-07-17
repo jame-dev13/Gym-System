@@ -5,6 +5,7 @@ import com.jame.dev.gymApp.features.subscription.application.contract.Subscripti
 import com.jame.dev.gymApp.features.subscription.application.service.mutation.FinalizeSubscriptionUseCaseService;
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +17,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,8 +57,7 @@ class FinalizeSubscriptionUseCaseServiceTest {
         var result = service.finalize(1L);
 
         assertNotNull(result);
-        assertTrue(entity.isFinished());
-        assertNotNull(entity.getUpdatedAt());
+        assertEquals(SubscriptionStatus.FINALIZED, entity.getStatus());
 
         verify(subscriptionQueryRepository).findById(anyLong());
         verify(subscriptionMutationRepository).save(subscriptionCaptor.capture());
@@ -66,8 +65,7 @@ class FinalizeSubscriptionUseCaseServiceTest {
 
         var captured = subscriptionCaptor.getValue();
         assertSame(entity, captured);
-        assertTrue(captured.isFinished());
-        assertNotNull(captured.getUpdatedAt());
+        assertEquals(SubscriptionStatus.FINALIZED, captured.getStatus());
 
         verifyNoMoreInteractions(subscriptionQueryRepository, subscriptionMutationRepository, subscriptionFactory);
     }
