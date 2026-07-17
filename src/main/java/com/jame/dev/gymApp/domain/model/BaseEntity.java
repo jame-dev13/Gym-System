@@ -51,12 +51,17 @@ public abstract class BaseEntity {
    }
 
    @PrePersist
-   public void setCreatedAt() {
+   void setCreatedAt() {
       this.createdAt = Instant.now();
    }
 
+   @PreUpdate
+   void setUpdatedAt() {
+      this.updatedAt = Instant.now();
+   }
+
    @PreRemove
-   public void setDeletedAt() {
+   void setDeletedAt() {
       this.deletedAt = Instant.now();
    }
 }

@@ -7,6 +7,7 @@ import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionFac
 import com.jame.dev.gymApp.features.subscription.domain.model.PeriodEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
 
 import java.util.List;
 
@@ -18,8 +19,7 @@ public interface SubscriptionFactory extends Factory<
          .customer(customerEntity)
          .pricing(pricingEntity)
          .subscriptionPeriods(subscriptionPeriods)
-         .finished(false)
-         .paid(false)
+         .status(SubscriptionStatus.NOT_PAID)
          .build();
    }
 }

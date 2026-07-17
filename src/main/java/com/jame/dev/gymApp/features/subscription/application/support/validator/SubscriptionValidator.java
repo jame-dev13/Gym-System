@@ -7,6 +7,7 @@ import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNo
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionUnfinishedException;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.SubscriptionRepository;
@@ -31,7 +32,7 @@ public class SubscriptionValidator {
       final SubscriptionEntity subscription = subscriptionRepository.findById(id)
          .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
 
-      if (!subscription.isFinished()) {
+      if (subscription.getStatus() != SubscriptionStatus.FINALIZED) {
          throw new SubscriptionUnfinishedException("Subscription unfinished, cannot renew yet.");
       }
 
@@ -50,7 +51,7 @@ public class SubscriptionValidator {
    }
 
    public boolean canRenewSubscription(final SubscriptionEntity subscription) {
-      if (subscription.isFinished()) return true;
+      if (subscription.getStatus() == SubscriptionStatus.FINALIZED) return true;
       final var currentPeriod = subscription.getSubscriptionPeriods().getLast();
       final var subscriptionFinishDate = currentPeriod.getEndPeriod();
       final LocalDate now = LocalDate.now();

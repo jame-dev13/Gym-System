@@ -11,6 +11,7 @@ import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.F
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.model.PaymentStatus;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.CacheEvictSubscriptions;
@@ -64,8 +65,7 @@ public class FinalizeSubscriptionUseCaseService implements FinalizeSubscriptionU
             p.setUpdatedAt(updatedAt);
          });
 
-      subscription.setFinished(true);
-      subscription.setUpdatedAt(updatedAt);
+      subscription.setStatus(SubscriptionStatus.FINALIZED);
       return subscriptionFactory.createFromEntity(subscriptionMutationRepository.save(subscription));
    }
 }

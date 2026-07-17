@@ -79,7 +79,7 @@ public class EvolutionMetricsRepositorySqlAdapter implements EvolutionMetricsRep
          FROM generate_series(1, 12) AS m(month_number)
          LEFT JOIN subscriptions s
              ON EXTRACT(MONTH FROM s.created_at) = m.month_number
-             AND s.paid = true
+             AND s.status = 'PAID'
              AND EXTRACT(YEAR FROM s.created_at) = :year
          GROUP BY m.month_number
          ORDER BY m.month_number
@@ -105,8 +105,7 @@ public class EvolutionMetricsRepositorySqlAdapter implements EvolutionMetricsRep
          FROM generate_series(1, 12) AS m(month_number)
          LEFT JOIN subscriptions s
              ON EXTRACT(MONTH FROM s.created_at) = m.month_number
-             AND s.paid = true
-             AND (s.finished = true OR s.active = false)
+             AND (s.status = 'FINALIZED' OR s.active = false)
              AND EXTRACT(YEAR FROM s.created_at) = :year
          LEFT JOIN
              subscription_periods sp ON sp.subscription_id = s.id

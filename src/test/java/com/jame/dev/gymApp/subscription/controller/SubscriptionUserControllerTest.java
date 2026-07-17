@@ -1,24 +1,32 @@
 package com.jame.dev.gymApp.subscription.controller;
 
+import com.jame.dev.gymApp.application.dto.PageDto;
+import com.jame.dev.gymApp.domain.exception.EntityNotFoundException;
 import com.jame.dev.gymApp.domain.exception.MissMatchException;
 import com.jame.dev.gymApp.domain.exception.NoActiveException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
 import com.jame.dev.gymApp.features.subscription.api.SubscriptionUserController;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
+import com.jame.dev.gymApp.features.subscription.api.response.RetryResponse;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionCheckoutResponse;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.contract.StripeCheckoutService;
 import com.jame.dev.gymApp.features.subscription.application.dto.PeriodDtoOutput;
+import com.jame.dev.gymApp.features.subscription.application.support.handler.RetrySubscriptionPaymentHandler;
+import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CreatePaymentUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CreateSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.FinalizeSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.RenewSubscriptionUseCase;
+import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.SoftDeleteSubscriptionByIdUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetAllSubscriptionsByCustomerEmailUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetByEmailSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetByIdSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.domain.exception.*;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import com.jame.dev.gymApp.features.subscription.domain.model.Period;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
+import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
 import com.jame.dev.gymApp.presentation.exception.ApiErrorResponseFactory;
 import com.jame.dev.gymApp.presentation.exception.GlobalExceptionHandler;
 import config.TestConfig;
@@ -40,6 +48,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -102,6 +111,18 @@ class SubscriptionUserControllerTest {
    @MockitoBean
    private StripeCheckoutService stripeCheckoutService;
 
+   @MockitoBean
+   private SoftDeleteSubscriptionByIdUseCase deleteById;
+
+   @MockitoBean
+   private IdentityExtractorService extractorService;
+
+   @MockitoBean
+   private CreatePaymentUseCase createPaymentUseCase;
+
+   @MockitoBean
+   private RetrySubscriptionPaymentHandler retrySubscriptionPaymentHandler;
+
    private final String URI_TEMPLATE = "/app/v1/subscriptions";
    private final String customerEmail = "user@mail.com";
 
@@ -109,8 +130,7 @@ class SubscriptionUserControllerTest {
       1L, customerEmail,
       Membership.ANNUAL, BigDecimal.valueOf(3000d),
       List.of(new PeriodDtoOutput(Period.ANNUAL, LocalDate.now(), LocalDate.now().plusYears(1))),
-      false,
-      false
+      SubscriptionStatus.PAID
    );
 
    @Nested
@@ -214,6 +234,10 @@ class SubscriptionUserControllerTest {
       @DisplayName("POST[201] Created")
       void create() throws Exception {
          var checkoutResponse = mock(SubscriptionCheckoutResponse.class);
+         given(checkoutResponse.sessionUrl()).willReturn("https://stripe.com/session_123");
+         given(checkoutResponse.sessionId()).willReturn("session_123");
+         given(checkoutResponse.paymentIndent()).willReturn("pi_123");
+         given(checkoutResponse.paymentSubscription()).willReturn("sub_123");
          given(stripeCheckoutService.createCheckoutSessionFrom(any(SubscriptionRequest.class))).willReturn(checkoutResponse);
          given(subscriptionCreate.create(any(SubscriptionRequest.class))).willReturn(subscriptionResponse);
          mockMvc.perform(post(URI_TEMPLATE)
@@ -224,9 +248,10 @@ class SubscriptionUserControllerTest {
             .andExpect(jsonPath("$.checkout").exists())
             .andExpect(jsonPath("$.checkout.sessionUrl").value("https://stripe.com/session_123"))
             .andExpect(jsonPath("$.subscription").exists())
-            .andExpect(jsonPath("$.subscription.id").isNotEmpty());
+             .andExpect(jsonPath("$.subscription.id").isNotEmpty());
          verify(stripeCheckoutService, times(1)).createCheckoutSessionFrom(any(SubscriptionRequest.class));
          verify(subscriptionCreate, times(1)).create(any(SubscriptionRequest.class));
+         verify(createPaymentUseCase, times(1)).create(any());
       }
 
       @Test
@@ -344,6 +369,12 @@ class SubscriptionUserControllerTest {
       @Test
       @DisplayName("PUT[200] Ok: Renew Subscription /subscriptions/{id}")
       void renew() throws Exception {
+         var checkoutResponse = mock(SubscriptionCheckoutResponse.class);
+         given(checkoutResponse.sessionUrl()).willReturn("https://stripe.com/renew_123");
+         given(checkoutResponse.sessionId()).willReturn("session_renew_123");
+         given(checkoutResponse.paymentIndent()).willReturn("pi_renew_123");
+         given(checkoutResponse.paymentSubscription()).willReturn("sub_renew_123");
+         given(stripeCheckoutService.createCheckoutSessionFrom(any(SubscriptionRequest.class))).willReturn(checkoutResponse);
          given(subscriptionRenew.renew(anyLong(), any(SubscriptionRequest.class))).willReturn(subscriptionResponse);
          mockMvc.perform(put(URI_TEMPLATE + '/' + 1L)
                .accept(MediaType.APPLICATION_JSON)
@@ -351,7 +382,9 @@ class SubscriptionUserControllerTest {
                .content(payload))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.*").exists());
+         verify(stripeCheckoutService, times(1)).createCheckoutSessionFrom(any(SubscriptionRequest.class));
          verify(subscriptionRenew, times(1)).renew(anyLong(), any(SubscriptionRequest.class));
+         verify(createPaymentUseCase, times(1)).create(any());
       }
 
       @Test
@@ -454,8 +487,7 @@ class SubscriptionUserControllerTest {
             subscriptionResponse.membership(),
             subscriptionResponse.price(),
             subscriptionResponse.periods(),
-            true,
-            false
+            SubscriptionStatus.FINALIZED
          );
          given(subscriptionFinalize.finalize(anyLong())).willReturn(finalized);
          mockMvc.perform(patch(URI_TEMPLATE + '/' + 1L)
@@ -492,6 +524,109 @@ class SubscriptionUserControllerTest {
             .andExpect(jsonPath("$.status").value(400))
             .andExpect(jsonPath("$.code").value(expectedCode));
          verifyNoInteractions(subscriptionFinalize);
+      }
+   }
+
+   @Nested
+   @DisplayName("POST Retry Subscription.")
+   class SubscriptionUserControllerPostRetryTests {
+
+      @Test
+      @DisplayName("POST[200] OK: retry subscription payment")
+      void retrySuccessfully() throws Exception {
+         given(extractorService.extract(any())).willReturn(customerEmail);
+         given(retrySubscriptionPaymentHandler.handleSubscriptionPaymentRetry(customerEmail))
+            .willReturn(ResponseEntity.ok(new RetryResponse("https://stripe.com/retry_123")));
+         mockMvc.perform(post(URI_TEMPLATE + "/retry")
+               .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.sessionUrl").value("https://stripe.com/retry_123"));
+         verify(extractorService, times(1)).extract(any());
+         verify(retrySubscriptionPaymentHandler, times(1)).handleSubscriptionPaymentRetry(customerEmail);
+      }
+
+      @Test
+      @DisplayName("POST[404] Not Found: retry - payment not found")
+      void retryNotFound() throws Exception {
+         given(extractorService.extract(any())).willReturn(customerEmail);
+         given(retrySubscriptionPaymentHandler.handleSubscriptionPaymentRetry(customerEmail))
+            .willThrow(EntityNotFoundException.class);
+         mockMvc.perform(post(URI_TEMPLATE + "/retry")
+               .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.*").exists());
+         verify(extractorService, times(1)).extract(any());
+         verify(retrySubscriptionPaymentHandler, times(1)).handleSubscriptionPaymentRetry(customerEmail);
+      }
+   }
+
+   @Nested
+   @DisplayName("GET Current Subscriptions.")
+   class SubscriptionUserControllerGetCurrentTests {
+
+      @Test
+      @DisplayName("GET[200] OK: get current subscriptions /subscriptions/current")
+      void getAllByCustomerEmail() throws Exception {
+         PageDto<SubscriptionResponse> page = mock();
+         given(page.content()).willReturn(List.of(subscriptionResponse));
+         given(page.totalElements()).willReturn(1L);
+         given(extractorService.extract(any())).willReturn(customerEmail);
+         given(subscriptionGetAllByCustomerEmail.getAllByCustomerEmail(eq(customerEmail), any()))
+            .willReturn(page);
+         mockMvc.perform(MockMvcRequestBuilders.get(URI_TEMPLATE + "/current")
+               .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content").exists())
+            .andExpect(jsonPath("$.content[0].id").isNotEmpty());
+         verify(extractorService, times(1)).extract(any());
+         verify(subscriptionGetAllByCustomerEmail, times(1)).getAllByCustomerEmail(eq(customerEmail), any());
+      }
+
+      @Test
+      @DisplayName("GET[200] OK: get current subscriptions - empty page")
+      void getAllByCustomerEmailEmpty() throws Exception {
+         PageDto<SubscriptionResponse> page = mock();
+         given(page.content()).willReturn(List.of());
+         given(page.totalElements()).willReturn(0L);
+         given(extractorService.extract(any())).willReturn(customerEmail);
+         given(subscriptionGetAllByCustomerEmail.getAllByCustomerEmail(eq(customerEmail), any()))
+            .willReturn(page);
+         mockMvc.perform(MockMvcRequestBuilders.get(URI_TEMPLATE + "/current")
+               .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content").isArray())
+            .andExpect(jsonPath("$.content").isEmpty());
+         verify(extractorService, times(1)).extract(any());
+         verify(subscriptionGetAllByCustomerEmail, times(1)).getAllByCustomerEmail(eq(customerEmail), any());
+      }
+   }
+
+   @Nested
+   @DisplayName("DELETE Subscription Resources.")
+   class SubscriptionUserControllerDeleteTests {
+
+      @Test
+      @DisplayName("DELETE[204] No Content: Subscription deleted")
+      void dropSubscription() throws Exception {
+         mockMvc.perform(delete(URI_TEMPLATE + '/' + 1L))
+            .andExpect(status().isNoContent())
+            .andExpect(jsonPath("$.*").doesNotExist());
+         verify(deleteById, times(1)).softDeleteById(anyLong());
+      }
+
+      @ParameterizedTest
+      @CsvSource(useHeadersInDisplayName = true,
+         textBlock = TestDataSource.ID_RESOURCE_ERRORS,
+         nullValues = "NULL")
+      @DisplayName("DELETE[400] Bad Request: invalid id format")
+      void badRequestInvalidPathVariable(String value, String expectedCode) throws Exception {
+         mockMvc.perform(delete(URI_TEMPLATE + '/' + value)
+               .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.*").exists())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.code").value(expectedCode));
+         verifyNoInteractions(deleteById);
       }
    }
 }

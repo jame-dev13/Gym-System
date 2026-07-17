@@ -63,15 +63,13 @@ public class SubscriptionEntity extends BaseEntity {
    @Builder.Default
    private List<PaymentEntity> payments = new LinkedList<>();
 
-   @Column(name = "finished", nullable = false)
-   private boolean finished;
+   @Column(name = "status", nullable = false, length = 12)
+   @Enumerated(EnumType.STRING)
+   private SubscriptionStatus status;
 
-   @Column(name = "paid", nullable = false)
-   private boolean paid = false;
-
-   @PostPersist
-   private void setStatus() {
-      this.finished = false;
+   @PreRemove
+   private void setFinalized(){
+      this.status = SubscriptionStatus.DROPPED;
    }
 
    @Override
@@ -82,15 +80,13 @@ public class SubscriptionEntity extends BaseEntity {
              customerId=%d,
              pricingId=%d,
              active=%b,
-             finished=%b
-             isPaid=%b
+             status=%s
          }""".formatted(
          super.getId(),
          customer.getId(),
          pricing.getId(),
          active,
-         finished,
-         paid
+         status.name()
       );
    }
 }
