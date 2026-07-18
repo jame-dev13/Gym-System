@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.features.metrics.domain.repository;
 
 import com.jame.dev.gymApp.features.metrics.api.response.MembershipRanking;
+import com.jame.dev.gymApp.features.metrics.api.response.SubscriptionAnnualResumeResponse;
 import com.jame.dev.gymApp.features.metrics.domain.model.PeriodSubscribersRanking;
 import com.jame.dev.gymApp.features.metrics.api.response.TotalSubscriptions;
 import com.jame.dev.gymApp.features.metrics.domain.model.SubsPerMembership;
@@ -89,4 +90,33 @@ public interface SubscriptionMetricsRepository extends
       ORDER BY m.membership DESC
       """)
    List<SubsPerMembership> countSubsByMembership();
+
+   @NativeQuery("""
+      WITH memberships_count AS (
+        SELECT
+            m.membership,
+            COUNT(*) AS total,
+            COALESCE(SUM(mp.price), 0) AS amount
+        FROM subscriptions s
+        JOIN membership_pricing mp ON mp.id = s.pricing_id
+        JOIN memberships m ON m.id = mp.membership_id
+        WHERE EXTRACT(YEAR FROM s.created_at) <= EXTRACT(YEAR FROM CURRENT_DATE)
+        GROUP BY m.membership
+      )
+      SELECT
+        SUM(total)::bigint AS subscriptionCount,
+        COALESCE(SUM(total) FILTER ( WHERE membership = 'BIWEEKLY')::bigint, 0) AS biweeklyTotal,
+        COALESCE(SUM(total) FILTER ( WHERE membership = 'MONTHLY')::bigint, 0) AS monthlyTotal,
+        COALESCE(SUM(total) FILTER ( WHERE membership = 'QUARTERLY')::bigint, 0) AS quarterlyTotal,
+        COALESCE(SUM(total) FILTER ( WHERE membership = 'ANNUAL'), 0)::bigint AS annualTotal,
+        (
+           SELECT
+               membership
+           FROM memberships_count
+           ORDER BY total DESC, amount DESC
+           LIMIT 1
+        )::varchar(12) AS mostRequestedMembership
+      FROM memberships_count
+      """)
+   SubscriptionAnnualResumeResponse calculateAnnualResume();
 }
