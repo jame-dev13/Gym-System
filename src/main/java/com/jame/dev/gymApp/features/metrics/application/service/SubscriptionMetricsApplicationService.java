@@ -92,4 +92,13 @@ public class SubscriptionMetricsApplicationService implements SubscriptionMetric
    public SubscriptionsPerMembershipResponse getSubscriptionsPerMembership() {
       return new SubscriptionsPerMembershipResponse(repo.countSubsByMembership());
    }
+
+   @Override
+   @Cacheable(
+      value = CacheSubsMetricsValues.SUBSCRIPTION_ANNUAL_RESUME,
+      unless = "#result == null"
+   )
+   public SubscriptionAnnualResumeResponse getAnnualResume() {
+      return repo.calculateAnnualResume();
+   }
 }

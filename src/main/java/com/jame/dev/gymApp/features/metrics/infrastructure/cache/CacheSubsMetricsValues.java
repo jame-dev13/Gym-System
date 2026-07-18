@@ -7,4 +7,5 @@ public class CacheSubsMetricsValues {
    public static final String SUBSCRIPTION_TOTAL_PER_MEMBERSHIP = "subscriptions:metrics:total:memberships";
    public static final String SUBSCRIPTION_RANKING = "subscriptions:metrics:membership:ranking";
    public static final String SUBSCRIPTION_PERIOD_RANKING = "subscriptions:metrics:period:ranking";
+   public static final String SUBSCRIPTION_ANNUAL_RESUME = "subscriptions:metrics:resume";
 }
