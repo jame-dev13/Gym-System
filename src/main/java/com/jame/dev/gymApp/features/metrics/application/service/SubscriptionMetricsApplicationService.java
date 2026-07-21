@@ -5,7 +5,7 @@ import com.jame.dev.gymApp.features.metrics.application.contract.SubscriptionMet
 import com.jame.dev.gymApp.features.metrics.domain.model.PeriodRanking;
 import com.jame.dev.gymApp.features.metrics.domain.model.PeriodSubscribersRanking;
 import com.jame.dev.gymApp.features.metrics.domain.repository.SubscriptionMetricsRepository;
-import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheSubsMetricsValues;
+import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheMetricValues;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -23,7 +23,8 @@ public class SubscriptionMetricsApplicationService implements SubscriptionMetric
 
    @Override
    @Cacheable(
-      value = CacheSubsMetricsValues.SUBSCRIPTION_TOTAL,
+      value = CacheMetricValues.SUBSCRIPTIONS,
+      keyGenerator = "appKeyGenerator",
       unless = "#result == null"
    )
    public TotalSubscriptions getTotalSubscriptions() {
@@ -32,7 +33,8 @@ public class SubscriptionMetricsApplicationService implements SubscriptionMetric
 
    @Override
    @Cacheable(
-      value = CacheSubsMetricsValues.SUBSCRIPTION_RANKING,
+      value = CacheMetricValues.SUBSCRIPTIONS,
+      keyGenerator = "appKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
    public MembershipRankingsResponse getMembershipRanking() {
@@ -41,7 +43,8 @@ public class SubscriptionMetricsApplicationService implements SubscriptionMetric
 
    @Override
    @Cacheable(
-      value = CacheSubsMetricsValues.SUBSCRIPTION_PERIOD_RANKING,
+      value = CacheMetricValues.SUBSCRIPTIONS,
+      keyGenerator = "appKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
    public PeriodRankingsResponse getPeriodRanking() {
@@ -68,7 +71,8 @@ public class SubscriptionMetricsApplicationService implements SubscriptionMetric
 
    @Override
    @Cacheable(
-      value = CacheSubsMetricsValues.SUBSCRIPTION_TOTAL_BEFORE,
+      value = CacheMetricValues.SUBSCRIPTIONS,
+      keyGenerator = "appKeyGenerator",
       unless = "#result == null"
    )
    public TotalSubscriptions getSubscriptionsBefore(@NonNull LocalDate date) {
@@ -77,7 +81,8 @@ public class SubscriptionMetricsApplicationService implements SubscriptionMetric
 
    @Override
    @Cacheable(
-      value = CacheSubsMetricsValues.SUBSCRIPTION_TOTAL_PER_MONTH,
+      value = CacheMetricValues.SUBSCRIPTIONS,
+      keyGenerator = "appKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
    public SubscriptionsPerMonthResponse getSubscriptionsPerMonth() {
@@ -86,7 +91,8 @@ public class SubscriptionMetricsApplicationService implements SubscriptionMetric
 
    @Override
    @Cacheable(
-      value = CacheSubsMetricsValues.SUBSCRIPTION_TOTAL_PER_MEMBERSHIP,
+      value = CacheMetricValues.SUBSCRIPTIONS,
+      keyGenerator = "appKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
    public SubscriptionsPerMembershipResponse getSubscriptionsPerMembership() {
@@ -95,7 +101,8 @@ public class SubscriptionMetricsApplicationService implements SubscriptionMetric
 
    @Override
    @Cacheable(
-      value = CacheSubsMetricsValues.SUBSCRIPTION_ANNUAL_RESUME,
+      value = CacheMetricValues.SUBSCRIPTIONS,
+      keyGenerator = "appKeyGenerator",
       unless = "#result == null"
    )
    public SubscriptionAnnualResumeResponse getAnnualResume() {
