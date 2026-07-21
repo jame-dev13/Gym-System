@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 import java.time.Clock;
+import java.util.Optional;
 
 import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
 
@@ -38,19 +39,33 @@ public class AppConfig {
          for (int i = 0; i < params.length; i++) {
             if (i > 0) sb.append("|");
             final Object param = params[i];
-            if (param == null) {
-               sb.append("null");
-            } else if (param instanceof Pageable pag) {
-               sb.append("page:").append(pag.getPageNumber())
+            switch (param) {
+               case Pageable pag -> sb.append("page:").append(pag.getPageNumber())
                   .append(":").append(pag.getPageSize())
                   .append(":sort=").append(pag.getSort());
-            } else if (param instanceof String s) {
-               sb.append("str:").append(s);
-            } else {
-               sb.append(param.getClass().getSimpleName())
-                  .append(":").append(param);
+               case String s -> sb.append("str:").append(s);
+               case null -> {}
+               default -> sb.append(":").append(param);
             }
          }
+         return sb.toString();
+      };
+   }
+
+   @Bean("appKeyGenerator")
+   public KeyGenerator appKeyGenerator() {
+      return (target, method, params) -> {
+         final StringBuilder sb = new StringBuilder();
+         sb.append(target.getClass().getSimpleName())
+            .append("::").append(method.getName());
+
+         Optional.of(params)
+            .ifPresent(p -> {
+               for (Object parm : p) {
+                  sb.append(":").append(parm);
+               }
+            });
+
          return sb.toString();
       };
    }

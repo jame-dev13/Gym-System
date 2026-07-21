@@ -4,7 +4,7 @@ import com.jame.dev.gymApp.features.metrics.api.response.AnnualResumeResponse;
 import com.jame.dev.gymApp.features.metrics.api.response.InvestmentMonthEvolutionResponse;
 import com.jame.dev.gymApp.features.metrics.application.contract.PaymentMetricsAdminService;
 import com.jame.dev.gymApp.features.metrics.domain.repository.PaymentMetricsRepository;
-import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CachePaymentMetricsValues;
+import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheMetricValues;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,8 @@ public class PaymentMetricsAdminApplicationService implements PaymentMetricsAdmi
 
    @Override
    @Cacheable(
-      value = CachePaymentMetricsValues.RESUME,
+      value = CacheMetricValues.PAYMENTS,
+      keyGenerator = "appKeyGenerator",
       unless = "#result == null"
    )
    public AnnualResumeResponse getAnnualResume() {
@@ -25,7 +26,8 @@ public class PaymentMetricsAdminApplicationService implements PaymentMetricsAdmi
 
    @Override
    @Cacheable(
-      value = CachePaymentMetricsValues.EVOLUTION,
+      value = CacheMetricValues.PAYMENTS,
+      keyGenerator = "appKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
    public InvestmentMonthEvolutionResponse getInvestmentMonthEvolution() {

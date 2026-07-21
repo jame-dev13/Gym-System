@@ -5,7 +5,7 @@ import com.jame.dev.gymApp.features.metrics.api.response.InvestmentMonthEvolutio
 import com.jame.dev.gymApp.features.metrics.api.response.TotalInvestment;
 import com.jame.dev.gymApp.features.metrics.application.contract.PaymentMetricsSubscriberService;
 import com.jame.dev.gymApp.features.metrics.domain.repository.PaymentMetricsRepository;
-import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CachePaymentMetricsValues;
+import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheMetricValues;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -20,9 +20,9 @@ public class PaymentMetricsSubscriberApplicationService implements PaymentMetric
 
    @Override
    @Cacheable(
-      value = CachePaymentMetricsValues.INVESTMENT,
-      unless = "#result == null",
-      key = "#customerId"
+      value = CacheMetricValues.PAYMENTS,
+      keyGenerator = "appKeyGenerator",
+      unless = "#result == null"
    )
    public TotalInvestment getTotalExpend(long customerId) {
       return paymentMetricsRepository.calculateTotalAmountExpended(customerId);
@@ -30,9 +30,9 @@ public class PaymentMetricsSubscriberApplicationService implements PaymentMetric
 
    @Override
    @Cacheable(
-      value = CachePaymentMetricsValues.RESUME,
-      unless = "#result == null",
-      key = "#customerId"
+      value = CacheMetricValues.PAYMENTS,
+      keyGenerator = "appKeyGenerator",
+      unless = "#result == null"
    )
    public AnnualResumeResponse getAnnualResume(long customerId) {
       return paymentMetricsRepository.calculateAnnualResume(customerId);
@@ -40,9 +40,9 @@ public class PaymentMetricsSubscriberApplicationService implements PaymentMetric
 
    @Override
    @Cacheable(
-      value = CachePaymentMetricsValues.EVOLUTION,
-      unless = "#result == null || #result.content.isEmpty()",
-      key = "#customerId"
+      value = CacheMetricValues.PAYMENTS,
+      keyGenerator = "appKeyGenerator",
+      unless = "#result == null || #result.content.isEmpty()"
    )
    public InvestmentMonthEvolutionResponse getInvestmentMonthEvolution(long customerId) {
       return new InvestmentMonthEvolutionResponse(paymentMetricsRepository.calculatePaymentEvolutionAlongMonths(customerId));

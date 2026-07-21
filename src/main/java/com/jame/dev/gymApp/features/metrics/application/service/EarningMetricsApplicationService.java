@@ -2,9 +2,12 @@ package com.jame.dev.gymApp.features.metrics.application.service;
 
 import com.jame.dev.gymApp.features.metrics.api.response.*;
 import com.jame.dev.gymApp.features.metrics.application.contract.EarningMetricsService;
-import com.jame.dev.gymApp.features.metrics.domain.model.*;
+import com.jame.dev.gymApp.features.metrics.domain.model.MonthTotal;
+import com.jame.dev.gymApp.features.metrics.domain.model.PeriodicalEarning;
+import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMonth;
+import com.jame.dev.gymApp.features.metrics.domain.model.YearPeriodicalEarning;
 import com.jame.dev.gymApp.features.metrics.domain.repository.EarningMetricsRepository;
-import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEarningMetricValues;
+import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheMetricValues;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -21,7 +24,8 @@ public class EarningMetricsApplicationService implements EarningMetricsService {
 
    @Override
    @Cacheable(
-      value = CacheEarningMetricValues.EARNING_TOTAL,
+      value = CacheMetricValues.EARNINGS,
+      keyGenerator = "appKeyGenerator",
       unless = "#result == null"
    )
    public TotalEarned getTotal() {
@@ -30,7 +34,8 @@ public class EarningMetricsApplicationService implements EarningMetricsService {
 
    @Override
    @Cacheable(
-      value = CacheEarningMetricValues.EARNING_PER_MONTH,
+      value = CacheMetricValues.EARNINGS,
+      keyGenerator = "appKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
    public EarningsByMonthResponse getTotalPerMonth() {
@@ -52,7 +57,8 @@ public class EarningMetricsApplicationService implements EarningMetricsService {
 
    @Override
    @Cacheable(
-      value = CacheEarningMetricValues.EARNING_MEMBERSHIP_TYPE,
+      value = CacheMetricValues.EARNINGS,
+      keyGenerator = "appKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
    public EarningsByMembershipTypeResponse getTotalPerMembershipType() {
@@ -62,7 +68,8 @@ public class EarningMetricsApplicationService implements EarningMetricsService {
 
    @Override
    @Cacheable(
-      value = CacheEarningMetricValues.EARNING_PERIODICAL,
+      value = CacheMetricValues.EARNINGS,
+      keyGenerator = "appKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
    public PeriodicalEarningsResponse getPeriodicalEarnings() {
