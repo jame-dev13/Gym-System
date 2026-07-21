@@ -20,6 +20,7 @@ public interface SubscriptionMapper extends BaseMapper<SubscriptionEntity, Subsc
    @Mapping(source = "customer.user.email", target = "customerEmail")
    @Mapping(source = "pricing.memberShipEntity.membership", target = "membership")
    @Mapping(source = "pricing.price", target = "price")
+   @Mapping(source = "subscriptionPeriods", target = "periods")
    SubscriptionResponse toDto(SubscriptionEntity entity);
 
    default SubscriptionEntity toEntity(

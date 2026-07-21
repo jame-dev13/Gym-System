@@ -9,7 +9,6 @@ import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Component
@@ -21,9 +20,8 @@ public class SubscriptionApplicationUpdater implements SubscriptionUpdater {
    public void apply(
            final SubscriptionEntity subscription,
            final PricingEntity newPricing) {
-      final LocalDate now = LocalDate.now();
       final List<PeriodEntity> periods = subscription.getSubscriptionPeriods();
-      final PeriodEntity newPeriod = periodFactory.createPeriodFrom(newPricing, now);
+      final PeriodEntity newPeriod = periodFactory.createPeriodFrom(newPricing);
 
       periods.addLast(newPeriod);
 
@@ -36,9 +34,7 @@ public class SubscriptionApplicationUpdater implements SubscriptionUpdater {
    public void applyRenew(
            final SubscriptionEntity subscriptionEntity,
            PricingEntity pricing) {
-      final LocalDate endPeriod = subscriptionEntity.getSubscriptionPeriods().getLast().getEndPeriod();
-      final LocalDate startDate = periodFactory.createNewStartDateFrom(endPeriod);
-      final PeriodEntity period = periodFactory.createPeriodFrom(pricing, startDate);
+      final PeriodEntity period = periodFactory.createPeriodFrom(pricing);
       final List<PeriodEntity> periods = periodFactory.createNewPeriodsFrom(subscriptionEntity, period);
 
       subscriptionEntity.setPricing(pricing);

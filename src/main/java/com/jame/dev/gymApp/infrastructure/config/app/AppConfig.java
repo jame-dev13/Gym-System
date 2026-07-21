@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 import java.time.Clock;
@@ -17,6 +18,7 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 
 @Configuration
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
+@EnableJpaAuditing
 public class AppConfig {
 
    @Bean(name = "mapper")

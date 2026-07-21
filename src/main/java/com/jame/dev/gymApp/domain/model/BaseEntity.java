@@ -6,13 +6,16 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLRestriction;
-import org.jspecify.annotations.Nullable;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 
 @MappedSuperclass
 @Getter
 @Setter
+@EntityListeners(AuditingEntityListener.class)
 @SQLRestriction("active = true")
 public abstract class BaseEntity {
 
@@ -22,16 +25,15 @@ public abstract class BaseEntity {
    @Setter(AccessLevel.NONE)
    protected Long id;
 
-   @Column(name = "created_at", updatable = false)
-   @Nullable
+   @Column(name = "created_at", updatable = false, nullable = false)
+   @CreatedDate
    protected Instant createdAt;
 
    @Column(name = "updated_at")
-   @Nullable
+   @LastModifiedDate
    protected Instant updatedAt;
 
    @Column(name = "deleted_at")
-   @Nullable
    protected Instant deletedAt;
 
    @Column(name = "active", nullable = false)
@@ -48,20 +50,5 @@ public abstract class BaseEntity {
    @Override
    public int hashCode() {
       return getClass().hashCode();
-   }
-
-   @PrePersist
-   void setCreatedAt() {
-      this.createdAt = Instant.now();
-   }
-
-   @PreUpdate
-   void setUpdatedAt() {
-      this.updatedAt = Instant.now();
-   }
-
-   @PreRemove
-   void setDeletedAt() {
-      this.deletedAt = Instant.now();
    }
 }

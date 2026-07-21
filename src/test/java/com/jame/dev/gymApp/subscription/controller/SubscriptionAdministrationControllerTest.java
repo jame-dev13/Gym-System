@@ -9,7 +9,7 @@ import com.jame.dev.gymApp.features.notification.domain.exception.NotificationEx
 import com.jame.dev.gymApp.features.subscription.api.SubscriptionAdministrationController;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
-import com.jame.dev.gymApp.features.subscription.application.dto.PeriodDtoOutput;
+import com.jame.dev.gymApp.features.subscription.application.dto.PeriodResponse;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.*;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetByIdSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetPageSubscriptionUseCase;
@@ -131,7 +131,7 @@ class SubscriptionAdministrationControllerTest {
    private final SubscriptionResponse subscriptionResponse = new SubscriptionResponse(
       1L, customerEmail,
       Membership.ANNUAL, BigDecimal.valueOf(3000d),
-      List.of(new PeriodDtoOutput(Period.ANNUAL, LocalDate.now(), LocalDate.now().plusYears(1))),
+      List.of(new PeriodResponse(Period.ANNUAL, LocalDate.now(), LocalDate.now().plusYears(1))),
       SubscriptionStatus.PAID
    );
 

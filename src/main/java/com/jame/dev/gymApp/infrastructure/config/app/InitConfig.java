@@ -1,6 +1,5 @@
 package com.jame.dev.gymApp.infrastructure.config.app;
 
-import com.jame.dev.gymApp.infrastructure.security.token.TokenGeneratorService;
 import com.jame.dev.gymApp.features.auth.application.contract.verification.VerificationService;
 import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
@@ -17,6 +16,7 @@ import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.user.infrastructure.persistence.RoleRepository;
 import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
+import com.jame.dev.gymApp.infrastructure.security.token.TokenGeneratorService;
 import jakarta.annotation.Priority;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -100,7 +99,10 @@ public class InitConfig {
          final var userSaved = userRepository.save(userFactory.createFromInput(user));
          saveAndVerifyUser(tokenService, verificationService, userSaved);
 
-         final CustomerEntity customerRequest = new CustomerEntity(userSaved, "1112223334");
+         final CustomerEntity customerRequest = CustomerEntity.builder()
+            .user(userSaved)
+            .phoneContact("1112223334")
+            .build();
          customerRepository.save(customerRequest);
 
          log.info("Runner InitUsersAndCustomers end execution.");
@@ -149,7 +151,8 @@ public class InitConfig {
                final var customerEntity = customerRepository.save(customer);
                //Subscriptions
                final var subscription = createSubscription(customerEntity);
-               subscriptionRepository.save(subscription);
+               var sub = subscriptionRepository.save(subscription);
+               System.out.println("periods: " + sub.getSubscriptionPeriods());
 
                paymentRepository.saveAndFlush(createPaymentEntity(subscription));
             });
@@ -168,7 +171,10 @@ public class InitConfig {
    }
 
    private CustomerEntity createCustomer(final UserEntity user, final int i) {
-      return new CustomerEntity(user, "8280101" + i);
+      final var customer = new CustomerEntity();
+      customer.setUser(user);
+      customer.setPhoneContact("8280101" + i);
+      return customer;
    }
 
    private SubscriptionEntity createSubscription(final CustomerEntity customer) {
@@ -178,7 +184,7 @@ public class InitConfig {
       return SubscriptionEntity.builder()
          .customer(customer)
          .pricing(pricingMap.get(memberships[randomIdx]))
-         .subscriptionPeriods(List.of(new PeriodEntity(periods[randomIdx], LocalDate.now())))
+         .subscriptionPeriods(List.of(new PeriodEntity(periods[randomIdx])))
          .status(SubscriptionStatus.PAID)
          .build();
    }

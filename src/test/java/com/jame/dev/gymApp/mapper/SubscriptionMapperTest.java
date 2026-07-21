@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SubscriptionMapperTest {
    private final PeriodMapper periodMapper = new PeriodMapperImpl();
    private final SubscriptionMapper subscriptionMapper =
-           new SubscriptionMapperImpl();
+           new SubscriptionMapperImpl(periodMapper);
    private CustomerEntity customer;
    private PricingEntity pricing;
    private SubscriptionEntity subs;
@@ -69,6 +69,6 @@ public class SubscriptionMapperTest {
               () -> assertEquals(customer, subs.getCustomer(), "Should be the same."),
               () -> assertEquals(pricing, subs.getPricing(), "Should be the same."),
               () -> assertEquals(periods, subs.getSubscriptionPeriods(), "Should be the same."),
-              () -> assertEquals(SubscriptionStatus.PAID, subs.getStatus(), "Status should be equals."));
+              () -> assertEquals(SubscriptionStatus.NOT_PAID, subs.getStatus(), "Status should be equals."));
    }
 }

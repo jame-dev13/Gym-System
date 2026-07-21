@@ -24,7 +24,7 @@ public class MemberShipEntity {
    private Integer id;
 
    @Enumerated(EnumType.STRING)
-   @Column(name = "membership", unique = true)
+   @Column(name = "membership", unique = true, length = 15)
    @NonNull
    private Membership membership;
 
