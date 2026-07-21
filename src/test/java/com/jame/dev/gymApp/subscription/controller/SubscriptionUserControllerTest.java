@@ -12,7 +12,7 @@ import com.jame.dev.gymApp.features.subscription.api.response.RetryResponse;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionCheckoutResponse;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.contract.StripeCheckoutService;
-import com.jame.dev.gymApp.features.subscription.application.dto.PeriodDtoOutput;
+import com.jame.dev.gymApp.features.subscription.application.dto.PeriodResponse;
 import com.jame.dev.gymApp.features.subscription.application.support.handler.RetrySubscriptionPaymentHandler;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CreatePaymentUseCase;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CreateSubscriptionUseCase;
@@ -129,7 +129,7 @@ class SubscriptionUserControllerTest {
    private final SubscriptionResponse subscriptionResponse = new SubscriptionResponse(
       1L, customerEmail,
       Membership.ANNUAL, BigDecimal.valueOf(3000d),
-      List.of(new PeriodDtoOutput(Period.ANNUAL, LocalDate.now(), LocalDate.now().plusYears(1))),
+      List.of(new PeriodResponse(Period.ANNUAL, LocalDate.now(), LocalDate.now().plusYears(1))),
       SubscriptionStatus.PAID
    );
 

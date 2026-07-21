@@ -1,14 +1,16 @@
 package com.jame.dev.gymApp.features.customer.domain.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.jame.dev.gymApp.domain.model.BaseEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
-import com.jame.dev.gymApp.domain.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.jspecify.annotations.Nullable;
 
+import java.util.LinkedList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -44,12 +46,13 @@ public class CustomerEntity extends BaseEntity {
    @Column(name = "contact", length = 15)
    private String phoneContact;
 
-   @OneToMany(mappedBy = "customer", orphanRemoval = true)
-   private List<SubscriptionEntity> subscriptions;
-
-   @Builder
-   public CustomerEntity(@NonNull UserEntity user, @Nullable String phoneContact) {
-      this.user = user;
-      this.phoneContact = phoneContact;
-   }
+   @OneToMany(
+      mappedBy = "customer",
+      orphanRemoval = true,
+      fetch = FetchType.LAZY,
+      cascade = {CascadeType.MERGE, CascadeType.REMOVE}
+   )
+   @Builder.Default
+   @JsonIgnore
+   private List<SubscriptionEntity> subscriptions = new LinkedList<>();
 }

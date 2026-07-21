@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.audit.domain.model;
 
-import com.jame.dev.gymApp.features.subscription.application.dto.PeriodDtoOutput;
+import com.jame.dev.gymApp.features.subscription.application.dto.PeriodResponse;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
 import lombok.Builder;
@@ -15,7 +15,7 @@ public record ChangesModelSubscription(
    String customerEmail,
    @Nullable BigDecimal price,
    Membership membership,
-   @Nullable List<PeriodDtoOutput> periods,
+   @Nullable List<PeriodResponse> periods,
    @Nullable SubscriptionStatus status
 ) {
 }

@@ -36,17 +36,17 @@ public class PaymentEntity extends BaseEntity {
    @NonNull
    private BigDecimal amount;
 
-   @Column(name = "currency", nullable = false)
+   @Column(name = "currency", nullable = false, length = 6)
    @NonNull
    private String currency;
 
    @Enumerated(EnumType.STRING)
-   @Column(name = "status", nullable = false)
+   @Column(name = "status", nullable = false, length = 12)
    @NonNull
    private PaymentStatus status;
 
    @Enumerated(EnumType.STRING)
-   @Column(name = "payment_method", nullable = false)
+   @Column(name = "payment_method", nullable = false, length = 12)
    @NonNull
    private PaymentMethod paymentMethod;
 

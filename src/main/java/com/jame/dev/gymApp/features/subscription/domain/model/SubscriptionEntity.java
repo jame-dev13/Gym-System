@@ -20,7 +20,14 @@ import java.util.List;
    @Index(name = "idx_subscription_customer_id", columnList = "customer_id"),
    @Index(name = "idx_subscriptions_pagination", columnList = "id, active")
 })
-@SQLDelete(sql = "UPDATE subscriptions SET active = false, deleted_at = NOW() WHERE id = ?")
+@SQLDelete(sql = """
+   UPDATE subscriptions
+   SET
+      active = false,
+      deleted_at = NOW(),
+      status = 'DROPPED'
+   WHERE id = ?
+   """)
 public class SubscriptionEntity extends BaseEntity {
 
    @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -52,6 +59,7 @@ public class SubscriptionEntity extends BaseEntity {
          foreignKeyDefinition = "FOREIGN KEY (subscription_id) REFERENCES subscriptions(id) ON DELETE CASCADE"
       )
    )
+   @Builder.Default
    private List<PeriodEntity> subscriptionPeriods = new LinkedList<>();
 
    @OneToMany(
@@ -66,11 +74,6 @@ public class SubscriptionEntity extends BaseEntity {
    @Column(name = "status", nullable = false, length = 12)
    @Enumerated(EnumType.STRING)
    private SubscriptionStatus status;
-
-   @PreRemove
-   private void setFinalized(){
-      this.status = SubscriptionStatus.DROPPED;
-   }
 
    @Override
    public String toString() {
