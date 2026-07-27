@@ -12,7 +12,8 @@ import com.jame.dev.gymApp.features.auth.api.request.PasswordResetRequest;
 import com.jame.dev.gymApp.features.auth.domain.repository.OneTimeTokenRepository;
 import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
 import com.jame.dev.gymApp.features.auth.application.contract.OneTimeTokenService;
-import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.HashExecutor;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,11 +23,12 @@ import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class OneTimeTokenApplicationService implements OneTimeTokenService {
 
    private final OneTimeTokenRepository repository;
    private final UserRepository userRepository;
-   private final TokenDBHasherService hasherService;
+   private final HashExecutor hasherService;
    private final PasswordEncoder passwordEncoder;
 
    @Override
@@ -35,7 +37,7 @@ public class OneTimeTokenApplicationService implements OneTimeTokenService {
       repository.deleteByUserId(user.getId());
       final OneTimeTokenEntity oneTimeTokenEntity = new OneTimeTokenEntity();
       oneTimeTokenEntity.setUser(user);
-      oneTimeTokenEntity.setHashToken(hasherService.hashToken(rawToken));
+      oneTimeTokenEntity.setHashToken(hasherService.hash(rawToken));
       oneTimeTokenEntity.setExpiresAt(Instant.now().plusSeconds(600L));
       repository.saveAndFlush(oneTimeTokenEntity);
    }
@@ -54,7 +56,7 @@ public class OneTimeTokenApplicationService implements OneTimeTokenService {
          throw new ExpiredException("Token is expired");
       }
 
-      boolean hashMatches = hasherService.tokenMatches(
+      boolean hashMatches = hasherService.verify(
          tokenIdResetPasswordRequest.rawToken(),
          resetTokenEntity.getHashToken()
       );

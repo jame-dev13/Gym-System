@@ -8,6 +8,8 @@ import com.jame.dev.gymApp.features.metrics.domain.model.TotalPerMonth;
 import com.jame.dev.gymApp.features.metrics.domain.model.YearPeriodicalEarning;
 import com.jame.dev.gymApp.features.metrics.domain.repository.EarningMetricsRepository;
 import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheMetricValues;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
+import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@CheckLockProcess(keys = {LockKeys.PG_RESTORE})
 public class EarningMetricsApplicationService implements EarningMetricsService {
    private final EarningMetricsRepository repo;
 

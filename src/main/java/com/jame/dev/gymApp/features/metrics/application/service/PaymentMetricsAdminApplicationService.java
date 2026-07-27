@@ -5,12 +5,15 @@ import com.jame.dev.gymApp.features.metrics.api.response.InvestmentMonthEvolutio
 import com.jame.dev.gymApp.features.metrics.application.contract.PaymentMetricsAdminService;
 import com.jame.dev.gymApp.features.metrics.domain.repository.PaymentMetricsRepository;
 import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheMetricValues;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
+import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess(keys = {LockKeys.PG_RESTORE})
 public class PaymentMetricsAdminApplicationService implements PaymentMetricsAdminService {
    private final PaymentMetricsRepository paymentMetricsRepository;
 

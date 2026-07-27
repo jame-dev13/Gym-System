@@ -7,6 +7,7 @@ import com.jame.dev.gymApp.features.customer.application.usecases.mutation.SoftD
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerMutationRepository;
 import com.jame.dev.gymApp.features.customer.infrastructure.annotations.CacheEvictCustomers;
 import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class SoftDeleteCustomerByIdUseCaseService implements SoftDeleteCustomerByIdUseCase {
    private final CustomerMutationRepository customerMutationRepository;
 

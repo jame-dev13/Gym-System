@@ -7,6 +7,8 @@ import com.jame.dev.gymApp.features.customer.application.usecases.query.GetPageC
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerQueryRepository;
 import com.jame.dev.gymApp.features.customer.infrastructure.specification.CustomerSpecification;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
+import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -21,6 +23,7 @@ import static com.jame.dev.gymApp.application.model.CacheValues.CUSTOMERS;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@CheckLockProcess(keys = {LockKeys.PG_RESTORE})
 public class GetPageCustomerUseCaseService implements GetPageCustomerUseCase {
     private final CustomerQueryRepository customerQueryRepository;
     private final CustomerFactory customerFactory;

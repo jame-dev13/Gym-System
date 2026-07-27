@@ -6,6 +6,8 @@ import com.jame.dev.gymApp.features.metrics.api.response.SubscriberEvolutionResp
 import com.jame.dev.gymApp.features.metrics.application.contract.EvolutionMetricsService;
 import com.jame.dev.gymApp.features.metrics.domain.repository.EvolutionMetricsRepository;
 import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
+import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@CheckLockProcess(keys = {LockKeys.PG_RESTORE})
 public class EvolutionMetricsApplicationService implements EvolutionMetricsService {
    private final EvolutionMetricsRepository evolutionMetricsRepository;
 

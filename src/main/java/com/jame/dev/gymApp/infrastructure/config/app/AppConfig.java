@@ -3,12 +3,16 @@ package com.jame.dev.gymApp.infrastructure.config.app;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.jame.dev.gymApp.application.model.LockProperties;
+import com.jame.dev.gymApp.features.backup.domain.model.BackupMapping;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 import java.time.Clock;
@@ -19,6 +23,8 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 @Configuration
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 @EnableJpaAuditing
+@EnableMongoAuditing
+@EnableConfigurationProperties(value = {BackupMapping.class, LockProperties.class})
 public class AppConfig {
 
    @Bean(name = "mapper")

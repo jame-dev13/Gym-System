@@ -152,7 +152,6 @@ public class InitConfig {
                //Subscriptions
                final var subscription = createSubscription(customerEntity);
                var sub = subscriptionRepository.save(subscription);
-               System.out.println("periods: " + sub.getSubscriptionPeriods());
 
                paymentRepository.saveAndFlush(createPaymentEntity(subscription));
             });

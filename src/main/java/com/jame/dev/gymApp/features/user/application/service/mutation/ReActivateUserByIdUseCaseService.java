@@ -13,6 +13,7 @@ import com.jame.dev.gymApp.features.user.domain.repository.UserMutationRepositor
 import com.jame.dev.gymApp.features.user.domain.repository.UserQueryRepository;
 import com.jame.dev.gymApp.features.user.infrastructure.annotations.CacheEvictUsers;
 import com.jame.dev.gymApp.features.user.infrastructure.annotations.PublishUserRecovered;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class ReActivateUserByIdUseCaseService implements ReActivateUserByIdUseCase {
    private final UserMutationRepository userMutationRepository;
    private final UserQueryRepository userQueryRepository;

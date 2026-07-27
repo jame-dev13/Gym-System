@@ -12,6 +12,7 @@ import com.jame.dev.gymApp.features.subscription.domain.model.PaymentStatus;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class CreatePaymentUseCaseService implements CreatePaymentUseCase {
    private final PaymentMutationRepository paymentMutationRepository;
    private final SubscriptionQueryRepository subscriptionQueryRepository;

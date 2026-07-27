@@ -17,12 +17,14 @@ import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.CacheEvictSubscriptions;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class RenewSubscriptionUseCaseService implements RenewSubscriptionUseCase {
     private final SubscriptionValidator validator;
     private final PricingRepository pricingRepository;

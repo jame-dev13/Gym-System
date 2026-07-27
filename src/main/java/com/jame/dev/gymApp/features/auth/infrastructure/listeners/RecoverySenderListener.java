@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.auth.infrastructure.listeners;
 
-import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.HashExecutor;
 import com.jame.dev.gymApp.features.auth.domain.event.RecoverySenderEvent;
 import com.jame.dev.gymApp.features.auth.domain.exception.AccountNotFoundException;
 import com.jame.dev.gymApp.features.auth.domain.exception.VerificationNotFoundException;
@@ -24,7 +24,7 @@ import java.time.temporal.ChronoUnit;
 public class RecoverySenderListener {
    private final ApplicationEventPublisher applicationEventPublisher;
    private final VerificationRepository verificationRepository;
-   private final TokenDBHasherService hasherService;
+   private final HashExecutor hasherService;
 
    @EventListener
    @Async("taskExecutor")
@@ -40,7 +40,7 @@ public class RecoverySenderListener {
          .orElseThrow(() -> new VerificationNotFoundException("Verification not found for: " + recipient));
 
       verification.setExpiration(Instant.now().plus(10, ChronoUnit.MINUTES));
-      verification.setToken(hasherService.hashToken(token));
+      verification.setToken(hasherService.hash(token));
       verificationRepository.saveAndFlush(verification);
 
       final var emailDetails = EmailDetails.builder()

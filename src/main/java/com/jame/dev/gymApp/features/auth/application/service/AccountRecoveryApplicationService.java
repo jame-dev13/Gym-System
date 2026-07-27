@@ -1,7 +1,8 @@
 package com.jame.dev.gymApp.features.auth.application.service;
 
-import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.HashExecutor;
 import com.jame.dev.gymApp.features.auth.application.contract.recovery.AccountRecoveryService;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import com.jame.dev.gymApp.features.auth.domain.exception.VerificationAttemptFailedException;
 import com.jame.dev.gymApp.features.auth.domain.exception.VerificationNotFoundException;
 import com.jame.dev.gymApp.features.auth.domain.model.VerificationEntity;
@@ -25,9 +26,10 @@ import java.util.Set;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class AccountRecoveryApplicationService implements AccountRecoveryService {
    private final VerificationRepository verificationRepository;
-   private final TokenDBHasherService hasherService;
+   private final HashExecutor hasherService;
    private final UserRepository userRepository;
    private final CustomerRepository customerRepository;
    private final RoleMapper roleMapper;
@@ -36,7 +38,7 @@ public class AccountRecoveryApplicationService implements AccountRecoveryService
    private @NonNull VerificationEntity getVerificationEntity(String userEmail, String token) {
       final VerificationEntity VE = verificationRepository.findDeactivatedByUser_Email(userEmail)
               .orElseThrow(() -> new VerificationNotFoundException("Verified user account's not found."));
-      final boolean tokenMatch = hasherService.tokenMatches(token, VE.getToken());
+      final boolean tokenMatch = hasherService.verify(token, VE.getToken());
       if (!tokenMatch) {
          throw new VerificationAttemptFailedException("Token mismatch.");
       }

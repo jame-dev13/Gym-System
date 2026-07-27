@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.auth.infrastructure.listeners;
 
-import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.HashExecutor;
 import com.jame.dev.gymApp.infrastructure.security.token.TokenGeneratorService;
 import com.jame.dev.gymApp.features.auth.application.support.factory.VerificationFactory;
 import com.jame.dev.gymApp.features.auth.domain.model.VerificationEntity;
@@ -23,7 +23,7 @@ public class VerificationNotifySignUpUser {
    private final VerificationRepository verificationRepository;
    private final VerificationFactory verificationFactory;
    private final TokenGeneratorService tokenGeneratorService;
-   private final TokenDBHasherService hasherService;
+   private final HashExecutor hasherService;
    private final ApplicationEventPublisher applicationEventPublisher;
 
    @EventListener(UserRegisteredEvent.class)
@@ -34,7 +34,7 @@ public class VerificationNotifySignUpUser {
       userQueryRepository.findByEmail(email)
          .ifPresentOrElse(userEntity -> {
             final String rawToken = tokenGeneratorService.generateToken();
-            final VerificationEntity verificationEntity = verificationFactory.createVerification(userEntity, hasherService.hashToken(rawToken));
+            final VerificationEntity verificationEntity = verificationFactory.createVerification(userEntity, hasherService.hash(rawToken));
             verificationRepository.saveAndFlush(verificationEntity);
             applicationEventPublisher.publishEvent(new VerificationSenderEvent(email, rawToken));
          }, () -> {

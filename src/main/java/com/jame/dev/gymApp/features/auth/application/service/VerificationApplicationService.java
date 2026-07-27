@@ -1,7 +1,8 @@
 package com.jame.dev.gymApp.features.auth.application.service;
 
-import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.HashExecutor;
 import com.jame.dev.gymApp.features.auth.application.contract.verification.VerificationService;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import com.jame.dev.gymApp.features.auth.application.support.factory.VerificationFactory;
 import com.jame.dev.gymApp.features.auth.application.support.helper.VerificationEvaluatorHelper;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyVerifiedException;
@@ -21,11 +22,12 @@ import java.time.temporal.ChronoUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class VerificationApplicationService implements VerificationService {
    private final VerificationRepository verificationRepository;
    private final VerificationFactory verificationFactory;
    private final VerificationEvaluatorHelper verificationEvaluatorHelper;
-   private final TokenDBHasherService tokenHasherService;
+   private final HashExecutor tokenHasherService;
 
    @Override
    @Transactional
@@ -65,7 +67,7 @@ public class VerificationApplicationService implements VerificationService {
    @Override
    @Transactional
    public VerificationEntity save(UserEntity user, String token) {
-      final VerificationEntity verification = verificationFactory.createVerification(user, tokenHasherService.hashToken(token));
+      final VerificationEntity verification = verificationFactory.createVerification(user, tokenHasherService.hash(token));
       return verificationRepository.saveAndFlush(verification);
    }
 
@@ -84,7 +86,7 @@ public class VerificationApplicationService implements VerificationService {
    @Override
    @Transactional
    public void update(VerificationEntity verificationEntity, String rawToken) {
-      verificationEntity.setToken(tokenHasherService.hashToken(rawToken));
+      verificationEntity.setToken(tokenHasherService.hash(rawToken));
       verificationEntity
          .setExpiration(Instant.now().plus(10, ChronoUnit.MINUTES)
       );

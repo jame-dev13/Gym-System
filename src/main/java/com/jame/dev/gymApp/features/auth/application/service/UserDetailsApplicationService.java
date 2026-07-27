@@ -6,6 +6,8 @@ import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
 import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.user.domain.repository.UserQueryRepository;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
+import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess(keys = {LockKeys.PG_RESTORE})
 public class UserDetailsApplicationService implements UserDetailsService {
    private final UserQueryRepository userQueryRepository;
    private final RoleMapper roleMapper;

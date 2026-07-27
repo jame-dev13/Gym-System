@@ -8,6 +8,7 @@ import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionM
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.SoftDeleteSubscriptionByIdUseCase;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.CacheEvictSubscriptions;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class SoftDeleteSubscriptionByIdUseCaseService implements SoftDeleteSubscriptionByIdUseCase {
    private final SubscriptionMutationRepository subscriptionMutationRepository;
 

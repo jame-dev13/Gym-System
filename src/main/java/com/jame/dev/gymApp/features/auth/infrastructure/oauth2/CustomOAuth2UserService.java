@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.features.auth.infrastructure.oauth2;
 
 import com.jame.dev.gymApp.features.auth.infrastructure.annotation.VerifyOauthUser;
 import com.jame.dev.gymApp.features.auth.domain.model.AuthenticatedUser;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import com.jame.dev.gymApp.features.auth.domain.model.CustomOAuth2User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,6 +16,7 @@ import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
    private final CustomOauth2UserServiceHelper oauth2UserServiceHelper;
 

@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.auth.infrastructure.listeners;
 
-import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.HashExecutor;
 import com.jame.dev.gymApp.infrastructure.security.token.TokenGeneratorService;
 import com.jame.dev.gymApp.features.auth.application.support.factory.VerificationFactory;
 import com.jame.dev.gymApp.features.auth.domain.event.VerifyOauthUserEvent;
@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class VerificationOauth2ListenerSaver {
    private final VerificationFactory verificationFactory;
    private final VerificationRepository verificationRepository;
-   private final TokenDBHasherService hasherService;
+   private final HashExecutor hasherService;
    private final TokenGeneratorService tokenGeneratorService;
    private final UserQueryRepository userQueryRepository;
 
@@ -41,7 +41,7 @@ public class VerificationOauth2ListenerSaver {
 
       final String token = tokenGeneratorService.generateToken();
       final VerificationEntity verification = verificationFactory.createVerification(
-         userEntity, hasherService.hashToken(token));
+         userEntity, hasherService.hash(token));
       verification.setVerified(true);
       verificationRepository.saveAndFlush(verification);
    }

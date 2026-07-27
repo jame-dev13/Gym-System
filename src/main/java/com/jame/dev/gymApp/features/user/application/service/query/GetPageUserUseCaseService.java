@@ -9,6 +9,8 @@ import com.jame.dev.gymApp.features.user.application.usecases.query.GetPageUserU
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.user.domain.repository.UserQueryRepository;
 import com.jame.dev.gymApp.features.user.infrastructure.specification.UserSpecifications;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
+import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@CheckLockProcess(keys = {LockKeys.PG_RESTORE})
 public class GetPageUserUseCaseService implements GetPageUserUseCase {
    private final UserQueryRepository userQueryRepository;
    private final UserFactory userFactory;

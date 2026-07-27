@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.features.auth.infrastructure.listeners;
 
 
-import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.HashExecutor;
 import com.jame.dev.gymApp.infrastructure.security.token.TokenGeneratorService;
 import com.jame.dev.gymApp.features.auth.domain.event.TokenGenerationEvent;
 import com.jame.dev.gymApp.features.auth.domain.exception.VerificationNotFoundException;
@@ -27,7 +27,7 @@ import java.time.temporal.ChronoUnit;
 public class TokenGenerationSenderListener {
 
    private final TokenGeneratorService tokenGeneratorService;
-   private final TokenDBHasherService hasherService;
+   private final HashExecutor hasherService;
    private final VerificationRepository verificationRepository;
    private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -48,7 +48,7 @@ public class TokenGenerationSenderListener {
          .orElseThrow(() -> new VerificationNotFoundException("Verification not found for: " + email));
 
       final String rawToken = tokenGeneratorService.generateToken();
-      verification.setToken(hasherService.hashToken(rawToken));
+      verification.setToken(hasherService.hash(rawToken));
       verification.setExpiration(Instant.now().plus(10, ChronoUnit.MINUTES));
       verificationRepository.saveAndFlush(verification);
 
