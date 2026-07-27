@@ -7,6 +7,8 @@ import com.jame.dev.gymApp.features.subscription.domain.model.PeriodEntity;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.SubscriptionRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.notification.model.NotifiableSubscription;
 import com.jame.dev.gymApp.features.subscription.infrastructure.notification.template.HTMLSubscriptionPeriodTemplate;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
+import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess(keys = {LockKeys.PG_RESTORE})
 public class SubscriptionNotificationAppService {
 
    private final SubscriptionRepository subscriptionRepository;

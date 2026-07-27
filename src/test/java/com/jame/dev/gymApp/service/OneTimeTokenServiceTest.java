@@ -11,7 +11,7 @@ import com.jame.dev.gymApp.features.auth.api.request.TokenIdResetPasswordRequest
 import com.jame.dev.gymApp.features.auth.api.request.PasswordResetRequest;
 import com.jame.dev.gymApp.features.auth.domain.repository.OneTimeTokenRepository;
 import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
-import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.HashExecutor;
 import com.jame.dev.gymApp.features.auth.application.service.OneTimeTokenApplicationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -41,7 +41,7 @@ class OneTimeTokenServiceTest {
    @Mock
    private UserRepository userRepository;
    @Mock
-   private TokenDBHasherService hasherService;
+   private HashExecutor hasherService;
    @Mock
    private PasswordEncoder passwordEncoder;
 
@@ -60,12 +60,12 @@ class OneTimeTokenServiceTest {
          when(user.getId()).thenReturn(1L);
          String hashedToken = "hashedToken";
 
-         given(hasherService.hashToken(rawToken)).willReturn(hashedToken);
+         given(hasherService.hash(rawToken)).willReturn(hashedToken);
 
          underTest.saveToken(rawToken, user);
 
          verify(repository).deleteByUserId(eq(1L));
-         verify(hasherService).hashToken(eq(rawToken));
+         verify(hasherService).hash(eq(rawToken));
 
          ArgumentCaptor<OneTimeTokenEntity> captor = ArgumentCaptor.forClass(OneTimeTokenEntity.class);
          verify(repository).saveAndFlush(captor.capture());
@@ -95,12 +95,12 @@ class OneTimeTokenServiceTest {
          doNothing().when(tokenEntity).setTokenVerified(true);
 
          given(repository.findByUserId(userId)).willReturn(Optional.of(tokenEntity));
-         given(hasherService.tokenMatches(rawToken, hashedToken)).willReturn(true);
+         given(hasherService.verify(rawToken, hashedToken)).willReturn(true);
 
          assertDoesNotThrow(() -> underTest.validateTokenRequest(request));
 
          verify(repository).findByUserId(eq(userId));
-         verify(hasherService).tokenMatches(eq(rawToken), eq(hashedToken));
+         verify(hasherService).verify(eq(rawToken), eq(hashedToken));
       }
 
       @Test
@@ -127,7 +127,7 @@ class OneTimeTokenServiceTest {
 
          assertThrowsExactly(ExpiredException.class, () -> underTest.validateTokenRequest(request));
          verify(repository).findByUserId(eq(userId));
-         verify(hasherService, never()).tokenMatches(anyString(), anyString());
+         verify(hasherService, never()).verify(anyString(), anyString());
       }
 
       @Test
@@ -143,11 +143,11 @@ class OneTimeTokenServiceTest {
          when(tokenEntity.getExpiresAt()).thenReturn(Instant.now().plusSeconds(300L));
 
          given(repository.findByUserId(userId)).willReturn(Optional.of(tokenEntity));
-         given(hasherService.tokenMatches(rawToken, hashedToken)).willReturn(false);
+         given(hasherService.verify(rawToken, hashedToken)).willReturn(false);
 
          assertThrowsExactly(MissMatchException.class, () -> underTest.validateTokenRequest(request));
          verify(repository).findByUserId(eq(userId));
-         verify(hasherService).tokenMatches(eq(rawToken), eq(hashedToken));
+         verify(hasherService).verify(eq(rawToken), eq(hashedToken));
       }
    }
 

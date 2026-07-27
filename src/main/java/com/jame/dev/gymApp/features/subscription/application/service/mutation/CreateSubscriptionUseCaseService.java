@@ -21,6 +21,7 @@ import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionValidationRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
@@ -33,6 +34,7 @@ import static com.jame.dev.gymApp.application.model.CacheValues.SUBSCRIPTIONS;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class CreateSubscriptionUseCaseService implements CreateSubscriptionUseCase {
    private final SubscriptionMutationRepository subscriptionMutationRepository;
    private final CustomerQueryRepository customerQueryRepository;

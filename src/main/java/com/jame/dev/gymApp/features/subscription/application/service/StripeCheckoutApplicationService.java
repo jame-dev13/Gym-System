@@ -8,6 +8,8 @@ import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.stripe.service.StripeCheckoutGateway;
 import com.jame.dev.gymApp.features.subscription.infrastructure.stripe.session.utils.SessionParams;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
+import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess(keys = {LockKeys.PG_RESTORE})
 public class StripeCheckoutApplicationService implements StripeCheckoutService {
 
    private final PricingRepository pricingRepository;

@@ -8,6 +8,8 @@ import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetP
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.specification.SubscriptionSpecification;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
+import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@CheckLockProcess(keys = {LockKeys.PG_RESTORE})
 public class GetPageSubscriptionUseCaseService implements GetPageSubscriptionUseCase {
     private final SubscriptionQueryRepository subscriptionQueryRepository;
     private final SubscriptionFactory subscriptionFactory;

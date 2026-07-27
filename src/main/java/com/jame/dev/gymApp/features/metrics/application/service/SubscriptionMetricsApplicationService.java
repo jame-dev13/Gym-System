@@ -6,6 +6,8 @@ import com.jame.dev.gymApp.features.metrics.domain.model.PeriodRanking;
 import com.jame.dev.gymApp.features.metrics.domain.model.PeriodSubscribersRanking;
 import com.jame.dev.gymApp.features.metrics.domain.repository.SubscriptionMetricsRepository;
 import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheMetricValues;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
+import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@CheckLockProcess(keys = {LockKeys.PG_RESTORE})
 public class SubscriptionMetricsApplicationService implements SubscriptionMetricsService {
    private final SubscriptionMetricsRepository repo;
 

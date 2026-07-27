@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.application.service;
 
-import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.HashExecutor;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -8,11 +8,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 @Service
-public class SHA256TokenDBHasherService implements TokenDBHasherService {
+public class SHA256HashExecutor implements HashExecutor {
    private static final String ALGORITHM = "SHA-256";
 
    @Override
-   public String hashToken(String rawToken) {
+   public String hash(String rawToken) {
       try {
          final MessageDigest digest = MessageDigest.getInstance(ALGORITHM);
          final byte[] hashBytes = digest.digest(rawToken.getBytes(StandardCharsets.UTF_8));
@@ -23,8 +23,8 @@ public class SHA256TokenDBHasherService implements TokenDBHasherService {
    }
 
    @Override
-   public boolean tokenMatches(String rawToken, String hashedToken) {
-      final String computedHash = this.hashToken(rawToken);
+   public boolean verify(String rawToken, String hashedToken) {
+      final String computedHash = this.hash(rawToken);
       return MessageDigest.isEqual(
          computedHash.getBytes(StandardCharsets.UTF_8),
          hashedToken.getBytes(StandardCharsets.UTF_8)

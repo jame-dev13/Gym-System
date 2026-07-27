@@ -6,6 +6,8 @@ import com.jame.dev.gymApp.features.customer.application.contract.CustomerFactor
 import com.jame.dev.gymApp.features.customer.application.usecases.query.GetByIdCustomerUseCase;
 import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerQueryRepository;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
+import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@CheckLockProcess(keys = {LockKeys.PG_RESTORE})
 public class GetByIdCustomerUseCaseService implements GetByIdCustomerUseCase {
     private final CustomerQueryRepository customerQueryRepository;
     private final CustomerFactory customerFactory;

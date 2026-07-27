@@ -15,6 +15,7 @@ import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.CacheEvictSubscriptions;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -30,6 +31,7 @@ import java.util.function.Predicate;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class FinalizeSubscriptionUseCaseService implements FinalizeSubscriptionUseCase {
    private final SubscriptionQueryRepository subscriptionQueryRepository;
    private final SubscriptionMutationRepository subscriptionMutationRepository;

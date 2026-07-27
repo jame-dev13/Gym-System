@@ -5,6 +5,7 @@ import com.jame.dev.gymApp.features.auth.domain.exception.VerificationNotFoundEx
 import com.jame.dev.gymApp.features.auth.domain.exception.WindowTimeException;
 import com.jame.dev.gymApp.features.auth.domain.repository.VerificationRepository;
 import com.jame.dev.gymApp.features.auth.application.contract.expiration.ExpirationService;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class ExpirationApplicationService implements ExpirationService {
    private final VerificationRepository verificationRepository;
 

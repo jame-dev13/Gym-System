@@ -13,6 +13,7 @@ COPY src ./src
 RUN ./mvnw clean package -Dmaven.test.skip=true
 
 FROM eclipse-temurin:21-jre-alpine
+RUN apk add --no-cache postgresql-client
 WORKDIR /app
 
 COPY --from=builder /app/target/*.jar app.jar

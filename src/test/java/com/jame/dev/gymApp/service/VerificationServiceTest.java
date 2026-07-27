@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.infrastructure.security.hash.TokenDBHasherService;
+import com.jame.dev.gymApp.infrastructure.security.hash.HashExecutor;
 import com.jame.dev.gymApp.features.auth.application.service.VerificationApplicationService;
 import com.jame.dev.gymApp.features.auth.application.support.factory.VerificationFactory;
 import com.jame.dev.gymApp.features.auth.application.support.helper.VerificationEvaluatorHelper;
@@ -39,7 +39,7 @@ public class VerificationServiceTest {
     @Mock
     VerificationEvaluatorHelper verificationEvaluatorHelper;
     @Mock
-    TokenDBHasherService tokenHasherService;
+    HashExecutor tokenHasherService;
 
     @InjectMocks
     VerificationApplicationService service;
@@ -51,7 +51,7 @@ public class VerificationServiceTest {
     @DisplayName("Should save verification successfully")
     void save() {
         String tokenHashed = "TokenHashed";
-        given(tokenHasherService.hashToken(anyString()))
+        given(tokenHasherService.hash(anyString()))
                 .willReturn(tokenHashed);
         given(verificationFactory.createVerification(any(), anyString()))
                 .willReturn(verificationEntity);
@@ -62,7 +62,7 @@ public class VerificationServiceTest {
 
         assertNotNull(result);
 
-        then(tokenHasherService).should().hashToken(anyString());
+        then(tokenHasherService).should().hash(anyString());
         then(verificationFactory).should(times(1)).createVerification(any(), anyString());
         then(verificationRepository).should(times(1)).saveAndFlush(any());
         verifyNoMoreInteractions(verificationFactory, tokenHasherService, verificationRepository);
@@ -251,12 +251,12 @@ public class VerificationServiceTest {
     void update() {
         String rawToken = "newRawToken";
         String hashedToken = "newHashedToken";
-        given(tokenHasherService.hashToken(rawToken)).willReturn(hashedToken);
+        given(tokenHasherService.hash(rawToken)).willReturn(hashedToken);
         given(verificationRepository.saveAndFlush(verificationEntity)).willReturn(verificationEntity);
 
         service.update(verificationEntity, rawToken);
 
-        then(tokenHasherService).should().hashToken(rawToken);
+        then(tokenHasherService).should().hash(rawToken);
         assertEquals(hashedToken, verificationEntity.getToken());
         assertNotNull(verificationEntity.getExpiration());
         then(verificationRepository).should().saveAndFlush(verificationEntity);

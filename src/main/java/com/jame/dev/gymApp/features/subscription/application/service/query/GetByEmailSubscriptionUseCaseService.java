@@ -5,6 +5,8 @@ import com.jame.dev.gymApp.features.subscription.application.contract.Subscripti
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetByEmailSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
+import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@CheckLockProcess(keys = {LockKeys.PG_RESTORE})
 public class GetByEmailSubscriptionUseCaseService implements GetByEmailSubscriptionUseCase {
     private final SubscriptionQueryRepository subscriptionQueryRepository;
     private final SubscriptionFactory subscriptionFactory;

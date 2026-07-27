@@ -158,4 +158,12 @@ public class RedisConfig {
 
       return new StringRedisTemplate(factory);
    }
+
+   @Bean("lockTemplate")
+   public StringRedisTemplate lockTemplate() {
+      final JedisConnectionFactory factory = new JedisConnectionFactory(getStandaloneConfig(5));
+      factory.afterPropertiesSet();
+
+      return new StringRedisTemplate(factory);
+   }
 }

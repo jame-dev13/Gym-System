@@ -13,6 +13,7 @@ import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerMutationRepository;
 import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
@@ -23,6 +24,7 @@ import static com.jame.dev.gymApp.application.model.CacheValues.CUSTOMERS;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class CreateCustomerUseCaseService implements CreateCustomerUseCase {
    private final CustomerMutationRepository customerMutationRepository;
    private final CustomerValidator customerValidator;

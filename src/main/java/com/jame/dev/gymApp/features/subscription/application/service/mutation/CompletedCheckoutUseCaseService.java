@@ -13,6 +13,7 @@ import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus
 import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentQueryRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -25,6 +26,7 @@ import java.time.Instant;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class CompletedCheckoutUseCaseService implements CompletedCheckoutUseCase {
    private final PaymentMutationRepository paymentMutationRepository;
    private final PaymentQueryRepository paymentQueryRepository;

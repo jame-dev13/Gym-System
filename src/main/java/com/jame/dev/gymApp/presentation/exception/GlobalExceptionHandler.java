@@ -4,6 +4,7 @@ import com.jame.dev.gymApp.application.model.ErrorCodes;
 import com.jame.dev.gymApp.domain.exception.*;
 import com.jame.dev.gymApp.features.audit.domain.exception.AuditLogNotFoundException;
 import com.jame.dev.gymApp.features.auth.domain.exception.*;
+import com.jame.dev.gymApp.features.backup.domain.exception.BackupException;
 import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.features.notification.domain.exception.NotificationException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.*;
@@ -441,6 +442,33 @@ public class GlobalExceptionHandler {
    @ExceptionHandler(StateException.class)
    public ResponseEntity<ApiErrorResponse> handleStateException(
       StateException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.CONFLICT, ErrorCodes.UNSUPPORTED));
+   }
+
+   @ExceptionHandler(NotFoundException.class)
+   public ResponseEntity<ApiErrorResponse> handleNotFoundException(
+      NotFoundException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.NOT_FOUND, ErrorCodes.NOT_FOUND));
+   }
+
+   @ExceptionHandler(BackupException.class)
+   public ResponseEntity<ApiErrorResponse> handleBackupException(
+      BackupException ex, HttpServletRequest request
+   ) {
+      return responseFactory
+         .buildResponse(new InputError(
+            ex, request, HttpStatus.CONFLICT, ErrorCodes.UNSUPPORTED));
+   }
+
+   @ExceptionHandler(LockException.class)
+   public ResponseEntity<ApiErrorResponse> handleLockException(
+      LockException ex, HttpServletRequest request
    ) {
       return responseFactory
          .buildResponse(new InputError(

@@ -13,6 +13,7 @@ import com.jame.dev.gymApp.features.user.application.usecases.mutation.CreateUse
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.user.domain.repository.UserMutationRepository;
 import com.jame.dev.gymApp.features.user.domain.repository.UserValidationRepository;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class CreateUserUseCaseService implements CreateUserUseCase {
    private final UserMutationRepository userMutationRepository;
    private final UserValidationRepository userValidationRepository;

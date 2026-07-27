@@ -4,6 +4,7 @@ import com.jame.dev.gymApp.features.subscription.domain.model.MemberShipEntity;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
 import com.jame.dev.gymApp.features.subscription.application.contract.MembershipService;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class MembershipApplicationService implements MembershipService {
    private final MembershipRepository repo;
 

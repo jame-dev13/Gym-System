@@ -3,6 +3,7 @@ package com.jame.dev.gymApp.features.subscription.application.service;
 import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
 import com.jame.dev.gymApp.features.subscription.application.contract.PricingService;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Validated
+@CheckLockProcess
 public class PricingApplicationService implements PricingService {
    private final PricingRepository repo;
 

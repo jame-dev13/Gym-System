@@ -13,12 +13,14 @@ import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.user.domain.repository.UserMutationRepository;
 import com.jame.dev.gymApp.features.user.domain.repository.UserQueryRepository;
 import com.jame.dev.gymApp.features.user.infrastructure.annotations.CacheEvictUsers;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class UpdateUserUseCaseService implements UpdateUserUseCase {
    private final UserMutationRepository userMutationRepository;
    private final UserQueryRepository userQueryRepository;

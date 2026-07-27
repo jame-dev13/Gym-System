@@ -18,6 +18,7 @@ import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionM
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.CacheEvictSubscriptions;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
+@CheckLockProcess
 public class UpdateSubscriptionUseCaseService implements UpdateSubscriptionUseCase {
    private final SubscriptionQueryRepository subscriptionQueryRepository;
    private final PricingRepository pricingRepository;
