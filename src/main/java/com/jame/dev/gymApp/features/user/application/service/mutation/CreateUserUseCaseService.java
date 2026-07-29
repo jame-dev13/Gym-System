@@ -1,6 +1,5 @@
 package com.jame.dev.gymApp.features.user.application.service.mutation;
 
-import com.jame.dev.gymApp.application.model.CacheValues;
 import com.jame.dev.gymApp.domain.exception.NoActiveException;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
@@ -13,9 +12,9 @@ import com.jame.dev.gymApp.features.user.application.usecases.mutation.CreateUse
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.user.domain.repository.UserMutationRepository;
 import com.jame.dev.gymApp.features.user.domain.repository.UserValidationRepository;
+import com.jame.dev.gymApp.features.user.infrastructure.annotations.EvictUsersOnSave;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,10 +28,7 @@ public class CreateUserUseCaseService implements CreateUserUseCase {
 
    @Override
    @Transactional
-   @CacheEvict(
-      value = CacheValues.USERS,
-      allEntries = true
-   )
+   @EvictUsersOnSave
    @AuditLog(
       action = AuditLogAction.INSERT,
       entityType = AuditLogEntityType.USER,

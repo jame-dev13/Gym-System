@@ -20,8 +20,7 @@ public class AuditLogApplicationService implements AuditLogService {
    @Cacheable(
       value = "auditLogs",
       keyGenerator = "pageKeyGenerator",
-      unless = "#result == null || #result.content.isEmpty()",
-      cacheManager = "redisCacheManager"
+      unless = "#result == null || #result.content.isEmpty()"
    )
    public PageDto<AuditLogResponse> getPage(Pageable pageable, String search) {
       return auditLogFactory.createPageFrom(auditLogRepository.search(pageable, search));

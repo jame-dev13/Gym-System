@@ -5,7 +5,6 @@ import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import com.jame.dev.gymApp.infrastructure.security.lock.LockProcessExecutorService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class CheckBackupLockAspect {
 
    private final LockProcessExecutorService lockProcessExecutorService;
@@ -27,7 +25,6 @@ public class CheckBackupLockAspect {
       @annotation(com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess)
       """)
    public Object checkLockProcess(final ProceedingJoinPoint joinPoint) throws Throwable {
-      log.info("[HIT] CheckLockProcess.");
       final var signature = (MethodSignature) joinPoint.getSignature();
       final var method = signature.getMethod();
 
@@ -42,7 +39,7 @@ public class CheckBackupLockAspect {
          return joinPoint.proceed();
       }
 
-      for (LockKeys key : annotation.keys()) {
+      for (final LockKeys key : annotation.keys()) {
          final String value = key.getKey();
          if (lockProcessExecutorService.isLocked(value)) {
             throw new LockException("Try again latter.");

@@ -1,17 +1,13 @@
 package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 
-import com.jame.dev.gymApp.application.model.CacheValues;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
-import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.SoftDeleteSubscriptionByIdUseCase;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
-import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.CacheEvictSubscriptions;
+import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictSubsOnDrop;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,20 +19,7 @@ public class SoftDeleteSubscriptionByIdUseCaseService implements SoftDeleteSubsc
 
    @Override
    @Transactional
-   @CacheEvictSubscriptions
-   @Caching(
-      evict = {
-         @CacheEvict(
-            value = CacheValues.PAYMENTS,
-            allEntries = true,
-            cacheManager = "redisCacheManager",
-            beforeInvocation = true
-         ),
-         @CacheEvict(
-            value = CacheEvolutionMetricsValues.DOWNING_SUBSCRIBERS, allEntries = true, cacheManager = "redisCacheManager"
-         )
-      }
-   )
+   @EvictSubsOnDrop
    @AuditLog(
       action = AuditLogAction.DELETE,
       entityType = AuditLogEntityType.SUBSCRIPTION,

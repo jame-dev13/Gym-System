@@ -11,16 +11,12 @@ import com.jame.dev.gymApp.features.customer.application.support.validator.Custo
 import com.jame.dev.gymApp.features.customer.application.usecases.mutation.CreateCustomerUseCase;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerMutationRepository;
-import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues;
+import com.jame.dev.gymApp.features.customer.infrastructure.annotations.EvictOnSaveCustomers;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static com.jame.dev.gymApp.application.model.CacheValues.CUSTOMERS;
 
 @Service
 @RequiredArgsConstructor
@@ -32,12 +28,7 @@ public class CreateCustomerUseCaseService implements CreateCustomerUseCase {
 
    @Override
    @Transactional
-   @Caching(
-      evict = {
-         @CacheEvict(value = CUSTOMERS, allEntries = true, cacheManager = "redisCacheManager"),
-         @CacheEvict(value = CacheEvolutionMetricsValues.JOINING_CUSTOMERS, allEntries = true, cacheManager = "redisCacheManager")
-      }
-   )
+   @EvictOnSaveCustomers
    @AuditLog(
       action = AuditLogAction.INSERT,
       entityType = AuditLogEntityType.CUSTOMER,

@@ -1,8 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 
-import com.jame.dev.gymApp.application.model.CacheValues;
 import com.jame.dev.gymApp.features.metrics.infrastructure.annotations.EvictPaymentMetrics;
-import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues;
 import com.jame.dev.gymApp.features.subscription.api.request.PaymentRequest;
 import com.jame.dev.gymApp.features.subscription.application.support.factory.PaymentFactory;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CreatePaymentUseCase;
@@ -14,8 +12,6 @@ import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentMutati
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,12 +25,6 @@ public class CreatePaymentUseCaseService implements CreatePaymentUseCase {
 
    @Override
    @Transactional
-   @Caching(
-      evict = {
-         @CacheEvict(value = CacheValues.PAYMENTS, allEntries = true, cacheManager = "redisCacheManger"),
-         @CacheEvict(value = CacheEvolutionMetricsValues.BILLINGS, allEntries = true, cacheManager = "redisCacheManager")
-      }
-   )
    @EvictPaymentMetrics
    public void create(PaymentRequest paymentRequest) {
       final SubscriptionEntity subscriptionEntity = subscriptionQueryRepository.findById(paymentRequest.subscriptionId())

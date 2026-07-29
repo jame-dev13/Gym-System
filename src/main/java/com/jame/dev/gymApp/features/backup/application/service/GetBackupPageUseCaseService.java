@@ -6,8 +6,6 @@ import com.jame.dev.gymApp.features.backup.application.support.factory.BackupFac
 import com.jame.dev.gymApp.features.backup.application.usecases.GetBackupPageUseCase;
 import com.jame.dev.gymApp.features.backup.domain.repository.BackupQueryRepository;
 import com.jame.dev.gymApp.features.backup.infrastructure.cache.CacheBackupValues;
-import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
-import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
@@ -24,8 +22,7 @@ public class GetBackupPageUseCaseService implements GetBackupPageUseCase {
    @Cacheable(
       value = CacheBackupValues.CACHE_BACKUP,
       keyGenerator = "pageKeyGenerator",
-      unless = "#result == null || #result.content.isEmpty()",
-      cacheManager = "redisCacheManager"
+      unless = "#result == null || #result.content.isEmpty()"
    )
    public PageDto<BackupResponse> getBackupPage(final Pageable pageable) {
       return backupFactory.createPageFrom(backupQueryRepository.findAll(pageable));
