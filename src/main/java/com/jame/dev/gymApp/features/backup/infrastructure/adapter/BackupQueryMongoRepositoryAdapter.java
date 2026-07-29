@@ -17,8 +17,8 @@ public class BackupQueryMongoRepositoryAdapter implements BackupQueryRepository 
    private final BackupRepository backupRepository;
 
    @Override
-   public Page<BackupDocument> findAll(Pageable pageable) {
-      return backupRepository.findAll(pageable);
+   public Page<BackupDocument> findAll(Pageable pageable, String search) {
+      return backupRepository.search(pageable, search);
    }
 
    @Override

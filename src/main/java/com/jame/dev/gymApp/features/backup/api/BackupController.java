@@ -42,9 +42,10 @@ public class BackupController {
 
    @GetMapping
    public ResponseEntity<Page<BackupResponse>> getBackupPage(
-      @PageableDefault(size = 5, sort = "id", direction = Sort.Direction.DESC) final Pageable pageable
+      @PageableDefault(size = 5, sort = "id", direction = Sort.Direction.DESC) final Pageable pageable,
+      @RequestParam(value = "search", required = false) final String search
    ) {
-      final PageDto<BackupResponse> pageDto = getBackupPageUseCase.getBackupPage(pageable);
+      final PageDto<BackupResponse> pageDto = getBackupPageUseCase.getBackupPage(pageable, search);
       final Page<BackupResponse> page = new PageImpl<>(pageDto.content(), pageable, pageDto.totalElements());
       return ResponseEntity.ok(page);
    }
