@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.features.audit.domain.repository.support;
 
+import com.jame.dev.gymApp.domain.repository.CustomMongoSpecification;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogDocument;
-import com.jame.dev.gymApp.features.audit.domain.repository.AuditLogRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -16,7 +16,7 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 public class AuditLogRepositoryImpl implements
-   AuditLogRepositoryCustom<AuditLogDocument> {
+   CustomMongoSpecification<AuditLogDocument> {
    private final MongoTemplate mongoTemplate;
 
    @Override

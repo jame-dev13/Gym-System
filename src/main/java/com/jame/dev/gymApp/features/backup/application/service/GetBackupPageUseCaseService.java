@@ -24,7 +24,7 @@ public class GetBackupPageUseCaseService implements GetBackupPageUseCase {
       keyGenerator = "pageKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
-   public PageDto<BackupResponse> getBackupPage(final Pageable pageable) {
-      return backupFactory.createPageFrom(backupQueryRepository.findAll(pageable));
+   public PageDto<BackupResponse> getBackupPage(final Pageable pageable, final String search) {
+      return backupFactory.createPageFrom(backupQueryRepository.findAll(pageable, search));
    }
 }

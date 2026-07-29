@@ -5,5 +5,5 @@ import com.jame.dev.gymApp.features.backup.api.response.BackupResponse;
 import org.springframework.data.domain.Pageable;
 
 public interface GetBackupPageUseCase {
-   PageDto<BackupResponse> getBackupPage(final Pageable pageable);
+   PageDto<BackupResponse> getBackupPage(final Pageable pageable, final String search);
 }

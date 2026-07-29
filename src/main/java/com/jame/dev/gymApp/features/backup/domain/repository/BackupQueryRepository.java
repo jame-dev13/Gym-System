@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface BackupQueryRepository {
-   Page<BackupDocument> findAll(final Pageable pageable);
+   Page<BackupDocument> findAll(final Pageable pageable, final String search);
 
    Optional<BackupDocument> findById(final UUID uuid);
 }
