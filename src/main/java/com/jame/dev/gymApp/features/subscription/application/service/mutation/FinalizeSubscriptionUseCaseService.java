@@ -1,10 +1,8 @@
 package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 
-import com.jame.dev.gymApp.application.model.CacheValues;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
-import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.FinalizeSubscriptionUseCase;
@@ -14,12 +12,10 @@ import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
-import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.CacheEvictSubscriptions;
+import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictSubsOnUpdate;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,15 +35,7 @@ public class FinalizeSubscriptionUseCaseService implements FinalizeSubscriptionU
 
    @Override
    @Transactional
-   @CacheEvictSubscriptions
-   @Caching(evict = {
-      @CacheEvict(
-         value = CacheValues.PAYMENTS, allEntries = true, cacheManager = "redisCacheManager"
-      ),
-      @CacheEvict(
-         value = CacheEvolutionMetricsValues.DOWNING_SUBSCRIBERS, allEntries = true, cacheManager = "redisCacheManager"
-      )
-   })
+   @EvictSubsOnUpdate
    @AuditLog(
       action = AuditLogAction.UPDATE,
       entityType = AuditLogEntityType.SUBSCRIPTION,

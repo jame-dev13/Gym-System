@@ -11,7 +11,7 @@ import com.jame.dev.gymApp.features.user.domain.model.Role;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.user.domain.repository.UserMutationRepository;
 import com.jame.dev.gymApp.features.user.domain.repository.UserQueryRepository;
-import com.jame.dev.gymApp.features.user.infrastructure.annotations.CacheEvictUsers;
+import com.jame.dev.gymApp.features.user.infrastructure.annotations.EvictUsersOnUpdate;
 import com.jame.dev.gymApp.features.user.infrastructure.annotations.PublishUserRecovered;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class ReActivateUserByIdUseCaseService implements ReActivateUserByIdUseCa
 
    @Override
    @Transactional
-   @CacheEvictUsers
+   @EvictUsersOnUpdate
    @PublishUserRecovered
    @AuditLog(
       action = AuditLogAction.RECOVER,

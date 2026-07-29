@@ -12,7 +12,7 @@ import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundExce
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.user.domain.repository.UserMutationRepository;
 import com.jame.dev.gymApp.features.user.domain.repository.UserQueryRepository;
-import com.jame.dev.gymApp.features.user.infrastructure.annotations.CacheEvictUsers;
+import com.jame.dev.gymApp.features.user.infrastructure.annotations.EvictUsersOnUpdate;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class UpdateUserUseCaseService implements UpdateUserUseCase {
 
    @Override
    @Transactional
-   @CacheEvictUsers
+   @EvictUsersOnUpdate
    @AuditLog(
       action = AuditLogAction.UPDATE,
       entityType = AuditLogEntityType.USER,

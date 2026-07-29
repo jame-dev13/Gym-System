@@ -5,12 +5,9 @@ import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.customer.application.usecases.mutation.SoftDeleteCustomerByIdUseCase;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerMutationRepository;
-import com.jame.dev.gymApp.features.customer.infrastructure.annotations.CacheEvictCustomers;
-import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues;
+import com.jame.dev.gymApp.features.customer.infrastructure.annotations.EvictOnDropCustomers;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +19,7 @@ public class SoftDeleteCustomerByIdUseCaseService implements SoftDeleteCustomerB
 
    @Override
    @Transactional
-   @CacheEvictCustomers
-   @Caching(
-      evict = {
-         @CacheEvict(value = CacheEvolutionMetricsValues.DOWNING_CUSTOMERS, allEntries = true, cacheManager = "redisCacheManager")
-      }
-   )
+   @EvictOnDropCustomers
    @AuditLog(
       action = AuditLogAction.DELETE,
       entityType = AuditLogEntityType.CUSTOMER,

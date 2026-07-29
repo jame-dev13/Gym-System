@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Inherited
 @Documented
 @Caching(
-   evict = @CacheEvict(value = CacheBackupValues.CACHE_BACKUP, allEntries = true, cacheManager = "redisCacheManager")
+   evict = @CacheEvict(value = CacheBackupValues.CACHE_BACKUP, allEntries = true)
 )
 public @interface EvictBackups {
 }

@@ -13,8 +13,7 @@ import java.lang.annotation.*;
 @Caching(evict = {
    @CacheEvict(
       value = CacheMetricValues.PAYMENTS,
-      allEntries = true,
-      cacheManager = "redisCacheManager")
+      allEntries = true)
 })
 public @interface EvictPaymentMetrics {
 }

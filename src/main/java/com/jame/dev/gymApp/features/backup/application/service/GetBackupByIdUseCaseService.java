@@ -24,7 +24,6 @@ public class GetBackupByIdUseCaseService implements GetBackupByIdUseCase {
    @Cacheable(
       value = CacheBackupValues.CACHE_BACKUP,
       key = "#uuid",
-      cacheManager = "redisCacheManager",
       unless = "#result == null"
    )
    public BackupResponse getById(UUID uuid) {

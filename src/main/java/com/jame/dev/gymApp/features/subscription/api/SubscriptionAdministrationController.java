@@ -14,6 +14,7 @@ import com.jame.dev.gymApp.infrastructure.annotation.Minimum;
 import com.jame.dev.gymApp.infrastructure.annotation.NotNullObject;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/app/v1/administration/subs")
 @PreAuthorize("hasRole('ADMIN')")
@@ -79,6 +81,7 @@ public class SubscriptionAdministrationController {
          PaymentPhysicMeta.PAYMENT_INTEND_ID.getValue(),
          PaymentPhysicMeta.STRIPE_SUBSCRIPTION_ID.getValue(),
          subscription.customerEmail());
+      log.info("checkout event created.");
 
       createPaymentUseCase.create(
          PaymentRequest.builder()
@@ -92,9 +95,7 @@ public class SubscriptionAdministrationController {
 
       completedCheckoutUseCase.execute(checkoutEvent);
 
-      final SubscriptionResponse body = subscriptionGetById.getById(subscription.id());
-
-      return ResponseEntity.created(location).body(body);
+      return ResponseEntity.created(location).body(subscription);
    }
 
    @PostMapping("/notify")

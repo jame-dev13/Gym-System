@@ -3,8 +3,6 @@ package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
-import com.jame.dev.gymApp.features.metrics.infrastructure.annotations.EvictEarningMetrics;
-import com.jame.dev.gymApp.features.metrics.infrastructure.annotations.EvictSubscriptionMetrics;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
@@ -16,7 +14,7 @@ import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
-import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.CacheEvictSubscriptions;
+import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictSubsOnUpdate;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
@@ -39,9 +37,7 @@ public class UpdateSubscriptionUseCaseService implements UpdateSubscriptionUseCa
 
    @Override
    @Transactional
-   @CacheEvictSubscriptions
-   @EvictEarningMetrics
-   @EvictSubscriptionMetrics
+   @EvictSubsOnUpdate
    @AuditLog(
       action = AuditLogAction.UPDATE,
       entityType = AuditLogEntityType.SUBSCRIPTION,

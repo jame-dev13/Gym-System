@@ -7,9 +7,6 @@ import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException
 import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerQueryRepository;
-import com.jame.dev.gymApp.features.metrics.infrastructure.annotations.EvictEarningMetrics;
-import com.jame.dev.gymApp.features.metrics.infrastructure.annotations.EvictSubscriptionMetrics;
-import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
@@ -20,18 +17,17 @@ import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionValidationRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictSubsOnSave;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
-import static com.jame.dev.gymApp.application.model.CacheValues.SUBSCRIPTIONS;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @CheckLockProcess
@@ -44,14 +40,7 @@ public class CreateSubscriptionUseCaseService implements CreateSubscriptionUseCa
 
    @Override
    @Transactional
-   @Caching(
-      evict = {
-         @CacheEvict(value = SUBSCRIPTIONS, allEntries = true, cacheManager = "redisCacheManager"),
-         @CacheEvict(value = CacheEvolutionMetricsValues.JOINING_SUBSCRIBERS, allEntries = true, cacheManager = "redisCacheManager"),
-      }
-   )
-   @EvictEarningMetrics
-   @EvictSubscriptionMetrics
+   @EvictSubsOnSave
    @AuditLog(
       action = AuditLogAction.INSERT,
       entityType = AuditLogEntityType.SUBSCRIPTION,
@@ -60,6 +49,7 @@ public class CreateSubscriptionUseCaseService implements CreateSubscriptionUseCa
       result = "#result"
    )
    public SubscriptionResponse create(SubscriptionRequest request) {
+      log.info("[HIT]: Create subscription.");
       final CustomerEntity customer = customerQueryRepository.findByUserEmail(request.customerEmail())
          .orElseThrow(() -> new CustomerNotFoundException("Customer Not Found."));
 

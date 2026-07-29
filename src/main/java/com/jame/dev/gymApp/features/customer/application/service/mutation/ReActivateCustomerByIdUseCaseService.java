@@ -5,13 +5,15 @@ import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundEx
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerMutationRepository;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerQueryRepository;
-import com.jame.dev.gymApp.features.customer.infrastructure.annotations.CacheEvictCustomers;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+
+import static com.jame.dev.gymApp.application.model.CacheValues.CUSTOMERS;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class ReActivateCustomerByIdUseCaseService implements ReActivateCustomerB
 
     @Override
     @Transactional
-    @CacheEvictCustomers
+    @CacheEvict(value = CUSTOMERS, allEntries = true)
     public void reActivateById(long id) {
         final CustomerEntity customer = customerQueryRepository.findDeactivatedById(id)
             .orElseThrow(() -> new CustomerNotFoundException("Customer not found, id: " + id));
