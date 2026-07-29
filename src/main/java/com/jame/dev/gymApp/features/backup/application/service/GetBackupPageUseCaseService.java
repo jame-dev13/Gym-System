@@ -6,6 +6,7 @@ import com.jame.dev.gymApp.features.backup.application.support.factory.BackupFac
 import com.jame.dev.gymApp.features.backup.application.usecases.GetBackupPageUseCase;
 import com.jame.dev.gymApp.features.backup.domain.repository.BackupQueryRepository;
 import com.jame.dev.gymApp.features.backup.infrastructure.cache.CacheBackupValues;
+import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class GetBackupPageUseCaseService implements GetBackupPageUseCase {
    private final BackupFactory backupFactory;
    private final BackupQueryRepository backupQueryRepository;
+   private final SortPropertyResolver backupSortPropertyResolver;
 
    @Override
    @Cacheable(
@@ -25,6 +27,7 @@ public class GetBackupPageUseCaseService implements GetBackupPageUseCase {
       unless = "#result == null || #result.content.isEmpty()"
    )
    public PageDto<BackupResponse> getBackupPage(final Pageable pageable, final String search) {
-      return backupFactory.createPageFrom(backupQueryRepository.findAll(pageable, search));
+      final Pageable wrapped = backupSortPropertyResolver.resolve(pageable);
+      return backupFactory.createPageFrom(backupQueryRepository.findAll(wrapped, search));
    }
 }
