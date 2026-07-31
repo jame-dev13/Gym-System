@@ -13,6 +13,7 @@ import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictSubsOnUpdate;
+import com.jame.dev.gymApp.features.subscription.infrastructure.publisher.SubscriptionMutationEventPublisher;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ public class FinalizeSubscriptionUseCaseService implements FinalizeSubscriptionU
    private final SubscriptionQueryRepository subscriptionQueryRepository;
    private final SubscriptionMutationRepository subscriptionMutationRepository;
    private final SubscriptionFactory subscriptionFactory;
+   private final SubscriptionMutationEventPublisher subscriptionMutationEventPublisher;
 
    @Override
    @Transactional
@@ -56,6 +58,8 @@ public class FinalizeSubscriptionUseCaseService implements FinalizeSubscriptionU
          });
 
       subscription.setStatus(SubscriptionStatus.FINALIZED);
-      return subscriptionFactory.createFromEntity(subscriptionMutationRepository.save(subscription));
+      final SubscriptionEntity subscriptionEntity = subscriptionMutationRepository.save(subscription);
+      subscriptionMutationEventPublisher.publishSubscriptionFinalized(subscriptionEntity);
+      return subscriptionFactory.createFromEntity(subscriptionEntity);
    }
 }

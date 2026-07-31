@@ -8,6 +8,7 @@ import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.publisher.SubscriptionMutationEventPublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +37,9 @@ class FinalizeSubscriptionUseCaseServiceTest {
 
     @Mock
     private SubscriptionFactory subscriptionFactory;
+
+    @Mock
+    private SubscriptionMutationEventPublisher subscriptionMutationEventPublisher;
 
     @InjectMocks
     private FinalizeSubscriptionUseCaseService service;
@@ -67,7 +71,9 @@ class FinalizeSubscriptionUseCaseServiceTest {
         assertSame(entity, captured);
         assertEquals(SubscriptionStatus.FINALIZED, captured.getStatus());
 
-        verifyNoMoreInteractions(subscriptionQueryRepository, subscriptionMutationRepository, subscriptionFactory);
+        verify(subscriptionMutationEventPublisher).publishSubscriptionFinalized(savedEntity);
+
+        verifyNoMoreInteractions(subscriptionQueryRepository, subscriptionMutationRepository, subscriptionFactory, subscriptionMutationEventPublisher);
     }
 
     @Test
@@ -78,6 +84,6 @@ class FinalizeSubscriptionUseCaseServiceTest {
         assertThrows(SubscriptionNotFoundException.class, () -> service.finalize(1L));
 
         verify(subscriptionQueryRepository).findById(anyLong());
-        verifyNoInteractions(subscriptionMutationRepository, subscriptionFactory);
+        verifyNoInteractions(subscriptionMutationRepository, subscriptionFactory, subscriptionMutationEventPublisher);
     }
 }
