@@ -3,7 +3,6 @@ package com.jame.dev.gymApp.notification.repository;
 import com.jame.dev.gymApp.features.notification.domain.model.SubscriberNotificationEntity;
 import com.jame.dev.gymApp.features.notification.infrastructure.adapter.SubscriberNotificationQueryJpaRepositoryAdapter;
 import com.jame.dev.gymApp.features.notification.infrastructure.persistence.SubscriberNotificationRepository;
-import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,30 +56,58 @@ class SubscriberNotificationQueryJpaRepositoryAdapterTest {
    }
 
    @Test
-   @DisplayName("Should delegate findBySubscriber to JPA repository")
-   void findBySubscriber_delegatesToJpaRepository() {
-      var subscription = new SubscriptionEntity();
+   @DisplayName("Should delegate findBySubscriptionId to JPA repository")
+   void findBySubscriptionId_delegatesToJpaRepository() {
+      long subscriptionId = 1L;
       var entity = new SubscriberNotificationEntity();
-      given(subscriberNotificationRepository.findBySubscription(subscription)).willReturn(Optional.of(entity));
+      given(subscriberNotificationRepository.findBySubscriptionId(subscriptionId)).willReturn(Optional.of(entity));
 
-      var result = adapter.findBySubscriber(subscription);
+      var result = adapter.findBySubscriptionId(subscriptionId);
 
       assertTrue(result.isPresent());
       assertSame(entity, result.get());
-      verify(subscriberNotificationRepository).findBySubscription(subscription);
+      verify(subscriberNotificationRepository).findBySubscriptionId(subscriptionId);
       verifyNoMoreInteractions(subscriberNotificationRepository);
    }
 
    @Test
-   @DisplayName("Should return empty when subscription has no notification")
-   void findBySubscriber_whenNotFound_returnsEmpty() {
-      var subscription = new SubscriptionEntity();
-      given(subscriberNotificationRepository.findBySubscription(subscription)).willReturn(Optional.empty());
+   @DisplayName("Should return empty when subscription id has no notification")
+   void findBySubscriptionId_whenNotFound_returnsEmpty() {
+      long subscriptionId = 1L;
+      given(subscriberNotificationRepository.findBySubscriptionId(subscriptionId)).willReturn(Optional.empty());
 
-      var result = adapter.findBySubscriber(subscription);
+      var result = adapter.findBySubscriptionId(subscriptionId);
 
       assertTrue(result.isEmpty());
-      verify(subscriberNotificationRepository).findBySubscription(subscription);
+      verify(subscriberNotificationRepository).findBySubscriptionId(subscriptionId);
+      verifyNoMoreInteractions(subscriberNotificationRepository);
+   }
+
+   @Test
+   @DisplayName("Should delegate findBySubscriberId to JPA repository")
+   void findBySubscriberId_delegatesToJpaRepository() {
+      long subscriberId = 1L;
+      var entity = new SubscriberNotificationEntity();
+      given(subscriberNotificationRepository.findBySubscriptionId(subscriberId)).willReturn(Optional.of(entity));
+
+      var result = adapter.findBySubscriberId(subscriberId);
+
+      assertTrue(result.isPresent());
+      assertSame(entity, result.get());
+      verify(subscriberNotificationRepository).findBySubscriptionId(subscriberId);
+      verifyNoMoreInteractions(subscriberNotificationRepository);
+   }
+
+   @Test
+   @DisplayName("Should return empty when subscriber id has no notification")
+   void findBySubscriberId_whenNotFound_returnsEmpty() {
+      long subscriberId = 1L;
+      given(subscriberNotificationRepository.findBySubscriptionId(subscriberId)).willReturn(Optional.empty());
+
+      var result = adapter.findBySubscriberId(subscriberId);
+
+      assertTrue(result.isEmpty());
+      verify(subscriberNotificationRepository).findBySubscriptionId(subscriberId);
       verifyNoMoreInteractions(subscriberNotificationRepository);
    }
 }

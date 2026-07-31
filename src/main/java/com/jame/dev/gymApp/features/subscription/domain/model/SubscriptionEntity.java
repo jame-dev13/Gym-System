@@ -3,6 +3,7 @@ package com.jame.dev.gymApp.features.subscription.domain.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jame.dev.gymApp.domain.model.BaseEntity;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
+import com.jame.dev.gymApp.features.notification.domain.model.SubscriberNotificationEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -70,6 +71,16 @@ public class SubscriptionEntity extends BaseEntity {
    @JsonIgnore
    @Builder.Default
    private List<PaymentEntity> payments = new LinkedList<>();
+
+   @OneToMany(
+      mappedBy = "subscription",
+      fetch = FetchType.LAZY,
+      cascade = {CascadeType.REMOVE, CascadeType.MERGE},
+      orphanRemoval = true
+   )
+   @JsonIgnore
+   @Builder.Default
+   private List<SubscriberNotificationEntity> notifications = new LinkedList<>();
 
    @Column(name = "status", nullable = false, length = 12)
    @Enumerated(EnumType.STRING)

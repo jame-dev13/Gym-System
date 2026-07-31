@@ -11,6 +11,7 @@ import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentMutati
 import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentQueryRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictOnCompleteCheckout;
+import com.jame.dev.gymApp.features.subscription.infrastructure.publisher.SubscriptionMutationEventPublisher;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ public class CompletedCheckoutUseCaseService implements CompletedCheckoutUseCase
    private final PaymentMutationRepository paymentMutationRepository;
    private final PaymentQueryRepository paymentQueryRepository;
    private final SubscriptionMutationRepository subscriptionMutationRepository;
+   private final SubscriptionMutationEventPublisher subscriptionMutationEventPublisher;
 
    @Override
    @Transactional
@@ -38,10 +40,11 @@ public class CompletedCheckoutUseCaseService implements CompletedCheckoutUseCase
       final PaymentEntity paymentSaved = paymentMutationRepository.save(paymentEntity);
       final SubscriptionEntity subscription = paymentSaved.getSubscription();
       subscription.setStatus(SubscriptionStatus.PAID);
-      subscriptionMutationRepository.save(subscription);
+      final SubscriptionEntity subscriptionEntity = subscriptionMutationRepository.save(subscription);
 
       log.info("Checkout completed: session={}, subscription={}, customer={}",
          event.stripeSessionId(), subscription.getId(), event.customerEmail());
       log.info("Payment status: {}", paymentSaved.getStatus());
+      subscriptionMutationEventPublisher.publishSubscriptionMutated(subscriptionEntity);
    }
 }

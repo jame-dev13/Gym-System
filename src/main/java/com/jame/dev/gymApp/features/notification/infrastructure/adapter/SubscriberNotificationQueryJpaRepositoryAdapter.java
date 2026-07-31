@@ -3,7 +3,6 @@ package com.jame.dev.gymApp.features.notification.infrastructure.adapter;
 import com.jame.dev.gymApp.features.notification.domain.model.SubscriberNotificationEntity;
 import com.jame.dev.gymApp.features.notification.domain.repository.SubscriberNotificationQueryRepository;
 import com.jame.dev.gymApp.features.notification.infrastructure.persistence.SubscriberNotificationRepository;
-import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -21,7 +20,12 @@ public class SubscriberNotificationQueryJpaRepositoryAdapter implements Subscrib
    }
 
    @Override
-   public Optional<SubscriberNotificationEntity> findBySubscriber(SubscriptionEntity subscriptionEntity) {
-      return subscriberNotificationRepository.findBySubscription(subscriptionEntity);
+   public Optional<SubscriberNotificationEntity> findBySubscriptionId(long subscriptionId) {
+      return subscriberNotificationRepository.findBySubscriptionId(subscriptionId);
+   }
+
+   @Override
+   public Optional<SubscriberNotificationEntity> findBySubscriberId(long subscriberId) {
+      return subscriberNotificationRepository.findBySubscriptionId(subscriberId);
    }
 }

@@ -129,7 +129,7 @@ class SubscriptionUserControllerTest {
    private final SubscriptionResponse subscriptionResponse = new SubscriptionResponse(
       1L, customerEmail,
       Membership.ANNUAL, BigDecimal.valueOf(3000d),
-      List.of(new PeriodResponse(Period.ANNUAL, LocalDate.now(), LocalDate.now().plusYears(1))),
+      List.of(new PeriodResponse(Period.ANNUAL, LocalDate.now() + " - " + LocalDate.now().plusYears(1))),
       SubscriptionStatus.PAID
    );
 
