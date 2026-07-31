@@ -17,6 +17,7 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.time.Clock;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
@@ -38,7 +39,7 @@ public class AppConfig {
 
    @Bean(name = "clock")
    public Clock clock() {
-      return Clock.systemUTC();
+      return Clock.systemUTC().withZone(ZoneId.of("America/Mexico_City"));
    }
 
    @Bean("pageKeyGenerator")
