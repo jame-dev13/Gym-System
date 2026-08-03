@@ -18,7 +18,6 @@ public interface SubscriberNotificationMapper extends BaseMapper<SubscriberNotif
    @Mapping(target = "uuid", source = "entity.id")
    @Mapping(target = "rangeDaysNotification", source = "entity.rangeNotificationDays")
    @Mapping(target = "nextNotificationDate", source = "entity.nextNotificationDate", dateFormat = "EEEE, MMMM dd, yyyy")
-   @Mapping(target = "lastNotificationDate", source = "entity.lastNotificationDate", dateFormat = "EEEE, MMMM dd, yyyy")
    SubscriberNotificationResponse toDto(SubscriberNotificationEntity entity);
 
    default SubscriberNotificationEntity toEntity(SubscriberNotificationFactoryDtoInput input) {
