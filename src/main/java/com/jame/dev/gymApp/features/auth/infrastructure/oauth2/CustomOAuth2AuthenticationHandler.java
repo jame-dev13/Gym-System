@@ -1,8 +1,8 @@
 package com.jame.dev.gymApp.features.auth.infrastructure.oauth2;
 
+import com.jame.dev.gymApp.features.auth.application.contract.JwtService;
 import com.jame.dev.gymApp.features.auth.application.support.helper.CookieHelper;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationNullException;
-import com.jame.dev.gymApp.features.auth.application.contract.JwtService;
 import com.jame.dev.gymApp.features.auth.domain.model.CustomOAuth2User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,9 +34,8 @@ public class CustomOAuth2AuthenticationHandler implements AuthenticationSuccessH
    @Override
    public void onAuthenticationSuccess(final @NonNull HttpServletRequest request,
                                        final @NonNull HttpServletResponse response,
-                                       final Authentication authentication)
-      throws IOException {
-      log.info("[Oauth2 - AuthHandler]: HIT authentication handler.");
+                                       final Authentication authentication) {
+
       if (Objects.isNull(authentication.getPrincipal())) {
          throw new AuthenticationNullException("No user authenticated.");
       }
@@ -59,10 +58,15 @@ public class CustomOAuth2AuthenticationHandler implements AuthenticationSuccessH
       final ResponseCookie accessCookie = cookieHelper.createAccessTokenCookie(access);
       final ResponseCookie refreshCookie = cookieHelper.createRefreshTokenCookie(refreshToken);
 
-      response.setStatus(HttpStatus.TEMPORARY_REDIRECT.value());
+      response.setStatus(HttpStatus.PERMANENT_REDIRECT.value());
       response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
       response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
       request.getSession(false);
-      response.sendRedirect(REDIRECT_URL);
+
+      try {
+         response.sendRedirect(REDIRECT_URL);
+      } catch (IOException e) {
+         throw new RuntimeException("Cannot send redirect.", e);
+      }
    }
 }
