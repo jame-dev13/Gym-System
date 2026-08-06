@@ -36,7 +36,8 @@ import java.util.Objects;
 public class AuditLogDocument {
 
    @Id
-   private final ObjectId id;
+   @Builder.Default
+   private final ObjectId id = ObjectId.get();
 
    @Field("entity")
    private final AuditLogEntity entity;
@@ -51,12 +52,16 @@ public class AuditLogDocument {
    @Field("changes")
    private final AuditLogChanges changes;
 
+   @Field("success")
+   private final boolean success;
+
    @Field("metadata")
    private final AuditLogMetadata metadata;
 
    @Field("created_at")
    @Indexed(direction = IndexDirection.DESCENDING)
-   private final Instant createdAt;
+   @Builder.Default
+   private final Instant createdAt = Instant.now();
 
    @Override
    public boolean equals(Object o) {

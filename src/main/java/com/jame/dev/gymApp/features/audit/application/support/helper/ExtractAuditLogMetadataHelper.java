@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-public class ExtractAuditLogMetadataHelper {
+public final class ExtractAuditLogMetadataHelper {
    private static final String DEFAULT_IP = "UNKNOWN_IP";
    private static final String DEFAULT_UA = "UNKNOWN_AGENT";
 
@@ -31,5 +31,8 @@ public class ExtractAuditLogMetadataHelper {
          userAgent = DEFAULT_UA;
       }
       return new AuditLogMetadata(ip, userAgent);
+   }
+
+   private ExtractAuditLogMetadataHelper() {
    }
 }

@@ -11,11 +11,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Objects;
 
-public class ExtractAuditLogActorHelper {
+public final class ExtractAuditLogActorHelper {
 
    public static AuditLogActor extractLogActor() {
       final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-      if(Objects.isNull(auth) || !auth.isAuthenticated())
+      if (Objects.isNull(auth) || !auth.isAuthenticated())
          throw new AuthenticationNullException("Authentication required.");
       final Object principal = auth.getPrincipal();
       if (principal instanceof UserPrincipal user) {
@@ -26,5 +26,8 @@ public class ExtractAuditLogActorHelper {
          return new AuditLogActor(user.id(), user.email());
       }
       throw new InvalidAuthenticationPrincipalException("No mapping for auth principal subject present.");
+   }
+
+   private ExtractAuditLogActorHelper() {
    }
 }
