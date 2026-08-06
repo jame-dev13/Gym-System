@@ -1,8 +1,7 @@
 package com.jame.dev.gymApp.messages;
 
-import com.jame.dev.gymApp.features.notification.application.service.EmailApplicationService;
 import com.jame.dev.gymApp.features.notification.application.dto.EmailDetails;
-import com.jame.dev.gymApp.features.notification.application.dto.EmailDetailsWAttachment;
+import com.jame.dev.gymApp.features.notification.application.service.EmailApplicationService;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
@@ -33,12 +32,6 @@ class EmailApplicationServiceTest {
            .recipient("someone@mail.com")
            .msgBody("Hello form messaging service")
            .subject("Welcome")
-           .build();
-   private final EmailDetailsWAttachment emailDetailsWAttachment = EmailDetailsWAttachment.builder()
-           .recipient("someone@mail.com")
-           .msgBody("<p>Welcome!</p>")
-           .subject("Welcome")
-           .attachment("logo_me.png")
            .build();
 
    @Test
