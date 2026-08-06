@@ -1,15 +1,12 @@
 package com.jame.dev.gymApp.notification.controller;
 
 import com.jame.dev.gymApp.features.notification.api.SubscriberNotificationController;
-import com.jame.dev.gymApp.features.notification.api.request.SubscriberNotificationRequest;
 import com.jame.dev.gymApp.features.notification.api.request.SubscriberNotificationUpdateRequest;
 import com.jame.dev.gymApp.features.notification.api.response.SubscriberNotificationResponse;
-import com.jame.dev.gymApp.features.notification.application.usecases.mutation.CreateSubscriberNotificationUseCase;
 import com.jame.dev.gymApp.features.notification.application.usecases.mutation.DeleteSubscriberNotificationById;
 import com.jame.dev.gymApp.features.notification.application.usecases.mutation.UpdateSubscriberNotificationUseCase;
 import com.jame.dev.gymApp.features.notification.application.usecases.query.GetByIdSubscriberNotificationUseCase;
 import com.jame.dev.gymApp.features.notification.domain.exception.NotificationException;
-import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNotFoundException;
 import com.jame.dev.gymApp.presentation.exception.GlobalExceptionHandler;
 import config.TestConfig;
 import config.TestValidationConfig;
@@ -36,7 +33,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(
    controllers = SubscriberNotificationController.class,
@@ -59,9 +57,6 @@ class SubscriberNotificationControllerTest {
 
    @MockitoBean
    private GetByIdSubscriberNotificationUseCase getById;
-
-   @MockitoBean
-   private CreateSubscriberNotificationUseCase create;
 
    @MockitoBean
    private UpdateSubscriberNotificationUseCase update;
@@ -125,85 +120,6 @@ class SubscriberNotificationControllerTest {
             .andExpect(jsonPath("$.code").value(expectedCode));
 
          then(getById).shouldHaveNoInteractions();
-      }
-   }
-
-   @Nested
-   @DisplayName("POST: /app/v1/notifications")
-   class PostSubscriberNotificationTests {
-
-      private final String payload = """
-         {
-            "subscriptionId": 1,
-            "rangeDays": 3
-         }
-         """;
-
-      @Test
-      @DisplayName("POST[201] Created")
-      void create() throws Exception {
-         given(create.createSubscriberNotification(any(SubscriberNotificationRequest.class)))
-            .willReturn(response);
-
-         mockMvc.perform(post(URI_TEMPLATE)
-               .contentType(MediaType.APPLICATION_JSON)
-               .content(payload))
-            .andExpect(status().isCreated())
-            .andExpect(header().string("Location", org.hamcrest.Matchers.endsWith("/" + uuid)))
-            .andExpect(jsonPath("$.uuid").value(uuid.toString()));
-
-         then(create).should(times(1)).createSubscriberNotification(any(SubscriberNotificationRequest.class));
-      }
-
-      @Test
-      @DisplayName("POST[404] Not Found: Subscription does not exist")
-      void createSubscriptionNotFound() throws Exception {
-         given(create.createSubscriberNotification(any(SubscriberNotificationRequest.class)))
-            .willThrow(SubscriptionNotFoundException.class);
-
-         mockMvc.perform(post(URI_TEMPLATE)
-               .contentType(MediaType.APPLICATION_JSON)
-               .content(payload))
-            .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.*").exists())
-            .andExpect(jsonPath("$.status").value(404));
-
-         then(create).should(times(1)).createSubscriberNotification(any(SubscriberNotificationRequest.class));
-      }
-
-      @Test
-      @DisplayName("POST[409] Conflict: Notification already exists")
-      void createAlreadyExists() throws Exception {
-         given(create.createSubscriberNotification(any(SubscriberNotificationRequest.class)))
-            .willThrow(NotificationException.class);
-
-         mockMvc.perform(post(URI_TEMPLATE)
-               .contentType(MediaType.APPLICATION_JSON)
-               .content(payload))
-            .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.*").exists())
-            .andExpect(jsonPath("$.status").value(409));
-
-         then(create).should(times(1)).createSubscriberNotification(any(SubscriberNotificationRequest.class));
-      }
-
-      @ParameterizedTest
-      @CsvSource(useHeadersInDisplayName = true, textBlock = """
-              VALUE,  ERROR_CODE
-              {NULL},   VALIDATION_OPERATION
-              {EMPTY},  VALIDATION_OPERATION
-              """)
-      @DisplayName("POST[400] Bad Request: Invalid payload format")
-      void badRequestInvalidPayload(String value, String codeExpected) throws Exception {
-         mockMvc.perform(post(URI_TEMPLATE)
-               .contentType(MediaType.APPLICATION_JSON)
-               .content(value))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.*").exists())
-            .andExpect(jsonPath("$.status").value(400))
-            .andExpect(jsonPath("$.code").value(codeExpected));
-
-         then(create).shouldHaveNoInteractions();
       }
    }
 
