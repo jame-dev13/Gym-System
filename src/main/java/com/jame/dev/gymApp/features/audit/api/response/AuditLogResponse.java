@@ -14,6 +14,7 @@ public record AuditLogResponse(
    @JsonProperty("action") AuditLogAction action,
    @JsonProperty("actor") AuditLogActor actor,
    @JsonProperty("changes") AuditLogChanges changes,
+   @JsonProperty("success") boolean success,
    @JsonProperty("metadata") AuditLogMetadata metadata,
    @JsonProperty("createdAt") Instant createdAt
 ) {

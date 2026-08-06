@@ -26,6 +26,7 @@ public class AuditLogRepositoryImpl implements
          query.addCriteria(
             new Criteria().orOperator(
                Criteria.where("action").regex(search, "i"),
+               Criteria.where("actor.username").regex(search, "i"),
                Criteria.where("entity.type").regex(search, "i")
             )
          );

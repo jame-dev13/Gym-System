@@ -1,6 +1,5 @@
-package com.jame.dev.gymApp.features.audit.application.listener;
+package com.jame.dev.gymApp.features.audit.infrastructure.listener;
 
-import com.jame.dev.gymApp.features.audit.api.response.AuditLogResponse;
 import com.jame.dev.gymApp.features.audit.application.support.factory.AuditLogFactory;
 import com.jame.dev.gymApp.features.audit.domain.event.AuditLogEvent;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogDocument;
@@ -27,7 +26,6 @@ public class AuditLogEventListener {
    public void processAuditLogEvent(AuditLogEvent auditLogEvent) {
       final AuditLogInput input = auditLogEvent.input();
       final AuditLogDocument entity = auditLogFactory.createFromInput(input);
-      final AuditLogDocument logDocument = auditLogRepository.save(entity);
-      final AuditLogResponse response = auditLogFactory.createFromEntity(logDocument);
+      auditLogRepository.save(entity);
    }
 }
