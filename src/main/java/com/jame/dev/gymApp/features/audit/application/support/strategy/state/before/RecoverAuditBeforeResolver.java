@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.features.audit.application.support.strategy;
+package com.jame.dev.gymApp.features.audit.application.support.strategy.state.before;
 
 import com.jame.dev.gymApp.features.audit.application.model.AuditExecutionContext;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
@@ -10,14 +10,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class DeleteAuditBeforeResolver implements AuditBeforeResolver {
-
+public class RecoverAuditBeforeResolver implements AuditBeforeResolver {
    private final AuditLogExpressionEvaluator evaluator;
    private final LongParser longParser;
 
    @Override
    public AuditLogAction action() {
-      return AuditLogAction.DELETE;
+      return AuditLogAction.RECOVER;
    }
 
    @Override

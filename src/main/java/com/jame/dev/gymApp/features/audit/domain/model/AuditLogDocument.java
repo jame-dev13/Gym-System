@@ -1,9 +1,6 @@
 package com.jame.dev.gymApp.features.audit.domain.model;
 
-import com.jame.dev.gymApp.features.audit.application.dto.AuditLogActor;
-import com.jame.dev.gymApp.features.audit.application.dto.AuditLogChanges;
-import com.jame.dev.gymApp.features.audit.application.dto.AuditLogEntity;
-import com.jame.dev.gymApp.features.audit.application.dto.AuditLogMetadata;
+import com.jame.dev.gymApp.features.audit.application.dto.*;
 import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Getter;
@@ -49,8 +46,8 @@ public class AuditLogDocument {
    @Field("actor")
    private final AuditLogActor actor;
 
-   @Field("changes")
-   private final AuditLogChanges changes;
+   @Field("payload")
+   private final AuditPayload payload;
 
    @Field("success")
    private final boolean success;
@@ -83,7 +80,7 @@ public class AuditLogDocument {
              ", entityType=" + entity.type() +
              ", auditLogAction=" + action +
              ", actorId=" + actor.userId() +
-             ", changes=" + changes +
+             ", changes=" + payload +
              ", metadata=" + metadata +
              ", createdAt=" + createdAt +
              '}';
