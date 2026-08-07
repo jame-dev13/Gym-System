@@ -1,4 +1,4 @@
-package com.jame.dev.gymApp.features.audit.application.support.strategy;
+package com.jame.dev.gymApp.features.audit.application.support.strategy.state.before;
 
 import com.jame.dev.gymApp.features.audit.application.model.AuditExecutionContext;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;

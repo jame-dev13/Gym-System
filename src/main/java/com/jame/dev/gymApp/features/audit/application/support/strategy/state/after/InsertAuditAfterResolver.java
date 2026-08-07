@@ -1,30 +1,37 @@
-package com.jame.dev.gymApp.features.audit.application.support.strategy;
+package com.jame.dev.gymApp.features.audit.application.support.strategy.state.after;
 
 import com.jame.dev.gymApp.features.audit.application.model.AuditExecutionContext;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.infrastructure.parser.LongParser;
 import com.jame.dev.gymApp.features.audit.infrastructure.spel_evaluator.AuditLogExpressionEvaluator;
-import com.jame.dev.gymApp.features.audit.infrastructure.audit_strategy.AuditBeforeResolver;
+import com.jame.dev.gymApp.features.audit.infrastructure.audit_strategy.AuditAfterResolver;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+
+@Slf4j
 @Component
 @RequiredArgsConstructor
-public class RecoverAuditBeforeResolver implements AuditBeforeResolver {
+public class InsertAuditAfterResolver implements AuditAfterResolver {
    private final AuditLogExpressionEvaluator evaluator;
    private final LongParser longParser;
 
    @Override
    public AuditLogAction action() {
-      return AuditLogAction.RECOVER;
+      return AuditLogAction.INSERT;
    }
 
    @Override
    public void resolve(AuditExecutionContext context) {
-      final String idStr = evaluator.evaluate(context.getAnnotation().entityId(), context.getParamNames(), context.getArgs());
+      log.debug("entityId: {}", context.getAnnotation().entityId());
+      log.debug("param Names: {}", Arrays.stream(context.getParamNames()).toList());
+      log.debug("args: {}", Arrays.stream(context.getArgs()).toList());
+
+      final String idStr = evaluator.evaluate(context.getAnnotation().entityId(), context.getResult());
       final Long id = longParser.parseString(idStr);
-      final Object input = evaluator.evaluateAsObject(context.getAnnotation().input(), context.getParamNames(), context.getArgs());
+
       context.setEntityId(id);
-      context.setInput(input);
    }
 }
