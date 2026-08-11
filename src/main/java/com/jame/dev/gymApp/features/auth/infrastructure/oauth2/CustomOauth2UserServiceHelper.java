@@ -47,6 +47,7 @@ public class CustomOauth2UserServiceHelper {
          .id(user.getId())
          .name(user.getName())
          .email(user.getEmail())
+         .authProvider(user.getProvider())
          .roles(Set.of(Role.USER))
          .build();
 

@@ -41,7 +41,7 @@ public class AuditIdQueryBeforeResolver {
                .status(s.getStatus())
                .build())
             .orElseThrow(() -> new SubscriptionNotFoundException("Subscription entity not found."));
-         case NO_SET -> throw new IllegalArgumentException("Type not accepted.");
+         default -> throw new IllegalArgumentException("Type not accepted.");
       };
    }
 }

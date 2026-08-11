@@ -2,7 +2,6 @@ package com.jame.dev.gymApp.features.audit.infrastructure.execution;
 
 import com.jame.dev.gymApp.features.audit.application.support.factory.AuditExecutionContextFactory;
 import com.jame.dev.gymApp.features.audit.application.support.factory.AuditLogInputFactory;
-import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.infrastructure.audit_registry.AuditResolverRegistry;
 import com.jame.dev.gymApp.features.audit.infrastructure.publisher.AuditLogEventPublisher;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,6 @@ public class AuditLogCoordinator {
    private final AuditResolverRegistry auditResolverRegistry;
    private final AuditLogEventPublisher eventPublisher;
    private final AuditLogInputFactory auditLogInputFactory;
-   private final AuditLogResultProcessor resultProcessor;
 
    public Object coordinate(final ProceedingJoinPoint joinPoint) throws Throwable {
       final var context = executionContextFactory.create(joinPoint);
@@ -32,14 +30,14 @@ public class AuditLogCoordinator {
       try {
          final Object result = joinPoint.proceed();
 
-         resultProcessor.processResultObject(result, context);
+         context.setResult(result);
 
-         if (ACTION == AuditLogAction.INSERT) {
+         if (auditResolverRegistry.checkAfterRegistry(ACTION)) {
             auditResolverRegistry.after(ACTION).resolve(context);
          }
 
          return result;
-      } catch (Throwable th) {
+      } catch (final Throwable th) {
          context.setTh(th);
          log.error("Exception during audit coordination.", th);
          throw th;
@@ -47,7 +45,7 @@ public class AuditLogCoordinator {
          try {
             final var input = auditLogInputFactory.create(context);
             eventPublisher.publishAuditLogEvent(input);
-         } catch (Exception ex) {
+         } catch (final Exception ex) {
             log.error("Failed to publish audit event", ex);
          }
       }
