@@ -474,4 +474,11 @@ public class GlobalExceptionHandler {
          .buildResponse(new InputError(
             ex, request, HttpStatus.CONFLICT, ErrorCodes.UNSUPPORTED));
    }
+
+   @ExceptionHandler(NullPointerException.class)
+   public ResponseEntity<ApiErrorResponse> handleNPE(NullPointerException ex, HttpServletRequest request) {
+      return responseFactory.buildResponse(
+         new InputError(ex, request, HttpStatus.CONFLICT, ErrorCodes.ARGUMENT)
+      );
+   }
 }

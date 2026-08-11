@@ -20,9 +20,12 @@ public class AuditLogInputFactory {
 
    public AuditLogInput create(AuditExecutionContext context) {
       final var ACTION = context.getAnnotation().action();
-      final AuditLogEntity entity = new AuditLogEntity(context
-         .getAnnotation().entityType(), context.getEntityId());
-      final AuditLogActor actor = ExtractAuditLogActorHelper.extractLogActor();
+      final var TYPE = context.getAnnotation().entityType();
+      final AuditLogEntity entity = AuditLogEntity.builder()
+         .entityId(context.getEntityId())
+         .type(TYPE)
+         .build();
+      final AuditLogActor actor = ExtractAuditLogActorHelper.extractLogActor(context);
       final AuditPayload payload = resolverRegistry.check(ACTION).resolve(context);
       final AuditLogMetadata metadata = ExtractAuditLogMetadataHelper.extractAuditLogMetadata();
       return AuditLogInput.builder()

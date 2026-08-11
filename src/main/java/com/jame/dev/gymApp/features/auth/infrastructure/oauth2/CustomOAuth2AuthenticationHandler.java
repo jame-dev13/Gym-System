@@ -1,5 +1,8 @@
 package com.jame.dev.gymApp.features.auth.infrastructure.oauth2;
 
+import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
+import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
+import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.auth.application.contract.JwtService;
 import com.jame.dev.gymApp.features.auth.application.support.helper.CookieHelper;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationNullException;
@@ -32,10 +35,14 @@ public class CustomOAuth2AuthenticationHandler implements AuthenticationSuccessH
    private String REDIRECT_URL;
 
    @Override
+   @AuditLog(
+      input = "#authentication",
+      entityType = AuditLogEntityType.AUTHENTICATION,
+      action = AuditLogAction.SIGN_IN
+   )
    public void onAuthenticationSuccess(final @NonNull HttpServletRequest request,
                                        final @NonNull HttpServletResponse response,
-                                       final Authentication authentication) {
-
+                                       final @NonNull Authentication authentication) {
       if (Objects.isNull(authentication.getPrincipal())) {
          throw new AuthenticationNullException("No user authenticated.");
       }
@@ -43,7 +50,7 @@ public class CustomOAuth2AuthenticationHandler implements AuthenticationSuccessH
       String email = null;
       Long id = null;
       if (authentication.getPrincipal() instanceof CustomOAuth2User user) {
-         log.info("[Oauth2 - AuthHandler]: USER AUTHENTICATED: {}.]", user.getUser());
+         log.info("[Oauth2 - AuthHandler]: USER IDENTIFIED.");
          email = user.getUser().email();
          id = user.getUser().id();
       }

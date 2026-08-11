@@ -1,5 +1,8 @@
 package com.jame.dev.gymApp.features.auth.application.service;
 
+import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
+import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
+import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.auth.api.request.RegisterRequest;
 import com.jame.dev.gymApp.features.auth.api.request.SignInRequest;
 import com.jame.dev.gymApp.features.auth.api.response.CookieResponse;
@@ -20,6 +23,7 @@ import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserReposito
 import com.jame.dev.gymApp.infrastructure.cache.BlacklistService;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,6 +34,7 @@ import org.springframework.validation.annotation.Validated;
 import java.util.Optional;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Validated
@@ -45,6 +50,11 @@ public class AuthApplicationService implements AuthService {
    @Transactional
    @CheckExistence
    @PublishVerify
+   @AuditLog(
+      input = "#register",
+      action = AuditLogAction.REGISTER,
+      entityType = AuditLogEntityType.AUTHENTICATION
+   )
    public void signUp(final RegisterRequest register) {
       final UserRequest userRequest = UserRequest.builder()
          .name(register.name())
@@ -59,14 +69,22 @@ public class AuthApplicationService implements AuthService {
 
    @Override
    @CheckSignIn
-   public SignInResponse signIn(SignInRequest dto) {
+   @AuditLog(
+      input = "#dto",
+      action = AuditLogAction.SIGN_IN,
+      entityType = AuditLogEntityType.AUTHENTICATION,
+      result = "#result"
+   )
+   public SignInResponse signIn(final SignInRequest dto) {
       final UsernamePasswordAuthenticationToken token =
          new UsernamePasswordAuthenticationToken(dto.email(), dto.password());
 
       final Authentication authentication = authenticationManager.authenticate(token);
 
+      log.info("Auth principal: {}", authentication.getPrincipal());
       final UserPrincipal userAuthenticated = Optional.ofNullable((UserPrincipal) authentication.getPrincipal())
          .orElseThrow(() -> new AuthenticationAttemptFailureException("Can't authenticate User."));
+
       return authFactory.createSignInOkDtoFrom(userAuthenticated);
    }
 

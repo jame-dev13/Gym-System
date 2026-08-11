@@ -27,7 +27,7 @@ public class AuditLogPayloadResolverRegistry {
 
    public AuditLogPayloadResolver check(final AuditLogAction action) {
       return Optional
-         .of(resolver.get(action))
+         .ofNullable(resolver.get(action))
          .orElseThrow(() -> new IllegalArgumentException("Unknown AuditLogAction " + action));
    }
 }

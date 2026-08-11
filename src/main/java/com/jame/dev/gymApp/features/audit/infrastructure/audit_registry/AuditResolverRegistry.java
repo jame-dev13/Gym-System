@@ -38,4 +38,7 @@ public class AuditResolverRegistry {
       return after.get(action);
    }
 
+   public boolean checkAfterRegistry(AuditLogAction action) {
+      return after.containsKey(action);
+   }
 }
