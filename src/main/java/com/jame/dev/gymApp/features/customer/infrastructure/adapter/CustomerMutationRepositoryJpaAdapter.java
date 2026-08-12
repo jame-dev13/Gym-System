@@ -35,6 +35,11 @@ public class CustomerMutationRepositoryJpaAdapter implements CustomerMutationRep
    }
 
    @Override
+   public void deleteByUserId(long userId) {
+      customerRepository.deleteByUser_Id(userId);
+   }
+
+   @Override
    public void hardDeleteById(long id) {
       customerRepository.hardDeleteById(id);
    }

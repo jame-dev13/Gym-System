@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jame.dev.gymApp.application.model.LockProperties;
+import com.jame.dev.gymApp.features.auth.infrastructure.auth.AuthenticationUserResolver;
 import com.jame.dev.gymApp.features.backup.domain.model.BackupMapping;
 import com.jame.dev.gymApp.infrastructure.properties.SchedulerProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -15,9 +16,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.security.core.Authentication;
 
 import java.time.Clock;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
@@ -77,6 +80,26 @@ public class AppConfig {
             });
 
          return sb.toString();
+      };
+   }
+
+   @Bean("authCurrentKeyGen")
+   public KeyGenerator authCurrentKeyGenerator(final AuthenticationUserResolver authenticationUserResolver) {
+      return (targetIgnored, methodIgnored, params) -> {
+
+         final Authentication authentication = Arrays.stream(params)
+            .filter(Authentication.class::isInstance)
+            .map(Authentication.class::cast)
+            .findFirst()
+            .orElseThrow(() ->
+               new IllegalArgumentException(
+                  "Authentication parameter not found."
+               )
+            );
+
+         final Long userId = authenticationUserResolver.resolveUserId(authentication);
+
+         return "auth-current:" + userId;
       };
    }
 }

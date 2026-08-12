@@ -15,6 +15,7 @@ import static com.jame.dev.gymApp.application.model.CacheValues.CUSTOMERS;
 @Caching(evict = {
    @CacheEvict(value = CUSTOMERS, allEntries = true),
    @CacheEvict(value = CUSTOMER, key = "#id"),
+   @CacheEvict(value = CUSTOMER, key = "authCurrentKeyGen"),
 })
 public @interface EvictOnUpdateCustomers {
 }
