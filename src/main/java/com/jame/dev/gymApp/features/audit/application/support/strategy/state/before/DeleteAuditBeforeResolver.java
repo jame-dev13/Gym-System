@@ -1,11 +1,13 @@
 package com.jame.dev.gymApp.features.audit.application.support.strategy.state.before;
 
 import com.jame.dev.gymApp.features.audit.application.model.AuditExecutionContext;
+import com.jame.dev.gymApp.features.audit.application.support.resolver.AuditCurrentEntityIdBeforeResolver;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
+import com.jame.dev.gymApp.features.audit.infrastructure.audit_strategy.AuditBeforeResolver;
 import com.jame.dev.gymApp.features.audit.infrastructure.parser.LongParser;
 import com.jame.dev.gymApp.features.audit.infrastructure.spel_evaluator.AuditLogExpressionEvaluator;
-import com.jame.dev.gymApp.features.audit.infrastructure.audit_strategy.AuditBeforeResolver;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class DeleteAuditBeforeResolver implements AuditBeforeResolver {
 
    private final AuditLogExpressionEvaluator evaluator;
+   private final AuditCurrentEntityIdBeforeResolver entityIdBeforeResolver;
    private final LongParser longParser;
 
    @Override
@@ -22,10 +25,15 @@ public class DeleteAuditBeforeResolver implements AuditBeforeResolver {
 
    @Override
    public void resolve(AuditExecutionContext context) {
-      final String idStr = evaluator.evaluate(context.getAnnotation().entityId(), context.getParamNames(), context.getArgs());
-      final Long id = longParser.parseString(idStr);
       final Object input = evaluator.evaluateAsObject(context.getAnnotation().input(), context.getParamNames(), context.getArgs());
-      context.setEntityId(id);
+      final Long entityId = switch (input) {
+         case Authentication auth -> entityIdBeforeResolver.getEntityIdByCurrentAuthentication(auth, context.getAnnotation().entityType());
+         case null -> longParser.parseString(
+            evaluator.evaluate(context.getAnnotation().entityId(), context.getParamNames(), context.getArgs())
+         );
+         default -> throw new IllegalStateException("Unexpected value: " + input);
+      };
+      context.setEntityId(entityId);
       context.setInput(input);
    }
 }

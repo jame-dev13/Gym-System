@@ -15,12 +15,19 @@ public interface TestDataSource {
            NULL,    TYPE_MISMATCH
            """;
 
-   String PAYLOAD_VALIDATIONS_ERRORS = """
-           EMAIL,       ERROR_CODE
-           @missing,     VALIDATION_OPERATION
-           EMPTY,        VALIDATION_OPERATION
-           NULL,         VALIDATION_OPERATION
-           """;
+String PAYLOAD_VALIDATIONS_ERRORS = """
+            EMAIL,       ERROR_CODE
+            @missing,     VALIDATION_OPERATION
+            EMPTY,        VALIDATION_OPERATION
+            NULL,         VALIDATION_OPERATION
+            """;
+
+   String PHONE_CONTACT_VALIDATIONS_ERRORS = """
+            PHONE,   ERROR_CODE
+            EMPTY,   VALIDATION_OPERATION
+            NULL,    VALIDATION_OPERATION
+            MISSING, VALIDATION_OPERATION
+            """;
 
    String BODY_FORMAT_ERRORS = """
            VALUE,  ERROR_CODE

@@ -74,4 +74,6 @@ public interface CustomerRepository extends CustomJpaRepository<CustomerEntity, 
       c.active = false
       """)
    void hardDeleteById(@Param("id") long id);
+
+   void deleteByUser_Id(long userId);
 }
