@@ -20,4 +20,5 @@ public interface SubscriptionQueryRepository {
 
    Page<SubscriptionEntity> findAllByCustomerEmail(final String email, final Pageable pageable);
 
+   Optional<Long> findIdByCustomerEmail(final String email);
 }

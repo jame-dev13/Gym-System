@@ -6,11 +6,12 @@ import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.auth.infrastructure.auth.AuthenticationUserResolver;
 import com.jame.dev.gymApp.features.customer.application.usecases.mutation.DeleteCurrentCustomerUseCase;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerMutationRepository;
-import com.jame.dev.gymApp.features.customer.infrastructure.annotations.EvictOnDropCustomers;
+import com.jame.dev.gymApp.features.customer.infrastructure.annotations.EvictCurrentOnDeleteCustomer;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +21,8 @@ public class DeleteCurrentCustomerUseCaseService implements DeleteCurrentCustome
    private final AuthenticationUserResolver authenticationUserResolver;
 
    @Override
-   @EvictOnDropCustomers
+   @Transactional
+   @EvictCurrentOnDeleteCustomer
    @AuditLog(
       entityType = AuditLogEntityType.CUSTOMER,
       action = AuditLogAction.DELETE,

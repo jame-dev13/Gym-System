@@ -33,4 +33,12 @@ public interface SubscriptionRepository extends CustomJpaRepository<Subscription
       s.active = false
       """)
    Optional<SubscriptionEntity> findDeactivatedById(@Param("id") long id);
+
+
+   @Query("""
+      SELECT s.id
+      FROM SubscriptionEntity s
+      WHERE s.customer.user.email = :email
+      """)
+   Optional<Long> findIdByCustomerUserEmail(@Param("email") final String email);
 }

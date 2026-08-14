@@ -76,4 +76,11 @@ public interface CustomerRepository extends CustomJpaRepository<CustomerEntity, 
    void hardDeleteById(@Param("id") long id);
 
    void deleteByUser_Id(long userId);
+
+   @Query("""
+          SELECT c.id
+          FROM CustomerEntity c
+          WHERE c.user.email = :email
+      """)
+   Optional<Long> findIdByUserEmail(@Param("email") String email);
 }
