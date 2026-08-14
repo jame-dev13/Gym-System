@@ -19,6 +19,7 @@ import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class CreateCurrentCustomerUseCaseService implements CreateCurrentCustome
    private final CustomerFactory customerFactory;
 
    @Override
+   @Transactional
    @EvictOnSaveCustomers
    @AuditLog(
       entityType = AuditLogEntityType.CUSTOMER,

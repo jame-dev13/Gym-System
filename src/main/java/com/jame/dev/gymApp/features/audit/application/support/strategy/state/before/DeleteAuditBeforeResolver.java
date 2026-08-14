@@ -34,6 +34,5 @@ public class DeleteAuditBeforeResolver implements AuditBeforeResolver {
          default -> throw new IllegalStateException("Unexpected value: " + input);
       };
       context.setEntityId(entityId);
-      context.setInput(input);
    }
 }

@@ -25,9 +25,11 @@ public class AuditLogCoordinator {
          return joinPoint.proceed();
 
       final var ACTION = context.getAnnotation().action();
-      auditResolverRegistry.before(ACTION).resolve(context);
+
 
       try {
+         auditResolverRegistry.before(ACTION).resolve(context);
+
          final Object result = joinPoint.proceed();
 
          context.setResult(result);

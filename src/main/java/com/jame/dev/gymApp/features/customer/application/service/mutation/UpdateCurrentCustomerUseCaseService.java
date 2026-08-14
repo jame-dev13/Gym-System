@@ -13,12 +13,13 @@ import com.jame.dev.gymApp.features.customer.application.contract.CustomerUpdate
 import com.jame.dev.gymApp.features.customer.application.usecases.mutation.UpdateCurrentCustomerUseCase;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerMutationRepository;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerQueryRepository;
-import com.jame.dev.gymApp.features.customer.infrastructure.annotations.EvictOnUpdateCustomers;
+import com.jame.dev.gymApp.features.customer.infrastructure.annotations.EvictCurrentOnUpdateCustomer;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -32,13 +33,13 @@ public class UpdateCurrentCustomerUseCaseService implements UpdateCurrentCustome
    private final CustomerFactory customerFactory;
 
    @Override
-   @EvictOnUpdateCustomers
+   @Transactional
+   @EvictCurrentOnUpdateCustomer
    @AuditLog(
       entityType = AuditLogEntityType.CUSTOMER,
       action = AuditLogAction.UPDATE,
       input = "#authentication",
-      result = "#result",
-      entityId = "#result.id"
+      result = "#result"
    )
    public CustomerResponse updateCurrent(Authentication authentication, CustomerCurrentRequest request) {
       final String authenticated = identityExtractorApplicationService.extract(authentication);

@@ -15,4 +15,6 @@ public interface CustomerQueryRepository {
    Optional<CustomerEntity> findByUserEmail(final String email);
 
    Optional<CustomerEntity> findDeactivatedById(final long id);
+
+   Optional<Long> findIdByUserEmail(final String email);
 }

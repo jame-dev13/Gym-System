@@ -35,4 +35,9 @@ public class CustomerQueryRepositoryJpaAdapter implements CustomerQueryRepositor
    public Optional<CustomerEntity> findDeactivatedById(long id) {
       return customerRepository.findDeactivatedById(id);
    }
+
+   @Override
+   public Optional<Long> findIdByUserEmail(String email) {
+      return customerRepository.findIdByUserEmail(email);
+   }
 }
