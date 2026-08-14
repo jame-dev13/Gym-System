@@ -26,7 +26,6 @@ public class AuditLogCoordinator {
 
       final var ACTION = context.getAnnotation().action();
 
-
       try {
          auditResolverRegistry.before(ACTION).resolve(context);
 

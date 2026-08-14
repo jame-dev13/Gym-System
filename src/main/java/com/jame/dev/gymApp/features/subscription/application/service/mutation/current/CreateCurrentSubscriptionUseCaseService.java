@@ -1,0 +1,71 @@
+package com.jame.dev.gymApp.features.subscription.application.service.mutation.current;
+
+import com.jame.dev.gymApp.domain.exception.NotFoundException;
+import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
+import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
+import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
+import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
+import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
+import com.jame.dev.gymApp.features.customer.domain.repository.CustomerQueryRepository;
+import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionCurrentRequest;
+import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
+import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
+import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionFactoryDtoInput;
+import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.current.CreateCurrentSubscriptionUseCase;
+import com.jame.dev.gymApp.features.subscription.domain.exception.PricingNotFoundException;
+import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
+import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
+import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionValidationRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictSubsOnSave;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
+import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
+import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+
+@Service
+@RequiredArgsConstructor
+@CheckLockProcess
+public class CreateCurrentSubscriptionUseCaseService implements CreateCurrentSubscriptionUseCase {
+   private final SubscriptionMutationRepository subscriptionMutationRepository;
+   private final CustomerQueryRepository customerQueryRepository;
+   private final PricingRepository pricingRepository;
+   private final SubscriptionValidationRepository subscriptionValidationRepository;
+   private final SubscriptionFactory subscriptionFactory;
+   private final IdentityExtractorService identityExtractorService;
+
+   @Override
+   @Transactional
+   @EvictSubsOnSave
+   @AuditLog(
+      action = AuditLogAction.INSERT,
+      entityType = AuditLogEntityType.SUBSCRIPTION,
+      input = "#authentication",
+      entityId = "#result.id",
+      result = "#result"
+   )
+   public SubscriptionResponse create(Authentication authentication, SubscriptionCurrentRequest request) {
+      final String authName = identityExtractorService.extract(authentication);
+      final CustomerEntity customer = customerQueryRepository.findByUserEmail(authName)
+         .orElseThrow(() -> new NotFoundException("Customer Not Found for: " + authName));
+
+      if (subscriptionValidationRepository.existsByCustomer(customer)) {
+         throw new AlreadyExistsException("There's a subscription linked to the customer with: " + authName);
+      }
+
+      final PricingEntity pricing = pricingRepository.findByMemberShipEntity_Membership(request.membership())
+         .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
+
+      final SubscriptionEntity subscriptionEntity = subscriptionFactory.createFromInput(
+         new SubscriptionFactoryDtoInput(customer, pricing, LocalDate.now()));
+
+      final SubscriptionEntity subscriptionSaved = subscriptionMutationRepository.save(subscriptionEntity);
+
+      return subscriptionFactory.createFromEntity(subscriptionSaved);
+   }
+}

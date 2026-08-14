@@ -8,4 +8,6 @@ public interface SubscriptionMutationRepository {
 
    void deleteById(long id);
 
+   void deleteByCustomerEmail(final String email);
+
 }

@@ -46,7 +46,7 @@ public class AppConfig {
    }
 
    @Bean("pageKeyGenerator")
-   public KeyGenerator pageKeyGenerator() {
+   public KeyGenerator pageKeyGenerator(final AuthenticationUserResolver authenticationUserResolver) {
       return (ignoredTarget, ignoredMethod, params) -> {
          final StringBuilder sb = new StringBuilder();
          for (int i = 0; i < params.length; i++) {
@@ -57,7 +57,11 @@ public class AppConfig {
                   .append(":").append(pag.getPageSize())
                   .append(":sort=").append(pag.getSort());
                case String s -> sb.append("str:").append(s);
-               case null -> {}
+               case Authentication auth -> sb
+                  .append("auth-current-id:")
+                  .append(authenticationUserResolver.resolveUserId(auth));
+               case null -> {
+               }
                default -> sb.append(":").append(param);
             }
          }

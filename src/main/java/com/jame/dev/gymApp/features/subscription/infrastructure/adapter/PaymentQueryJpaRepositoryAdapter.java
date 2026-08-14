@@ -9,8 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,8 +17,8 @@ public class PaymentQueryJpaRepositoryAdapter implements PaymentQueryRepository 
     private final PaymentRepository paymentRepository;
 
    @Override
-   public Page<PaymentEntity> findPaymentPage(Long customerId, String search, Pageable pageable) {
-      return paymentRepository.findAll(customerId, search, pageable);
+   public Page<PaymentEntity> findPaymentPage(String userEmail, String search, Pageable pageable) {
+      return paymentRepository.findAll(userEmail, search, pageable);
    }
 
    @Override
@@ -36,10 +34,5 @@ public class PaymentQueryJpaRepositoryAdapter implements PaymentQueryRepository 
    @Override
     public Optional<PaymentEntity> findByStripeSessionId(String stripeSessionId) {
         return paymentRepository.findByStripeSessionId(stripeSessionId);
-    }
-
-    @Override
-    public List<PaymentEntity> findAllByStatusAndCreatedAtBefore(PaymentStatus status, Instant before) {
-        return paymentRepository.findAllByStatusAndCreatedAtBefore(status, before);
     }
 }

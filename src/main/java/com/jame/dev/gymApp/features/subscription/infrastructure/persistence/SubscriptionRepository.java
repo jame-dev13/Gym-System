@@ -34,6 +34,7 @@ public interface SubscriptionRepository extends CustomJpaRepository<Subscription
       """)
    Optional<SubscriptionEntity> findDeactivatedById(@Param("id") long id);
 
+   void deleteByCustomer_User_Email(final String email);
 
    @Query("""
       SELECT s.id
