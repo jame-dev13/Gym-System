@@ -20,4 +20,9 @@ public class SubscriptionMutationJpaRepositoryAdapter implements SubscriptionMut
    public void deleteById(long id) {
       subscriptionRepository.deleteById(id);
    }
+
+   @Override
+   public void deleteByCustomerEmail(String email) {
+      subscriptionRepository.deleteByCustomer_User_Email(email);
+   }
 }

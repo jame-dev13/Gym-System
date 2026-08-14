@@ -8,26 +8,29 @@ import com.jame.dev.gymApp.features.subscription.domain.model.PaymentStatus;
 import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentQueryRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.stripe.service.StripeCheckoutGateway;
 import com.jame.dev.gymApp.infrastructure.async.AsyncResolver;
+import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
 import com.stripe.model.checkout.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class RetrySubscriptionPaymentHandler {
+public class RetryPaymentHandler {
 
    private final PaymentSessionStatusResolver paymentSessionStatusResolver;
    private final PaymentQueryRepository paymentQueryRepository;
    private final StripeCheckoutGateway stripeCheckoutGateway;
+   private final IdentityExtractorService identityExtractorService;
 
-   public ResponseEntity<RetryResponse> handleSubscriptionPaymentRetry(final String subject) {
-
-      final String sessionId = paymentQueryRepository.findByCustomerEmailAndStatus(subject, PaymentStatus.PENDING)
+   public ResponseEntity<RetryResponse> handleSubscriptionPaymentRetry(final Authentication authentication) {
+      final String authName = identityExtractorService.extract(authentication);
+      final String sessionId = paymentQueryRepository.findByCustomerEmailAndStatus(authName, PaymentStatus.PENDING)
          .map(PaymentEntity::getStripeSessionId)
-         .orElseThrow(() -> new EntityNotFoundException("Payment not found for customer: " + subject));
+         .orElseThrow(() -> new EntityNotFoundException("Payment not found for customer: " + authName));
 
       final Session session = AsyncResolver.getResult(
          () -> stripeCheckoutGateway.retrieveSession(sessionId), 20
@@ -35,6 +38,6 @@ public class RetrySubscriptionPaymentHandler {
 
       log.info("Session located: {}", session.getId());
 
-      return paymentSessionStatusResolver.resolvePaymentStatus(session, subject);
+      return paymentSessionStatusResolver.resolvePaymentStatus(session, authName);
    }
 }

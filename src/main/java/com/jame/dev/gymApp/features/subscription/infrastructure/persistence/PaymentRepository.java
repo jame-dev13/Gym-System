@@ -25,7 +25,11 @@ public interface PaymentRepository extends CustomJpaRepository<PaymentEntity, Lo
    @NativeQuery(value = """
       SELECT p.*
       FROM payments p
-      WHERE p.customer_id = :customerId AND
+      INNER JOIN customers c
+            ON c.id = p.customer_id
+      INNER JOIN users u
+            ON u.id = c.user_id
+      WHERE u.email = :userEmail AND
       (
         :search IS NULL OR TRIM(:search) = '' OR
         CAST(p.amount AS TEXT) ILIKE CONCAT('%', :search, '%') OR
@@ -33,18 +37,24 @@ public interface PaymentRepository extends CustomJpaRepository<PaymentEntity, Lo
         CAST(p.status AS TEXT) ILIKE CONCAT('%', :search , '%')
       )
       """,
-      countQuery = """
-               SELECT COUNT(*) FROM payments p
-               WHERE p.customer_id = :customerId AND
-            (
-              :search IS NULL OR TRIM(:search) = '' OR
-              CAST(p.amount AS TEXT) ILIKE CONCAT('%', :search, '%') OR
-              CAST(p.payment_method AS TEXT) ILIKE CONCAT('%', :search , '%') OR
-              CAST(p.status AS TEXT) ILIKE CONCAT('%', :search , '%')
-            )
+      countQuery =
+         """
+            SELECT COUNT(*)
+            FROM payments p
+            INNER JOIN customers c
+               ON c.id = p.customer_id
+            INNER JOIN users u
+               ON u.id = c.user_id
+            WHERE u.email = :userEmail AND
+               (
+                 :search IS NULL OR TRIM(:search) = '' OR
+                 CAST(p.amount AS TEXT) ILIKE CONCAT('%', :search, '%') OR
+                 CAST(p.payment_method AS TEXT) ILIKE CONCAT('%', :search , '%') OR
+                 CAST(p.status AS TEXT) ILIKE CONCAT('%', :search , '%')
+               )
          """)
    Page<PaymentEntity> findAll(
-      @Param("customerId") final Long customerId,
+      @Param("userEmail") final String userEmail,
       @Param("search") final String search,
       final Pageable pageable
    );
