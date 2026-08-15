@@ -2,12 +2,11 @@ package com.jame.dev.gymApp.features.metrics.application.contract;
 
 import com.jame.dev.gymApp.features.metrics.api.response.AnnualResumeResponse;
 import com.jame.dev.gymApp.features.metrics.api.response.InvestmentMonthEvolutionResponse;
-import com.jame.dev.gymApp.features.metrics.api.response.TotalInvestment;
+import org.springframework.security.core.Authentication;
 
 public interface PaymentMetricsSubscriberService {
 
-   TotalInvestment getTotalExpend(final long customerId);
-   AnnualResumeResponse getAnnualResume(final long customerId);
-   InvestmentMonthEvolutionResponse getInvestmentMonthEvolution(final long customerId);
+   AnnualResumeResponse getAnnualResume(final Authentication authentication);
+   InvestmentMonthEvolutionResponse getInvestmentMonthEvolution(final Authentication authentication);
 
 }

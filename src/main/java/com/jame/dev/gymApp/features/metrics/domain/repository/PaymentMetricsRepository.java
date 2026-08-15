@@ -24,16 +24,20 @@ public interface PaymentMetricsRepository extends MetricsRepository<PaymentEntit
       SELECT
           COUNT(*) AS totalPaymentsMade,
           COALESCE(SUM(p.amount), 0) AS totalExpend,
-          COALESCE(ROUND(AVG(p.amount), 2), 0) AS avergare,
+          COALESCE(ROUND(AVG(p.amount), 2), 0) AS average,
           COUNT(*) FILTER ( WHERE p.payment_method = 'ELECTRONIC' ) as electronicPaymentsDone,
           COUNT(*) FILTER ( WHERE p.payment_method = 'PHYSIC' ) as physicPaymentsDone
       FROM payments p
+      INNER JOIN customers c
+            ON c.id = p.customer_id
+      INNER JOIN users u
+            ON u.id = c.user_id
       WHERE
-          p.customer_id = :customerId AND
+          u.email = :subject AND
           p.created_at >= DATE_TRUNC('year', CURRENT_DATE) AND
           p.created_at < date_trunc('year', CURRENT_DATE) + INTERVAL '1 year'
       """)
-   AnnualResumeResponse calculateAnnualResume(@Param("customerId") long customerId);
+   AnnualResumeResponse calculateAnnualResume(@Param("subject") final String subject);
 
    @NativeQuery("""
       SELECT
@@ -56,14 +60,21 @@ public interface PaymentMetricsRepository extends MetricsRepository<PaymentEntit
       FROM generate_series(1, 12) AS m(month_number)
       LEFT JOIN payments p
           ON EXTRACT(MONTH FROM p.created_at) = m.month_number
-          AND p.customer_id = :customerId
           AND p.amount > 0
           AND p.created_at >= DATE_TRUNC('year', CURRENT_DATE)
           AND p.created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '1 year'
+          AND EXISTS(
+                    SELECT 1
+                    FROM customers c
+                    INNER JOIN users u
+                          ON u.id = c.user_id
+                    WHERE
+                        p.customer_id = c.id AND u.email = 'user1@mail.com'
+                )
       GROUP BY m.month_number
       ORDER BY m.month_number
       """)
-   List<MonthTotal> calculatePaymentEvolutionAlongMonths(@Param("customerId") long customerId);
+   List<MonthTotal> calculatePaymentEvolutionAlongMonths(@Param("subject") final String subject);
 
    @NativeQuery("""
       SELECT

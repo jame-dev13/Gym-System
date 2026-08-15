@@ -70,7 +70,7 @@ public class AppConfig {
    }
 
    @Bean("appKeyGenerator")
-   public KeyGenerator appKeyGenerator() {
+   public KeyGenerator appKeyGenerator(AuthenticationUserResolver authenticationUserResolver) {
       return (target, method, params) -> {
          final StringBuilder sb = new StringBuilder();
          sb.append(target.getClass().getSimpleName())
@@ -78,8 +78,14 @@ public class AppConfig {
 
          Optional.of(params)
             .ifPresent(p -> {
-               for (Object parm : p) {
-                  sb.append(":").append(parm);
+               for (Object param : p) {
+                  if (param instanceof Authentication auth) {
+                     sb
+                        .append(":current:")
+                        .append(authenticationUserResolver.resolveUserId(auth));
+                     return;
+                  }
+                  sb.append(":").append(param);
                }
             });
 
