@@ -5,7 +5,7 @@ import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.user.application.usecases.mutation.HardDeleteUserByIdUseCase;
 import com.jame.dev.gymApp.features.user.domain.repository.UserMutationRepository;
-import com.jame.dev.gymApp.features.user.infrastructure.annotations.EvictUsersOnDrop;
+import com.jame.dev.gymApp.features.user.infrastructure.annotations.EvictUsersOnHDelete;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ public class HardDeleteUserByIdUseCaseService implements HardDeleteUserByIdUseCa
 
    @Override
    @Transactional
-   @EvictUsersOnDrop
+   @EvictUsersOnHDelete
    @AuditLog(
       action = AuditLogAction.HARD_DELETE,
       entityType = AuditLogEntityType.USER,
