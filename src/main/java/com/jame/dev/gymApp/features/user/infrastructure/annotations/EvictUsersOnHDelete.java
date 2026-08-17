@@ -6,14 +6,15 @@ import org.springframework.cache.annotation.Caching;
 import java.lang.annotation.*;
 
 import static com.jame.dev.gymApp.application.model.CacheValues.*;
+import static com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvolutionMetricsValues.DOWNING_CUSTOMERS;
 
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
 @Caching(evict = {
-   @CacheEvict(value = { USERS, CUSTOMERS, USERS_INACTIVE }, allEntries = true),
-   @CacheEvict(value = USER, key = "#id"),
+   @CacheEvict(value = {USERS, CUSTOMERS, DOWNING_CUSTOMERS, USERS_INACTIVE}, allEntries = true),
+   @CacheEvict(value = USER, key = "#id")
 })
-public @interface EvictUsersOnUpdate {
+public @interface EvictUsersOnHDelete {
 }
