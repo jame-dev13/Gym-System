@@ -27,9 +27,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
       final OAuth2User oAuth2User = super.loadUser(userRequest);
       final String provider = userRequest.getClientRegistration().getRegistrationId();
-      final AuthenticatedUser authenticatedUser = oauth2UserServiceHelper.handleUser(oAuth2User, provider);
-      final Collection<GrantedAuthority> authorities = oauth2UserServiceHelper.getAuthoritiesFrom(authenticatedUser);
+      final AuthenticatedUser user = oauth2UserServiceHelper.handleUser(oAuth2User, provider);
+      final Collection<GrantedAuthority> authorities = oauth2UserServiceHelper.getAuthoritiesFrom(user);
       log.debug("Returning CustomOAuth2User.");
-      return new CustomOAuth2User(authenticatedUser, oAuth2User.getAttributes(), authorities);
+      return CustomOAuth2User.builder()
+         .id(user.id())
+         .username(user.email())
+         .provider(user.authProvider())
+         .attributes(oAuth2User.getAttributes())
+         .authorities(authorities)
+         .build();
    }
 }

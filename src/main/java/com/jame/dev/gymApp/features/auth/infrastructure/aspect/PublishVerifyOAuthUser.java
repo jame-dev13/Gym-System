@@ -20,7 +20,7 @@ public class PublishVerifyOAuthUser {
            returning = "result")
    public void publishVerification(final Object result) {
       if (result instanceof CustomOAuth2User user) {
-         applicationEventPublisher.publishEvent(new VerifyOauthUserEvent(user.getUser()));
+         applicationEventPublisher.publishEvent(new VerifyOauthUserEvent(user));
       }
    }
 }

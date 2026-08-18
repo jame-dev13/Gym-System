@@ -1,43 +1,44 @@
 package com.jame.dev.gymApp.features.auth.domain.model;
 
-import lombok.*;
+import lombok.Builder;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
-@AllArgsConstructor
-@Getter
 @Builder
-@ToString
-public class UserPrincipal implements UserDetails {
-
-   private final Long id;
-
-   private final String email;
-
-   private final String password;
-
-   private final boolean active;
-
-   private final Collection<? extends GrantedAuthority> authorities;
+public record UserPrincipal(
+   Long id,
+   String username,
+   Collection<? extends GrantedAuthority> authorities
+) implements UserDetails, AuthPrincipal {
 
    @Override
-   @NonNull
+   public Long id() {
+      return id;
+   }
+
+   @Override
+   public String username() {
+      return username;
+   }
+
+   @Override
+   @NullMarked
    public Collection<? extends GrantedAuthority> getAuthorities() {
       return authorities;
    }
 
    @Override
    public @Nullable String getPassword() {
-      return this.password;
+      return null;
    }
 
    @Override
-   @NonNull
+   @NullMarked
    public String getUsername() {
-      return this.email;
+      return username;
    }
-
 }

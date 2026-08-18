@@ -7,7 +7,7 @@ import com.jame.dev.gymApp.features.metrics.domain.repository.PaymentMetricsRepo
 import com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheMetricValues;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
-import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;

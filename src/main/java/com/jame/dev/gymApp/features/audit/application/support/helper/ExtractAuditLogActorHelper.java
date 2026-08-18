@@ -6,7 +6,6 @@ import com.jame.dev.gymApp.features.audit.application.model.AuditExecutionContex
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationNullException;
 import com.jame.dev.gymApp.features.auth.domain.exception.InvalidAuthenticationPrincipalException;
-import com.jame.dev.gymApp.features.auth.domain.model.AuthenticatedUser;
 import com.jame.dev.gymApp.features.auth.domain.model.CustomOAuth2User;
 import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
 import org.springframework.security.core.Authentication;
@@ -33,11 +32,10 @@ public final class ExtractAuditLogActorHelper {
       }
       final Object principal = auth.getPrincipal();
       if (principal instanceof UserPrincipal user) {
-         return new AuditLogActor(user.getId(), user.getUsername());
+         return new AuditLogActor(user.id(), user.username());
       }
-      if (principal instanceof CustomOAuth2User oauthUser) {
-         final AuthenticatedUser user = oauthUser.getUser();
-         return new AuditLogActor(user.id(), user.email());
+      if (principal instanceof CustomOAuth2User user) {;
+         return new AuditLogActor(user.id(), user.username());
       }
       throw new InvalidAuthenticationPrincipalException("No mapping for auth principal subject present.");
    }

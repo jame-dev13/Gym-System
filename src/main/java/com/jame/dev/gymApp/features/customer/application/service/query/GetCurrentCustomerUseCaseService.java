@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.customer.application.service.query;
 
-import com.jame.dev.gymApp.application.service.IdentityExtractorApplicationService;
+import com.jame.dev.gymApp.features.auth.application.service.IdentityExtractorApplicationService;
 import com.jame.dev.gymApp.domain.exception.NotFoundException;
 import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerFactory;

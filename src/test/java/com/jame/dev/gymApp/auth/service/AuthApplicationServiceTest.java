@@ -88,14 +88,14 @@ public class AuthApplicationServiceTest {
          given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                  .willReturn(authentication);
          given(authentication.getPrincipal()).willReturn(user);
-         given(authFactory.createSignInOkDtoFrom(user)).willReturn(expectedResponse);
+         given(authFactory.createSigInResponseFrom(user)).willReturn(expectedResponse);
 
          SignInResponse result = service.signIn(signInRequest);
 
          assertNotNull(result);
          assertEquals(expectedResponse, result);
          verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-         verify(authFactory).createSignInOkDtoFrom(user);
+         verify(authFactory).createSigInResponseFrom(user);
       }
 
       @Test

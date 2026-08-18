@@ -20,7 +20,7 @@ import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionV
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictSubsOnSave;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
-import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;

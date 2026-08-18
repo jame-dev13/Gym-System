@@ -7,7 +7,7 @@ import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.c
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictCurrentOnDeleteSub;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
-import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;

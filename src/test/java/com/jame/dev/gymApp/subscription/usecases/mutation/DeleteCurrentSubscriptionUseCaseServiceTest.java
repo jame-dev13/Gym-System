@@ -2,7 +2,7 @@ package com.jame.dev.gymApp.subscription.usecases.mutation;
 
 import com.jame.dev.gymApp.features.subscription.application.service.mutation.current.DeleteCurrentSubscriptionUseCaseService;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
-import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

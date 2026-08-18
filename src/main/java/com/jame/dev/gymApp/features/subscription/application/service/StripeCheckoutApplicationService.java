@@ -11,7 +11,7 @@ import com.jame.dev.gymApp.features.subscription.infrastructure.stripe.service.S
 import com.jame.dev.gymApp.features.subscription.infrastructure.stripe.session.utils.SessionParams;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
-import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;

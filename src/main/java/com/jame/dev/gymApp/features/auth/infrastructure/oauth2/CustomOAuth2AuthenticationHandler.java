@@ -6,7 +6,7 @@ import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.auth.application.contract.JwtService;
 import com.jame.dev.gymApp.features.auth.application.support.helper.CookieHelper;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationNullException;
-import com.jame.dev.gymApp.features.auth.domain.model.CustomOAuth2User;
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
@@ -43,24 +43,12 @@ public class CustomOAuth2AuthenticationHandler implements AuthenticationSuccessH
    public void onAuthenticationSuccess(final @NonNull HttpServletRequest request,
                                        final @NonNull HttpServletResponse response,
                                        final @NonNull Authentication authentication) {
-      if (Objects.isNull(authentication.getPrincipal())) {
-         throw new AuthenticationNullException("No user authenticated.");
+      if (Objects.isNull(authentication.getPrincipal()) || !(authentication.getPrincipal() instanceof AuthPrincipal principal)) {
+         throw new AuthenticationNullException("No user authenticated identified.");
       }
 
-      String email = null;
-      Long id = null;
-      if (authentication.getPrincipal() instanceof CustomOAuth2User user) {
-         log.info("[Oauth2 - AuthHandler]: USER IDENTIFIED.");
-         email = user.getUser().email();
-         id = user.getUser().id();
-      }
-
-      if (Objects.isNull(email) || email.isBlank()) {
-         throw new AuthenticationNullException("No Authentication founded.");
-      }
-
-      final String access = jwt.generateAccessToken(id, email);
-      final String refreshToken = jwt.generateRefreshToken(id, email);
+      final String access = jwt.generateAccessToken(principal.id(), principal.username());
+      final String refreshToken = jwt.generateRefreshToken(principal.id(), principal.username());
 
       final ResponseCookie accessCookie = cookieHelper.createAccessTokenCookie(access);
       final ResponseCookie refreshCookie = cookieHelper.createRefreshTokenCookie(refreshToken);

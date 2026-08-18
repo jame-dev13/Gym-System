@@ -8,6 +8,7 @@ import com.jame.dev.gymApp.features.auth.application.model.JwtValidationArgument
 import com.jame.dev.gymApp.features.auth.application.support.helper.CookieHelper;
 import com.jame.dev.gymApp.features.auth.domain.exception.ExtractClaimException;
 import com.jame.dev.gymApp.features.auth.domain.exception.InvalidJwtException;
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
 import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
 import com.jame.dev.gymApp.features.user.domain.model.Role;
@@ -52,12 +53,14 @@ public class AuthResponsesFactory {
       return new CookieResponse(access.getValue(), refresh.getValue());
    }
 
-   public SignInResponse createSignInOkDtoFrom(final @NonNull UserPrincipal authenticatedUser) {
-      final boolean isUser = authenticatedUser.getAuthorities()
+   public SignInResponse createSigInResponseFrom(final @NonNull AuthPrincipal principal) {
+      if(!(principal instanceof UserPrincipal user))
+         throw new IllegalArgumentException("Type of Principal not allowed.");
+      final boolean isUser = user.getAuthorities()
          .stream()
          .map(GrantedAuthority::getAuthority)
          .noneMatch(ga -> Objects.equals(ga, "ROLE_ADMIN"));
-      return buildSignInOkDto(isUser, authenticatedUser);
+      return buildSignInOkDto(isUser, user);
    }
 
    public SessionResponse createSessionFrom(String username, Collection<? extends GrantedAuthority> authorities) {
@@ -70,11 +73,11 @@ public class AuthResponsesFactory {
 
    @NonNull
    private SignInResponse buildSignInOkDto(
-      final boolean isUser, final UserPrincipal userPrincipal) {
-      final CookieResponse cookies = generateCookieResponseFrom(userPrincipal.getId(), userPrincipal.getUsername());
+      final boolean isUser, final AuthPrincipal userPrincipal) {
+      final CookieResponse cookies = generateCookieResponseFrom(userPrincipal.id(), userPrincipal.username());
       return SignInResponse.builder()
          .isUser(isUser)
-         .email(userPrincipal.getUsername())
+         .email(userPrincipal.username())
          .access(cookies.access())
          .refresh(cookies.refresh())
          .build();
