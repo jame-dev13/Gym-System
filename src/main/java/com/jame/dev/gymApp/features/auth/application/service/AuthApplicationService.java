@@ -81,7 +81,6 @@ public class AuthApplicationService implements AuthService {
 
       final Authentication authentication = authenticationManager.authenticate(token);
 
-      log.info("Auth principal: {}", authentication.getPrincipal());
       final UserPrincipal userAuthenticated = Optional.ofNullable((UserPrincipal) authentication.getPrincipal())
          .orElseThrow(() -> new AuthenticationAttemptFailureException("Can't authenticate User."));
 
