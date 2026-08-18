@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.customer.usecases.mutation;
 
-import com.jame.dev.gymApp.application.service.IdentityExtractorApplicationService;
+import com.jame.dev.gymApp.features.auth.application.service.IdentityExtractorApplicationService;
 import com.jame.dev.gymApp.domain.exception.NoActiveException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationNullException;

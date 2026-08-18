@@ -7,7 +7,7 @@ import com.jame.dev.gymApp.features.backup.application.support.mapper.BackupMapp
 import com.jame.dev.gymApp.features.backup.domain.model.BackupDocument;
 import com.jame.dev.gymApp.features.backup.domain.model.BackupStatus;
 import com.jame.dev.gymApp.infrastructure.security.hash.HashExecutor;
-import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.context.SecurityContextHolder;

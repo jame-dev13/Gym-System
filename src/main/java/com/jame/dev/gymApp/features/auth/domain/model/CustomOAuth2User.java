@@ -1,5 +1,7 @@
 package com.jame.dev.gymApp.features.auth.domain.model;
 
+import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
+import lombok.Builder;
 import lombok.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -7,20 +9,14 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import java.util.Collection;
 import java.util.Map;
 
-public class CustomOAuth2User implements OAuth2User {
-   private final AuthenticatedUser user;
-   private final Map<String, Object> attributes;
-   private final Collection<? extends GrantedAuthority> authorities;
-
-   public CustomOAuth2User(AuthenticatedUser user, Map<String, Object> attributes, Collection<? extends GrantedAuthority> authorities) {
-      this.user = user;
-      this.attributes = attributes;
-      this.authorities = authorities;
-   }
-
-   public AuthenticatedUser getUser(){
-      return user;
-   }
+@Builder
+public record CustomOAuth2User(
+   Long id,
+   String username,
+   AuthProvider provider,
+   Map<String, Object> attributes,
+   Collection<? extends GrantedAuthority> authorities
+) implements OAuth2User, AuthPrincipal {
 
    @Override
    public Map<String, Object> getAttributes() {
@@ -34,6 +30,16 @@ public class CustomOAuth2User implements OAuth2User {
 
    @Override
    public @NonNull String getName() {
-      return user.name();
+      return this.username;
+   }
+
+   @Override
+   public Long id() {
+      return this.id;
+   }
+
+   @Override
+   public String username() {
+      return this.username;
    }
 }

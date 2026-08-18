@@ -9,7 +9,7 @@ import com.jame.dev.gymApp.features.subscription.domain.repository.PaymentQueryR
 import com.jame.dev.gymApp.features.subscription.infrastructure.payment.mapper.PaymentMapper;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import com.jame.dev.gymApp.infrastructure.security.lock.LockKeys;
-import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;

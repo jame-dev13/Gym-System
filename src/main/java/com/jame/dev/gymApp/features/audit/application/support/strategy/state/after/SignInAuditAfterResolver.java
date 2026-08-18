@@ -9,18 +9,11 @@ import com.jame.dev.gymApp.features.audit.infrastructure.spel_evaluator.AuditLog
 import com.jame.dev.gymApp.features.auth.api.request.SignInRequest;
 import com.jame.dev.gymApp.features.auth.api.response.SignInResponse;
 import com.jame.dev.gymApp.features.auth.application.contract.JwtService;
-import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationNullException;
-import com.jame.dev.gymApp.features.auth.domain.model.AuthenticatedUser;
-import com.jame.dev.gymApp.features.auth.domain.model.CustomOAuth2User;
-import lombok.NonNull;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-
-import java.util.Objects;
-import java.util.function.Function;
 
 @Slf4j
 @Component
@@ -28,6 +21,7 @@ import java.util.function.Function;
 public class SignInAuditAfterResolver implements AuditAfterResolver {
    private final AuditLogExpressionEvaluator evaluator;
    private final JwtService jwts;
+   private final IdentityExtractorService identityExtractorService;
 
    @Override
    public AuditLogAction action() {
@@ -50,11 +44,11 @@ public class SignInAuditAfterResolver implements AuditAfterResolver {
                .build();
          }
          case Authentication auth -> {
-            final AuthenticatedUser user = getAuthUser.apply(auth);
+            final var principal = identityExtractorService.getOauthUser(auth);
             yield AuditAuthenticationResultValue.builder()
-               .userId(user.id())
-               .performedBy(user.email())
-               .operation(AuditAuthOperation.OAUTH_SIGN_IN.getOp() + " with " + user.authProvider().getProvider())
+               .userId(principal.id())
+               .performedBy(principal.username())
+               .operation(AuditAuthOperation.OAUTH_SIGN_IN.getOp() + " with " + principal.provider().getProvider())
                .build();
          }
          default -> throw new IllegalStateException("Unexpected value: " + input);
@@ -63,18 +57,4 @@ public class SignInAuditAfterResolver implements AuditAfterResolver {
       context.setEntityId(resultValue.userId());
       context.setResultValue(resultValue);
    }
-
-   private static final Function<@NonNull Authentication, AuthenticatedUser> getAuthUser = auth -> {
-      if (auth instanceof AnonymousAuthenticationToken) {
-         throw new AuthenticationNullException("Authentication token is undefined.");
-      }
-
-      final var principal = Objects.requireNonNull(auth.getPrincipal(), "User principal is undefined.");
-
-      if (!(principal instanceof CustomOAuth2User oauth)) {
-         throw new IllegalArgumentException("Unexpecting type." + principal);
-      }
-
-      return Objects.requireNonNull(oauth.getUser(), "Authenticated user is undefined.");
-   };
 }

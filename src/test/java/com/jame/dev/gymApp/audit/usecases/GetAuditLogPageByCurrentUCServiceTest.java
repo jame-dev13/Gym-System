@@ -7,7 +7,7 @@ import com.jame.dev.gymApp.features.audit.api.response.AuditLogResponse;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogDocument;
 import com.jame.dev.gymApp.features.audit.infrastructure.specification.AuditLogSpecifications;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationNullException;
-import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -6,7 +6,7 @@ import com.jame.dev.gymApp.features.audit.application.support.factory.AuditLogFa
 import com.jame.dev.gymApp.features.audit.application.usecases.GetAuditLogPageByCurrentUseCase;
 import com.jame.dev.gymApp.features.audit.infrastructure.cache.AuditCacheValues;
 import com.jame.dev.gymApp.features.audit.infrastructure.specification.AuditLogSpecifications;
-import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;

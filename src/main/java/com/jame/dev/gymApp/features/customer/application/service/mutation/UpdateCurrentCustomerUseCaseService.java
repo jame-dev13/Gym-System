@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.customer.application.service.mutation;
 
-import com.jame.dev.gymApp.application.service.IdentityExtractorApplicationService;
+import com.jame.dev.gymApp.features.auth.application.service.IdentityExtractorApplicationService;
 import com.jame.dev.gymApp.domain.exception.NotFoundException;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;

@@ -11,7 +11,7 @@ import com.jame.dev.gymApp.features.auth.application.contract.AuthService;
 import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.auth.application.support.factory.AuthResponsesFactory;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationAttemptFailureException;
-import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.auth.infrastructure.annotation.CheckExistence;
 import com.jame.dev.gymApp.features.auth.infrastructure.annotation.CheckSignIn;
 import com.jame.dev.gymApp.features.auth.infrastructure.annotation.PublishVerify;
@@ -81,10 +81,10 @@ public class AuthApplicationService implements AuthService {
 
       final Authentication authentication = authenticationManager.authenticate(token);
 
-      final UserPrincipal userAuthenticated = Optional.ofNullable((UserPrincipal) authentication.getPrincipal())
+      final AuthPrincipal userAuthenticated = Optional.ofNullable((AuthPrincipal) authentication.getPrincipal())
          .orElseThrow(() -> new AuthenticationAttemptFailureException("Can't authenticate User."));
 
-      return authFactory.createSignInOkDtoFrom(userAuthenticated);
+      return authFactory.createSigInResponseFrom(userAuthenticated);
    }
 
    @Override

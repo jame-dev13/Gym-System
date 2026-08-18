@@ -5,7 +5,7 @@ import com.jame.dev.gymApp.features.metrics.api.response.InvestmentMonthEvolutio
 import com.jame.dev.gymApp.features.metrics.application.service.PaymentMetricsSubscriberApplicationService;
 import com.jame.dev.gymApp.features.metrics.domain.model.MonthTotal;
 import com.jame.dev.gymApp.features.metrics.domain.repository.PaymentMetricsRepository;
-import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

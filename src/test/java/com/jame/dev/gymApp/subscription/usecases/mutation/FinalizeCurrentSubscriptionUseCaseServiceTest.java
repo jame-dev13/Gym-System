@@ -11,7 +11,7 @@ import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.publisher.SubscriptionMutationEventPublisher;
-import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

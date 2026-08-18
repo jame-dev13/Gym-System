@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.infrastructure.security;
 
-import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionOwnershipService;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionValidationRepository;
