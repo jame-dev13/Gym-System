@@ -4,6 +4,7 @@ import com.jame.dev.gymApp.application.dto.PageDto;
 import com.jame.dev.gymApp.features.audit.api.response.AuditLogResponse;
 import com.jame.dev.gymApp.features.audit.application.support.factory.AuditLogFactory;
 import com.jame.dev.gymApp.features.audit.application.usecases.GetAuditLogPageByCurrentUseCase;
+import com.jame.dev.gymApp.features.audit.infrastructure.cache.AuditCacheValues;
 import com.jame.dev.gymApp.features.audit.infrastructure.specification.AuditLogSpecifications;
 import com.jame.dev.gymApp.infrastructure.security.principal.IdentityExtractorService;
 import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
@@ -23,7 +24,7 @@ public class GetAuditLogPageByCurrentUCService implements GetAuditLogPageByCurre
 
    @Override
    @Cacheable(
-      value = "auditLogs",
+      value = AuditCacheValues.AUDIT_LOG_CURR_VAL,
       keyGenerator = "pageKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )

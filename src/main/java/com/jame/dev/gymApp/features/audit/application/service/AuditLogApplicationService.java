@@ -5,6 +5,7 @@ import com.jame.dev.gymApp.features.audit.api.response.AuditLogResponse;
 import com.jame.dev.gymApp.features.audit.application.contract.AuditLogService;
 import com.jame.dev.gymApp.features.audit.application.support.factory.AuditLogFactory;
 import com.jame.dev.gymApp.features.audit.domain.repository.AuditLogRepository;
+import com.jame.dev.gymApp.features.audit.infrastructure.cache.AuditCacheValues;
 import com.jame.dev.gymApp.infrastructure.sort.SortPropertyResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -20,7 +21,7 @@ public class AuditLogApplicationService implements AuditLogService {
 
    @Override
    @Cacheable(
-      value = "auditLogs",
+      value = AuditCacheValues.AUDIT_LOG_VAL,
       keyGenerator = "pageKeyGenerator",
       unless = "#result == null || #result.content.isEmpty()"
    )
