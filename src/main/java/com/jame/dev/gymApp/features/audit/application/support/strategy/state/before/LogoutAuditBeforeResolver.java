@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.audit.application.support.strategy.state.before;
 
+import com.jame.dev.gymApp.features.audit.application.dto.AuditLogActor;
 import com.jame.dev.gymApp.features.audit.application.model.AuditAuthOperation;
 import com.jame.dev.gymApp.features.audit.application.model.AuditAuthenticationResultValue;
 import com.jame.dev.gymApp.features.audit.application.model.AuditExecutionContext;
@@ -15,14 +16,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class LogoutAuditBeforeResolver implements AuditBeforeResolver {
-   private final JwtService jwts;
    private final AuditLogExpressionEvaluator evaluator;
+   private final JwtService jwts;
 
    @Override
    public AuditLogAction action() {
@@ -31,20 +32,34 @@ public class LogoutAuditBeforeResolver implements AuditBeforeResolver {
 
    @Override
    public void resolve(AuditExecutionContext context) {
-      final var input = (HttpServletRequest) evaluator.evaluateAsObject(context.getAnnotation().input(), context.getParamNames(), context.getArgs());
-      context.setInput(input);
-      final var accessValue = Arrays.stream(input.getCookies())
-         .filter(c -> Objects.nonNull(c) && c.getName().equals(CookieNames.COOKIE_JWT_ACCESS.getValue()))
-         .findFirst()
-         .map(Cookie::getValue)
-         .orElseThrow(() -> new IllegalArgumentException("No access cookie value present."));
-      final Long userId = jwts.extractUserId(accessValue)
-         .orElse(null);
-      final var username = jwts.extractSubject(accessValue)
-         .orElse("");
+      final Object input = evaluator.evaluateAsObject(context.getAnnotation().input(), context.getParamNames(), context.getArgs());
 
-      context.setEntityId(userId);
+      if (!(input instanceof HttpServletRequest request))
+         throw new IllegalArgumentException("Resolved object unexpected.");
 
-      context.setResultValue(new AuditAuthenticationResultValue(userId, username, AuditAuthOperation.LOGOUT.getOp()));
+      final var cookieMap = Arrays.stream(request.getCookies())
+         .collect(Collectors.toUnmodifiableMap(Cookie::getName, Cookie::getValue));
+
+      final long actorId = jwts
+         .extractUserId(
+            cookieMap.getOrDefault(
+               CookieNames.COOKIE_JWT_ACCESS.getValue(),
+               CookieNames.COOKIE_JWT_REFRESH.getValue()))
+         .orElseThrow();
+
+      final String username = jwts.extractSubject(cookieMap.getOrDefault(
+            CookieNames.COOKIE_JWT_ACCESS.getValue(),
+            CookieNames.COOKIE_JWT_REFRESH.getValue()))
+         .orElseThrow();
+
+      context.setEntityId(actorId);
+      context.setResultValue(
+         AuditAuthenticationResultValue.builder()
+            .userId(actorId)
+            .performedBy(username)
+            .operation(AuditAuthOperation.LOGOUT.getOp())
+            .build()
+      );
+      context.setAuditLogActor(new AuditLogActor(actorId, username));
    }
 }

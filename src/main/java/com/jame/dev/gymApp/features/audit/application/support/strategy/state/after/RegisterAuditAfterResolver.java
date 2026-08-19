@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.features.audit.application.support.strategy.state.after;
 
 import com.jame.dev.gymApp.domain.exception.NotFoundException;
+import com.jame.dev.gymApp.features.audit.application.dto.AuditLogActor;
 import com.jame.dev.gymApp.features.audit.application.model.AuditAuthOperation;
 import com.jame.dev.gymApp.features.audit.application.model.AuditAuthenticationResultValue;
 import com.jame.dev.gymApp.features.audit.application.model.AuditExecutionContext;
@@ -30,5 +31,6 @@ public class RegisterAuditAfterResolver implements AuditAfterResolver {
          .orElseThrow(() -> new NotFoundException("User not found for: " + email));
       context.setEntityId(id);
       context.setResultValue(new AuditAuthenticationResultValue(id, email, AuditAuthOperation.REGISTER.getOp()));
+      context.setAuditLogActor(new AuditLogActor(id, email));
    }
 }
