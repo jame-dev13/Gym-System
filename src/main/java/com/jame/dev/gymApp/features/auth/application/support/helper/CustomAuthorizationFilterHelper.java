@@ -3,7 +3,6 @@ package com.jame.dev.gymApp.features.auth.application.support.helper;
 import com.jame.dev.gymApp.features.auth.application.contract.JwtService;
 import com.jame.dev.gymApp.features.auth.application.model.JwtValidationArgument;
 import com.jame.dev.gymApp.features.auth.domain.exception.ExtractClaimException;
-import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
@@ -67,7 +67,7 @@ public class CustomAuthorizationFilterHelper {
    public void authorizeSubject(final String subject) {
       final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
       if (auth == null) {
-         final UserPrincipal userDetails = (UserPrincipal) userDetailsService.loadUserByUsername(subject);
+         final UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
          final UsernamePasswordAuthenticationToken authenticationToken =
                  new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
          SecurityContextHolder.getContext().setAuthentication(authenticationToken);

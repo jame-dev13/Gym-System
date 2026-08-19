@@ -12,6 +12,7 @@ import java.util.Collection;
 public record UserPrincipal(
    Long id,
    String username,
+   String password,
    Collection<? extends GrantedAuthority> authorities
 ) implements UserDetails, AuthPrincipal {
 
@@ -33,7 +34,7 @@ public record UserPrincipal(
 
    @Override
    public @Nullable String getPassword() {
-      return null;
+      return password;
    }
 
    @Override

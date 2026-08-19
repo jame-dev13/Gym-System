@@ -11,7 +11,7 @@ import com.jame.dev.gymApp.features.auth.application.contract.AuthService;
 import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.auth.application.support.factory.AuthResponsesFactory;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationAttemptFailureException;
-import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
+import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
 import com.jame.dev.gymApp.features.auth.infrastructure.annotation.CheckExistence;
 import com.jame.dev.gymApp.features.auth.infrastructure.annotation.CheckSignIn;
 import com.jame.dev.gymApp.features.auth.infrastructure.annotation.PublishVerify;
@@ -31,7 +31,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -81,8 +80,10 @@ public class AuthApplicationService implements AuthService {
 
       final Authentication authentication = authenticationManager.authenticate(token);
 
-      final AuthPrincipal userAuthenticated = Optional.ofNullable((AuthPrincipal) authentication.getPrincipal())
-         .orElseThrow(() -> new AuthenticationAttemptFailureException("Can't authenticate User."));
+      final Object principal = authentication.getPrincipal();
+
+      if(!(principal instanceof UserPrincipal userAuthenticated))
+         throw new AuthenticationAttemptFailureException("Cannot resolve the authenticated subject.");
 
       return authFactory.createSigInResponseFrom(userAuthenticated);
    }
