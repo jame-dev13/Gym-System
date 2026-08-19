@@ -35,6 +35,7 @@ public class UserDetailsApplicationService implements UserDetailsService {
       return UserPrincipal.builder()
          .id(userEntity.getId())
          .username(userEntity.getEmail())
+         .password(userEntity.getPassword())
          .authorities(roleMapper.entityToGrantedAuthorities(userEntity.getRoles()))
          .build();
    }
