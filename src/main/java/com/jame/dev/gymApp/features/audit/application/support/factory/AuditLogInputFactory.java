@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 public class AuditLogInputFactory {
 
    private final AuditLogPayloadResolverRegistry resolverRegistry;
+   private final ExtractAuditLogActorHelper extractAuditLogActorHelper;
 
    public AuditLogInput create(AuditExecutionContext context) {
       final var ACTION = context.getAnnotation().action();
@@ -25,8 +26,10 @@ public class AuditLogInputFactory {
          .entityId(context.getEntityId())
          .type(TYPE)
          .build();
-      final AuditLogActor actor = ExtractAuditLogActorHelper.extractLogActor(context);
-      final AuditPayload payload = resolverRegistry.check(ACTION).resolve(context);
+      final AuditLogActor actor = extractAuditLogActorHelper.extractLogActor(context);
+      final AuditPayload payload = resolverRegistry
+         .check(ACTION)
+         .resolve(context);
       final AuditLogMetadata metadata = ExtractAuditLogMetadataHelper.extractAuditLogMetadata();
       return AuditLogInput.builder()
          .entity(entity)

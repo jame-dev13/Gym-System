@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.audit.application.model;
 
+import com.jame.dev.gymApp.features.audit.application.dto.AuditLogActor;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,4 +30,6 @@ public class AuditExecutionContext {
    private Object input;
 
    private Throwable th;
+
+   private AuditLogActor auditLogActor;
 }

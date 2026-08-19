@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.audit.application.support.strategy.state.after;
 
+import com.jame.dev.gymApp.features.audit.application.dto.AuditLogActor;
 import com.jame.dev.gymApp.features.audit.application.model.AuditAuthOperation;
 import com.jame.dev.gymApp.features.audit.application.model.AuditAuthenticationResultValue;
 import com.jame.dev.gymApp.features.audit.application.model.AuditExecutionContext;
@@ -56,5 +57,7 @@ public class SignInAuditAfterResolver implements AuditAfterResolver {
 
       context.setEntityId(resultValue.userId());
       context.setResultValue(resultValue);
+
+      context.setAuditLogActor(new AuditLogActor(resultValue.userId(), resultValue.performedBy()));
    }
 }
