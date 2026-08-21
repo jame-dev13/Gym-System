@@ -9,14 +9,12 @@ import com.jame.dev.gymApp.features.audit.infrastructure.audit_strategy.AuditBef
 import com.jame.dev.gymApp.features.audit.infrastructure.spel_evaluator.AuditLogExpressionEvaluator;
 import com.jame.dev.gymApp.features.auth.application.contract.JwtService;
 import com.jame.dev.gymApp.features.auth.application.model.CookieNames;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -37,20 +35,15 @@ public class LogoutAuditBeforeResolver implements AuditBeforeResolver {
       if (!(input instanceof HttpServletRequest request))
          throw new IllegalArgumentException("Resolved object unexpected.");
 
-      final var cookieMap = Arrays.stream(request.getCookies())
-         .collect(Collectors.toUnmodifiableMap(Cookie::getName, Cookie::getValue));
-
-      final long actorId = jwts
-         .extractUserId(
-            cookieMap.getOrDefault(
-               CookieNames.COOKIE_JWT_ACCESS.getValue(),
-               CookieNames.COOKIE_JWT_REFRESH.getValue()))
+      final var refreshCookie = Arrays.stream(request.getCookies())
+         .filter(c -> c.getName().equals(CookieNames.COOKIE_JWT_REFRESH.getValue()))
+         .findFirst()
          .orElseThrow();
 
-      final String username = jwts.extractSubject(cookieMap.getOrDefault(
-            CookieNames.COOKIE_JWT_ACCESS.getValue(),
-            CookieNames.COOKIE_JWT_REFRESH.getValue()))
-         .orElseThrow();
+      final Long actorId = jwts.extractUserId(refreshCookie.getValue())
+            .orElse(-1L);
+      final String username = jwts.extractSubject(refreshCookie.getValue())
+            .orElse("UNKNOWN");
 
       context.setEntityId(actorId);
       context.setResultValue(

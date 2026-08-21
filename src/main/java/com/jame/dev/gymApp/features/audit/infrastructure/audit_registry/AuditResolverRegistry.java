@@ -38,6 +38,10 @@ public class AuditResolverRegistry {
       return after.get(action);
    }
 
+   public boolean checkBeforeRegistry(AuditLogAction action) {
+      return before.containsKey(action);
+   }
+
    public boolean checkAfterRegistry(AuditLogAction action) {
       return after.containsKey(action);
    }

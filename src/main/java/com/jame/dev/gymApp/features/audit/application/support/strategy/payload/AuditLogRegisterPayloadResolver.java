@@ -20,7 +20,7 @@ public class AuditLogRegisterPayloadResolver implements AuditLogPayloadResolver 
    public AuditPayload resolve(AuditExecutionContext ctx) {
       final var res = (AuditAuthenticationResultValue) ctx.getResultValue();
       return AuditLogAuthPayload.builder()
-         .info(AuditAuthInfoMapExtractor.extractInfoMapFrom(ctx.getTh(), res))
+         .info(AuditAuthInfoMapExtractor.extractInfoMapFrom(res))
          .build();
    }
 }

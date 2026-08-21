@@ -6,12 +6,12 @@ import lombok.Builder;
 import java.util.Map;
 
 @Builder
-public record AuditLogAuthPayload(
-   @JsonProperty("info") Map<String, Object> info
-) implements AuditPayload {
+public record AuditLogErrorPayload(
+   @JsonProperty("error") Map<String, Object> error
+   ) implements AuditPayload {
    @Override
    @JsonProperty("type")
    public AuditPayloadType type() {
-      return AuditPayloadType.AUTHENTICATION;
+      return AuditPayloadType.ERROR;
    }
 }

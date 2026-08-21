@@ -10,14 +10,7 @@ public final class AuditAuthInfoMapExtractor {
       SUCCESS, FAILURE
    }
 
-   public static Map<String, Object> extractInfoMapFrom(final Throwable th, final AuditAuthenticationResultValue res) {
-      if (th != null) {
-         return Map.of(
-            "status", Status.FAILURE,
-            "desc", th.getMessage(),
-            "performedBy", res.performedBy());
-      }
-
+   public static Map<String, Object> extractInfoMapFrom(final AuditAuthenticationResultValue res) {
       return Map.of(
          "status", Status.SUCCESS,
          "desc", "Operation %s Completed with success".formatted(res.operation()),
