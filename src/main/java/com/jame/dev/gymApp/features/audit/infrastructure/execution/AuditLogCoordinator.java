@@ -1,8 +1,6 @@
 package com.jame.dev.gymApp.features.audit.infrastructure.execution;
 
 import com.jame.dev.gymApp.features.audit.application.support.factory.AuditExecutionContextFactory;
-import com.jame.dev.gymApp.features.audit.application.support.factory.AuditLogInputFactory;
-import com.jame.dev.gymApp.features.audit.infrastructure.audit_registry.AuditResolverRegistry;
 import com.jame.dev.gymApp.features.audit.infrastructure.publisher.AuditLogEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,40 +13,29 @@ import org.springframework.stereotype.Component;
 public class AuditLogCoordinator {
 
    private final AuditExecutionContextFactory executionContextFactory;
-   private final AuditResolverRegistry auditResolverRegistry;
    private final AuditLogEventPublisher eventPublisher;
-   private final AuditLogInputFactory auditLogInputFactory;
+   private final AuditResolverBlockExecutor blockExecutor;
 
    public Object coordinate(final ProceedingJoinPoint joinPoint) throws Throwable {
       final var context = executionContextFactory.create(joinPoint);
       if (context.getAnnotation() == null)
          return joinPoint.proceed();
 
-      final var ACTION = context.getAnnotation().action();
+      final var action = context.getAnnotation().action();
+
+      blockExecutor.resolveBeforeState(action, context);
 
       try {
-         auditResolverRegistry.before(ACTION).resolve(context);
-
          final Object result = joinPoint.proceed();
-
          context.setResult(result);
-
-         if (auditResolverRegistry.checkAfterRegistry(ACTION)) {
-            auditResolverRegistry.after(ACTION).resolve(context);
-         }
-
+         blockExecutor.resolverAfterState(action, context);
          return result;
       } catch (final Throwable th) {
          context.setTh(th);
-         log.error("Exception during audit coordination.", th);
+         log.error("Exception during audited method execution.", th);
          throw th;
       } finally {
-         try {
-            final var input = auditLogInputFactory.create(context);
-            eventPublisher.publishAuditLogEvent(input);
-         } catch (final Exception ex) {
-            log.error("Failed to publish audit event", ex);
-         }
+         eventPublisher.publishAuditLogEventSafely(context);
       }
    }
 }

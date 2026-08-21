@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -24,10 +23,11 @@ public class AuditLogPayloadResolverRegistry {
             ));
    }
 
+   public boolean exists (final AuditLogAction action) {
+      return resolver.containsKey(action);
+   }
 
-   public AuditLogPayloadResolver check(final AuditLogAction action) {
-      return Optional
-         .ofNullable(resolver.get(action))
-         .orElseThrow(() -> new IllegalArgumentException("Unknown AuditLogAction " + action));
+   public AuditLogPayloadResolver get(final AuditLogAction action) {
+      return resolver.get(action);
    }
 }
