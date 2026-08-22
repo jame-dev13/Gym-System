@@ -5,22 +5,29 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 public final class ErrorResponseUtils {
 
    public static String extractMessage(final BindException bindException) {
       return bindException.getBindingResult()
-              .getFieldErrors()
-              .stream()
-              .map(FieldError::getDefaultMessage)
-              .collect(Collectors.joining(" "));
+         .getFieldErrors()
+         .stream()
+         .map(FieldError::getDefaultMessage)
+         .filter(Objects::nonNull)
+         .findFirst()
+         .orElse("Unexpected value.");
    }
 
    public static String extractMessage(final ConstraintViolationException constraintViolationException) {
       return constraintViolationException.getConstraintViolations()
-              .stream()
-              .map(ConstraintViolation::getMessage)
-              .collect(Collectors.joining(" "));
+         .stream()
+         .map(ConstraintViolation::getMessage)
+         .filter(Objects::nonNull)
+         .findFirst()
+         .orElse("Unacceptable value reached.");
+   }
+
+   private ErrorResponseUtils() {
    }
 }
