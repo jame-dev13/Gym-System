@@ -2,8 +2,11 @@ package com.jame.dev.gymApp.presentation.exception;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jame.dev.gymApp.application.model.ErrorCodes;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Component;
@@ -17,32 +20,61 @@ import java.time.OffsetDateTime;
 public class ApiErrorResponseFactory {
    private final ObjectMapper mapper;
 
-   public ResponseEntity<ApiErrorResponse> buildResponse(final InputError inputError) {
-      final ApiErrorResponse errorResponse = buildError(inputError);
-      return ResponseEntity
-              .status(errorResponse.status())
-              .body(errorResponse);
+   public ResponseEntity<ApiErrorResponse> of(final ApiErrorKind kind,
+                                              final Throwable th,
+                                              final HttpServletRequest request) {
+      return respond(buildError(th, request, kind.getStatus(), kind.getCode()));
    }
 
-   public String jsonErrorResponse (final InputError inputError) {
+   /**
+    * @deprecated use {@link #of(ApiErrorKind, Throwable, HttpServletRequest)} instead.
+    */
+   @Deprecated
+   public ResponseEntity<ApiErrorResponse> buildResponse(final InputError inputError) {
+      return respond(buildError(
+              inputError.ex(),
+              inputError.request(),
+              inputError.httpStatusCode(),
+              inputError.errorCode()
+      ));
+   }
+
+   /**
+    * @deprecated use {@link #of(ApiErrorKind, Throwable, HttpServletRequest)} instead.
+    */
+   @Deprecated
+   public String jsonErrorResponse(final InputError inputError) {
       try{
-         return mapper.writeValueAsString(buildError(inputError));
+         return mapper.writeValueAsString(buildError(
+                 inputError.ex(),
+                 inputError.request(),
+                 inputError.httpStatusCode(),
+                 inputError.errorCode()
+         ));
       }catch(JsonProcessingException e){
          throw new RuntimeException("Error mapping error.", e);
       }
    }
 
-   private ApiErrorResponse buildError(final InputError inputError) {
-      final String msg = extractMessageFrom(inputError.ex());
-      final var request = inputError.request();
+   private ApiErrorResponse buildError(final Throwable th,
+                                       final HttpServletRequest request,
+                                       final HttpStatus status,
+                                       final ErrorCodes errorCode) {
+      final String msg = extractMessageFrom(th);
       return ApiErrorResponse.builder()
               .timestamp(OffsetDateTime.now())
-              .status(inputError.httpStatusCode().value())
-              .error(inputError.httpStatusCode().getReasonPhrase())
+              .status(status.value())
+              .error(status.getReasonPhrase())
               .message(msg)
               .path(request.getRequestURI())
-              .code(inputError.errorCode().getCode())
+              .code(errorCode.getCode())
               .build();
+   }
+
+   private ResponseEntity<ApiErrorResponse> respond(final ApiErrorResponse errorResponse) {
+      return ResponseEntity
+              .status(errorResponse.status())
+              .body(errorResponse);
    }
 
    private String extractMessageFrom(Throwable th) {
