@@ -9,6 +9,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+@Deprecated
 @Slf4j
 @Aspect
 @Component

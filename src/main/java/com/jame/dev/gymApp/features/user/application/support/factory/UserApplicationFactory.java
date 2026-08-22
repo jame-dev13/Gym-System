@@ -1,5 +1,7 @@
 package com.jame.dev.gymApp.features.user.application.support.factory;
 
+import com.jame.dev.gymApp.features.auth.api.request.RegisterRequest;
+import com.jame.dev.gymApp.features.user.domain.model.Role;
 import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.application.support.factories.PageDtoFactory;
@@ -59,5 +61,16 @@ public class UserApplicationFactory implements UserFactory {
          page.getSort().toString(),
          page.getSort().isSorted() ? "ASC" : "DESC"
       );
+   }
+
+   @Override
+   public UserEntity fromRegister(RegisterRequest registerRequest) {
+      return UserEntity.builder()
+         .name(registerRequest.name())
+         .email(registerRequest.email())
+         .password(passwordEncoder.encode(registerRequest.password()))
+         .provider(AuthProvider.LOCAL)
+         .roles(roleMapper.toEntitySet(Set.of(Role.USER), roleRepository))
+         .build();
    }
 }

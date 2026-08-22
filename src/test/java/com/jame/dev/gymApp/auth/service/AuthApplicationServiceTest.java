@@ -8,10 +8,9 @@ import com.jame.dev.gymApp.features.auth.application.service.AuthApplicationServ
 import com.jame.dev.gymApp.features.auth.application.support.factory.AuthResponsesFactory;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationAttemptFailureException;
 import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
-import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.features.user.application.contract.UserFactory;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
-import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
+import com.jame.dev.gymApp.features.user.domain.repository.UserMutationRepository;
 import com.jame.dev.gymApp.infrastructure.cache.BlacklistService;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -26,6 +25,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -35,7 +37,7 @@ import static org.mockito.Mockito.*;
 public class AuthApplicationServiceTest {
 
    @Mock
-   UserRepository userRepository;
+   UserMutationRepository userRepository;
    @Mock
    UserFactory userFactory;
    @Mock
@@ -53,24 +55,50 @@ public class AuthApplicationServiceTest {
    class SignUpTests {
 
       @Test
-      @DisplayName("Should successfully sign up local user")
-      void signUpShouldSucceedWhenProviderIsLocal() {
+      @DisplayName("Should successfully sign up user")
+      void signUpShouldSucceed() {
          var input = new RegisterRequest(
                  "test",
                  "email@test.com",
                  "pass");
          var userEntity = mock(UserEntity.class);
+         var optionalUE = Optional.ofNullable(userEntity);
 
-         given(userFactory.createFromInput(any(UserRequest.class))).willReturn(userEntity);
-         given(userRepository.saveAndFlush(userEntity)).willReturn(userEntity);
+         given(userFactory.fromRegister(any(RegisterRequest.class)))
+            .willReturn(userEntity);
+         given(userRepository.save(any(UserEntity.class)))
+            .willReturn(userEntity);
 
-         assertDoesNotThrow(() -> service.signUp(input));
+         final boolean succeed = assertDoesNotThrow(() -> service.signUp(input));
 
-         verify(userFactory).createFromInput(any(UserRequest.class));
-         verify(userRepository).saveAndFlush(userEntity);
-         verifyNoMoreInteractions(userRepository, userFactory, blacklistService, authFactory);
-         verifyNoInteractions(authenticationManager);
+         assertTrue(succeed, "SignUp should succeed.");
+
+         verify(userFactory).fromRegister(any(RegisterRequest.class));
+         verify(userRepository).save(any(UserEntity.class));
+         verifyNoMoreInteractions(userRepository, userFactory);
+         verifyNoInteractions(authenticationManager, blacklistService, authFactory);
       }
+   }
+
+   @Test
+   @DisplayName("Should throws NoSuchElementException when UserEntity is not present")
+   void signUp_UserEntity_notPresent() {
+      var input = new RegisterRequest(
+         "test",
+         "email@test.com",
+         "pass");
+
+      given(userFactory.fromRegister(any(RegisterRequest.class)))
+         .willReturn(null);
+      given(userRepository.save(any()))
+         .willReturn(null);
+
+      assertThrowsExactly(NoSuchElementException.class, () -> service.signUp(input));
+
+      verify(userFactory).fromRegister(any(RegisterRequest.class));
+      verify(userRepository).save(any());
+      verifyNoMoreInteractions(userRepository, userFactory);
+      verifyNoInteractions(authenticationManager, blacklistService, authFactory);
    }
 
    @Nested

@@ -8,7 +8,7 @@ import com.jame.dev.gymApp.infrastructure.annotation.NotEmptyNull;
 import com.jame.dev.gymApp.infrastructure.annotation.NotNullObject;
 
 public interface AuthService {
-   void signUp(final RegisterRequest register);
+   boolean signUp(final RegisterRequest register);
 
    SignInResponse signIn(@NotNullObject final SignInRequest dto);
 

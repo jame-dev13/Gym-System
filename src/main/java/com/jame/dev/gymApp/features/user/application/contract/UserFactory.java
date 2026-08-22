@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.user.application.contract;
 
+import com.jame.dev.gymApp.features.auth.api.request.RegisterRequest;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.application.support.factories.Factory;
@@ -11,4 +12,6 @@ import org.springframework.data.domain.Page;
 public interface UserFactory extends Factory<
    UserEntity, UserResponse, UserRequest> {
    PageDto<UserMinimalInfoResponse> createMinimalInfoPage(final Page<UserMinimalInfoResponse> page);
+
+   UserEntity fromRegister(final RegisterRequest registerRequest);
 }
