@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.subscription.usecases.mutation;
 
+import com.jame.dev.gymApp.domain.exception.UnrelatedDataAccessException;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
@@ -12,6 +13,7 @@ import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
+import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionValidationRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,81 +28,103 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willDoNothing;
-import static org.mockito.Mockito.*;
+import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UpdateSubscriptionUseCaseServiceTest {
 
-    @Mock
-    private SubscriptionQueryRepository subscriptionQueryRepository;
+   @Mock
+   private SubscriptionQueryRepository subscriptionQueryRepository;
 
-    @Mock
-    private PricingRepository pricingRepository;
+   @Mock
+   private SubscriptionValidationRepository subscriptionValidationRepository;
 
-    @Mock
-    private SubscriptionUpdater subscriptionUpdater;
+   @Mock
+   private PricingRepository pricingRepository;
 
-    @Mock
-    private SubscriptionMutationRepository subscriptionMutationRepository;
+   @Mock
+   private SubscriptionUpdater subscriptionUpdater;
 
-    @Mock
-    private SubscriptionFactory subscriptionFactory;
+   @Mock
+   private SubscriptionMutationRepository subscriptionMutationRepository;
 
-    @InjectMocks
-    private UpdateSubscriptionUseCaseService service;
+   @Mock
+   private SubscriptionFactory subscriptionFactory;
 
-    private final SubscriptionRequest request = new SubscriptionRequest("customer@mail.com", Membership.MONTHLY);
+   @InjectMocks
+   private UpdateSubscriptionUseCaseService service;
 
-    @Test
-    @DisplayName("Should update and return SubscriptionResponse when subscription exists")
-    void update_updatesAndReturnsResponse() {
-        var subscriptionEntity = new SubscriptionEntity();
-        subscriptionEntity.setUpdatedAt(Instant.now());
-        var pricing = new PricingEntity();
-        var modifiedEntity = new SubscriptionEntity();
-        var response = mock(SubscriptionResponse.class);
+   private final SubscriptionRequest request = new SubscriptionRequest("customer@mail.com", Membership.MONTHLY);
 
-        given(subscriptionQueryRepository.findById(anyLong())).willReturn(Optional.of(subscriptionEntity));
-        given(pricingRepository.findByMemberShipEntity_Membership(any(Membership.class))).willReturn(Optional.of(pricing));
-        willDoNothing().given(subscriptionUpdater).apply(any(SubscriptionEntity.class), any(PricingEntity.class));
-        given(subscriptionMutationRepository.save(any(SubscriptionEntity.class))).willReturn(modifiedEntity);
-        given(subscriptionFactory.createFromEntity(any(SubscriptionEntity.class))).willReturn(response);
+   @Test
+   @DisplayName("Should update and return SubscriptionResponse when subscription exists")
+   void update_updatesAndReturnsResponse() {
+      var subscriptionEntity = new SubscriptionEntity();
+      subscriptionEntity.setUpdatedAt(Instant.now());
+      var pricing = new PricingEntity();
+      var modifiedEntity = new SubscriptionEntity();
+      var response = mock(SubscriptionResponse.class);
 
-        var result = service.update(1L, request);
+      given(subscriptionValidationRepository.existsByIdAndCustomerEmail(anyLong(), anyString()))
+         .willReturn(true);
+      given(subscriptionQueryRepository.findById(anyLong())).willReturn(Optional.of(subscriptionEntity));
+      given(pricingRepository.findByMemberShipEntity_Membership(any(Membership.class))).willReturn(Optional.of(pricing));
+      willDoNothing().given(subscriptionUpdater).apply(any(SubscriptionEntity.class), any(PricingEntity.class));
+      given(subscriptionMutationRepository.save(any(SubscriptionEntity.class))).willReturn(modifiedEntity);
+      given(subscriptionFactory.createFromEntity(any(SubscriptionEntity.class))).willReturn(response);
 
-        assertNotNull(result);
-        verify(subscriptionQueryRepository).findById(anyLong());
-        verify(pricingRepository).findByMemberShipEntity_Membership(any(Membership.class));
-        verify(subscriptionUpdater).apply(any(SubscriptionEntity.class), any(PricingEntity.class));
-        verify(subscriptionMutationRepository).save(any(SubscriptionEntity.class));
-        verify(subscriptionFactory).createFromEntity(any(SubscriptionEntity.class));
-        verifyNoMoreInteractions(subscriptionQueryRepository, pricingRepository, subscriptionUpdater, subscriptionMutationRepository, subscriptionFactory);
-    }
+      var result = assertDoesNotThrow(() -> service.update(1L, request));
 
-    @Test
-    @DisplayName("Should throw SubscriptionNotFoundException when subscription not found")
-    void update_whenSubscriptionNotFound_throwsException() {
-        given(subscriptionQueryRepository.findById(anyLong())).willReturn(Optional.empty());
+      assertNotNull(result);
+      verify(subscriptionValidationRepository).existsByIdAndCustomerEmail(anyLong(), anyString());
+      verify(subscriptionQueryRepository).findById(anyLong());
+      verify(pricingRepository).findByMemberShipEntity_Membership(any(Membership.class));
+      verify(subscriptionUpdater).apply(any(SubscriptionEntity.class), any(PricingEntity.class));
+      verify(subscriptionMutationRepository).save(any(SubscriptionEntity.class));
+      verify(subscriptionFactory).createFromEntity(any(SubscriptionEntity.class));
+      verifyNoMoreInteractions(subscriptionQueryRepository, subscriptionValidationRepository, pricingRepository, subscriptionUpdater, subscriptionMutationRepository, subscriptionFactory);
+   }
 
-        assertThrows(SubscriptionNotFoundException.class, () -> service.update(1L, request));
+   @Test
+   @DisplayName("Should throw UnrelatedDataAccessException when not exists by sub id's and customer email's.")
+   void update_whenSubscriptionIdAndEmail_Unrelated_throwsException() {
+      given(subscriptionValidationRepository.existsByIdAndCustomerEmail(anyLong(), anyString()))
+         .willReturn(false);
 
-        verify(subscriptionQueryRepository).findById(anyLong());
-        verifyNoInteractions(pricingRepository, subscriptionUpdater, subscriptionMutationRepository, subscriptionFactory);
-    }
+      assertThrowsExactly(UnrelatedDataAccessException.class, () -> service.update(1L, request));
+      verify(subscriptionValidationRepository, atLeastOnce()).existsByIdAndCustomerEmail(anyLong(), anyString());
+      verifyNoMoreInteractions(subscriptionValidationRepository);
+      verifyNoInteractions(subscriptionQueryRepository, subscriptionMutationRepository, subscriptionUpdater, subscriptionFactory);
+   }
 
-    @Test
-    @DisplayName("Should throw PricingNotFoundException when pricing not found")
-    void update_whenPricingNotFound_throwsException() {
-        var subscriptionEntity = new SubscriptionEntity();
-        given(subscriptionQueryRepository.findById(anyLong())).willReturn(Optional.of(subscriptionEntity));
-        given(pricingRepository.findByMemberShipEntity_Membership(any(Membership.class))).willReturn(Optional.empty());
+   @Test
+   @DisplayName("Should throw SubscriptionNotFoundException when subscription not found")
+   void update_whenSubscriptionNotFound_throwsException() {
+      given(subscriptionValidationRepository.existsByIdAndCustomerEmail(anyLong(), anyString()))
+         .willReturn(true);
+      given(subscriptionQueryRepository.findById(anyLong())).willReturn(Optional.empty());
 
-        assertThrows(PricingNotFoundException.class, () -> service.update(1L, request));
+      assertThrows(SubscriptionNotFoundException.class, () -> service.update(1L, request));
 
-        verify(subscriptionQueryRepository).findById(anyLong());
-        verify(pricingRepository).findByMemberShipEntity_Membership(any(Membership.class));
-        verifyNoInteractions(subscriptionUpdater, subscriptionMutationRepository, subscriptionFactory);
-    }
+      verify(subscriptionValidationRepository).existsByIdAndCustomerEmail(anyLong(), anyString());
+      verify(subscriptionQueryRepository).findById(anyLong());
+      verifyNoInteractions(pricingRepository, subscriptionUpdater, subscriptionMutationRepository, subscriptionFactory);
+   }
+
+   @Test
+   @DisplayName("Should throw PricingNotFoundException when pricing not found")
+   void update_whenPricingNotFound_throwsException() {
+      var subscriptionEntity = new SubscriptionEntity();
+      given(subscriptionValidationRepository.existsByIdAndCustomerEmail(anyLong(), anyString()))
+         .willReturn(true);
+      given(subscriptionQueryRepository.findById(anyLong())).willReturn(Optional.of(subscriptionEntity));
+      given(pricingRepository.findByMemberShipEntity_Membership(any(Membership.class))).willReturn(Optional.empty());
+
+      assertThrows(PricingNotFoundException.class, () -> service.update(1L, request));
+
+      verify(subscriptionValidationRepository).existsByIdAndCustomerEmail(anyLong(), anyString());
+      verify(subscriptionQueryRepository).findById(anyLong());
+      verify(pricingRepository).findByMemberShipEntity_Membership(any(Membership.class));
+      verifyNoInteractions(subscriptionUpdater, subscriptionMutationRepository, subscriptionFactory);
+   }
 }

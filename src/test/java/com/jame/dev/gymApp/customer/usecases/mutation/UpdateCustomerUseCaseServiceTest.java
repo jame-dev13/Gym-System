@@ -1,14 +1,16 @@
 package com.jame.dev.gymApp.customer.usecases.mutation;
 
+import com.jame.dev.gymApp.domain.exception.NotFoundException;
+import com.jame.dev.gymApp.domain.exception.UnrelatedDataAccessException;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
 import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerFactory;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerUpdater;
 import com.jame.dev.gymApp.features.customer.application.service.mutation.UpdateCustomerUseCaseService;
-import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerMutationRepository;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerQueryRepository;
+import com.jame.dev.gymApp.features.customer.domain.repository.CustomerValidationRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,57 +32,78 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class UpdateCustomerUseCaseServiceTest {
 
-    @Mock
-    private CustomerQueryRepository customerQueryRepository;
+   @Mock
+   private CustomerQueryRepository customerQueryRepository;
 
-    @Mock
-    private CustomerMutationRepository customerMutationRepository;
+   @Mock
+   private CustomerMutationRepository customerMutationRepository;
 
-    @Mock
-    private CustomerUpdater customerUpdater;
+   @Mock
+   private CustomerValidationRepository customerValidationRepository;
 
-    @Mock
-    private CustomerFactory customerFactory;
+   @Mock
+   private CustomerUpdater customerUpdater;
 
-    @InjectMocks
-    private UpdateCustomerUseCaseService service;
+   @Mock
+   private CustomerFactory customerFactory;
 
-    @Captor
-    private ArgumentCaptor<CustomerEntity> customerEntityCaptor;
+   @InjectMocks
+   private UpdateCustomerUseCaseService service;
 
-    private final CustomerRequest request = new CustomerRequest("john@mail.com", "987654321");
+   @Captor
+   private ArgumentCaptor<CustomerEntity> customerEntityCaptor;
 
-    @Test
-    @DisplayName("Should update and return CustomerResponse when customer exists")
-    void update_whenCustomerExists_updatesAndReturnsResponse() {
-        var entity = new CustomerEntity();
-        var savedEntity = new CustomerEntity();
-        var response = mock(CustomerResponse.class);
+   private final CustomerRequest request = new CustomerRequest("john@mail.com", "987654321");
 
-        given(customerQueryRepository.findById(anyLong())).willReturn(Optional.of(entity));
-        willDoNothing().given(customerUpdater).apply(any(CustomerEntity.class), any(CustomerRequest.class));
-        given(customerMutationRepository.save(any(CustomerEntity.class))).willReturn(savedEntity);
-        given(customerFactory.createFromEntity(any(CustomerEntity.class))).willReturn(response);
+   @Test
+   @DisplayName("Should update and return CustomerResponse when customer exists")
+   void update_whenCustomerExists_updatesAndReturnsResponse() {
+      var entity = new CustomerEntity();
+      var savedEntity = new CustomerEntity();
+      var response = mock(CustomerResponse.class);
 
-        var result = service.update(1L, request);
+      given(customerValidationRepository.existsByIdAndUserEmail(anyLong(), anyString()))
+         .willReturn(true);
+      given(customerQueryRepository.findById(anyLong())).willReturn(Optional.of(entity));
+      willDoNothing().given(customerUpdater).apply(any(CustomerEntity.class), any(CustomerRequest.class));
+      given(customerMutationRepository.save(any(CustomerEntity.class))).willReturn(savedEntity);
+      given(customerFactory.createFromEntity(any(CustomerEntity.class))).willReturn(response);
 
-        assertNotNull(result);
-        verify(customerQueryRepository).findById(anyLong());
-        verify(customerUpdater).apply(any(CustomerEntity.class), any(CustomerRequest.class));
-        verify(customerMutationRepository).save(customerEntityCaptor.capture());
-        verify(customerFactory).createFromEntity(any(CustomerEntity.class));
-        assertSame(entity, customerEntityCaptor.getValue());
-        verifyNoMoreInteractions(customerQueryRepository, customerMutationRepository, customerUpdater, customerFactory);
-    }
+      var result = assertDoesNotThrow(() -> service.update(1L, request));
 
-    @Test
-    @DisplayName("Should throw CustomerNotFoundException when customer not found")
-    void update_whenCustomerNotFound_throwsException() {
-        given(customerQueryRepository.findById(anyLong())).willReturn(Optional.empty());
+      assertNotNull(result);
+      verify(customerValidationRepository).existsByIdAndUserEmail(anyLong(), anyString());
+      verify(customerQueryRepository).findById(anyLong());
+      verify(customerUpdater).apply(any(CustomerEntity.class), any(CustomerRequest.class));
+      verify(customerMutationRepository).save(customerEntityCaptor.capture());
+      verify(customerFactory).createFromEntity(any(CustomerEntity.class));
+      assertSame(entity, customerEntityCaptor.getValue());
+      verifyNoMoreInteractions(customerQueryRepository, customerMutationRepository, customerUpdater, customerFactory);
+   }
 
-        assertThrows(CustomerNotFoundException.class, () -> service.update(1L, request));
+   @Test
+   @DisplayName("Should throw UnrelatedDataAccessException")
+   void update_whenNotMatchingCustomerIdAndCustomerEmail_throwsException() {
+      given(customerValidationRepository.existsByIdAndUserEmail(anyLong(), anyString()))
+         .willReturn(false);
 
-        verify(customerQueryRepository).findById(anyLong());
-        verifyNoInteractions(customerUpdater, customerMutationRepository, customerFactory);
-    }
+      assertThrowsExactly(UnrelatedDataAccessException.class, () -> service.update(1L, request));
+
+      verify(customerValidationRepository).existsByIdAndUserEmail(anyLong(), anyString());
+      verifyNoInteractions(customerQueryRepository, customerFactory, customerMutationRepository, customerUpdater);
+   }
+
+   @Test
+   @DisplayName("Should throw NotFoundException when customer not found")
+   void update_whenNotFound_throwsException() {
+      given(customerValidationRepository.existsByIdAndUserEmail(anyLong(), anyString()))
+         .willReturn(true);
+      given(customerQueryRepository.findById(anyLong())).willReturn(Optional.empty());
+
+      assertThrowsExactly(NotFoundException.class, () -> service.update(1L, request));
+
+      verify(customerValidationRepository).existsByIdAndUserEmail(anyLong(), anyString());
+      verify(customerQueryRepository).findById(anyLong());
+      verifyNoInteractions(customerUpdater, customerMutationRepository, customerFactory);
+   }
 }

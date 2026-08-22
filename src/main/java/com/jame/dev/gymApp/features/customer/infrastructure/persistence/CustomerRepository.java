@@ -83,4 +83,6 @@ public interface CustomerRepository extends CustomJpaRepository<CustomerEntity, 
           WHERE c.user.email = :email
       """)
    Optional<Long> findIdByUserEmail(@Param("email") String email);
+
+   boolean existsByUser_Email(final String userEmail);
 }

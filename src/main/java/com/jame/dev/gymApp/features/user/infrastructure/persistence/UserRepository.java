@@ -61,7 +61,6 @@ public interface UserRepository extends CustomJpaRepository<UserEntity, Long> {
       """)
    Optional<UserEntity> findDeactivatedById(@Param("id") long id);
 
-
    @Modifying(clearAutomatically = true, flushAutomatically = true)
    @NativeQuery(value = """
       DELETE FROM users u
@@ -76,4 +75,11 @@ public interface UserRepository extends CustomJpaRepository<UserEntity, Long> {
       SELECT EXISTS(SELECT 1 FROM users u WHERE u.email = :email AND u.active = false)
       """)
    boolean existsAndIsDeactivatedByEmail(final String email);
+
+   @NativeQuery("""
+      SELECT EXISTS(SELECT 1 FROM users u WHERE u.id = :id AND u.active = false)
+      """)
+   boolean existsByIdAndActiveFalse(@Param("id") final long id);
+
+   boolean existsByIdAndEmail(final Long id, final String email);
 }

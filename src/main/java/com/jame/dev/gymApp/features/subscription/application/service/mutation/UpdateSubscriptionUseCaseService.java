@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 
+import com.jame.dev.gymApp.domain.exception.UnrelatedDataAccessException;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
@@ -14,6 +15,7 @@ import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
+import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionValidationRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictSubsOnUpdate;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
@@ -30,6 +32,7 @@ import java.util.function.Predicate;
 @CheckLockProcess
 public class UpdateSubscriptionUseCaseService implements UpdateSubscriptionUseCase {
    private final SubscriptionQueryRepository subscriptionQueryRepository;
+   private final SubscriptionValidationRepository subscriptionValidationRepository;
    private final PricingRepository pricingRepository;
    private final SubscriptionUpdater subscriptionUpdater;
    private final SubscriptionMutationRepository subscriptionMutationRepository;
@@ -46,6 +49,9 @@ public class UpdateSubscriptionUseCaseService implements UpdateSubscriptionUseCa
       result = "#result"
    )
    public SubscriptionResponse update(long id, SubscriptionRequest request) {
+      if (!subscriptionValidationRepository.existsByIdAndCustomerEmail(id, request.customerEmail()))
+         throw new UnrelatedDataAccessException("Trying to edit unrelated subscription data for non-owner: " + request.customerEmail());
+
       final SubscriptionEntity subscriptionEntity = subscriptionQueryRepository.findById(id)
          .orElseThrow(() -> new SubscriptionNotFoundException("Subscription Not Found."));
 

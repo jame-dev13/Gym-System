@@ -20,7 +20,7 @@ public interface AuthenticationChecksQueriesRepository extends JpaRepository<Use
            value = """
                    SELECT EXISTS(
                       SELECT 1 FROM users u
-                      WHERE u.email = :email && u.active = false
+                      WHERE u.email = :email AND u.active = false
                    )
                    """)
    boolean existsDeactivatedByEmail(@Param("email") final String email);

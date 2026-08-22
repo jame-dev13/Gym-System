@@ -39,11 +39,11 @@ public class CreateUserUseCaseService implements CreateUserUseCase {
    public UserResponse create(UserRequest request) {
       final String email = request.email();
 
-      if (userValidationRepository.existsAndIsDeactivatedByEmail(email)){
+      if (userValidationRepository.existsAndIsDeactivatedByEmail(email)) {
          throw new NoActiveException("Account linked with '%s' is unactive.".formatted(email));
       }
 
-      if(userValidationRepository.existsByEmail(email)){
+      if (userValidationRepository.existsByEmail(email)) {
          throw new AlreadyExistsException("There's an existing account linked to '%s'.".formatted(email));
       }
 
