@@ -2,8 +2,10 @@ package com.jame.dev.gymApp.auth.service;
 
 import com.jame.dev.gymApp.domain.exception.NoActiveException;
 import com.jame.dev.gymApp.features.auth.application.service.UserDetailsApplicationService;
+import com.jame.dev.gymApp.features.auth.domain.repository.AuthenticationChecksQueriesRepository;
 import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
 import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;
+import com.jame.dev.gymApp.features.user.domain.exception.UserNotVerifiedException;
 import com.jame.dev.gymApp.features.user.domain.model.RoleEntity;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.user.domain.repository.UserQueryRepository;
@@ -35,6 +37,8 @@ class UserDetailsApplicationServiceTest {
    UserQueryRepository userQueryRepository;
    @Mock
    RoleMapper roleMapper;
+   @Mock
+   AuthenticationChecksQueriesRepository queriesRepository;
 
    @InjectMocks
    UserDetailsApplicationService service;
@@ -46,8 +50,9 @@ class UserDetailsApplicationServiceTest {
       UserEntity userEntity = mock(UserEntity.class);
       Collection<GrantedAuthority> authorities = Set.of(mock(GrantedAuthority.class));
 
+      given(queriesRepository.existsButNotVerified(anyString())).willReturn(false);
+      given(queriesRepository.existsDeactivatedByEmail(anyString())).willReturn(false);
       given(userQueryRepository.findByEmail(email)).willReturn(Optional.of(userEntity));
-      given(userEntity.isActive()).willReturn(true);
       given(userEntity.getRoles()).willReturn(Set.of(new RoleEntity()));
       given(roleMapper.entityToGrantedAuthorities(any())).willReturn(authorities);
       given(userEntity.getEmail()).willReturn(email);
@@ -58,32 +63,57 @@ class UserDetailsApplicationServiceTest {
       assertNotNull(result);
       assertEquals(email, result.getUsername());
       assertTrue(result.isEnabled());
+      verify(queriesRepository).existsButNotVerified(anyString());
+      verify(queriesRepository).existsDeactivatedByEmail(anyString());
       verify(userQueryRepository).findByEmail(email);
       verify(roleMapper).entityToGrantedAuthorities(any());
+      verifyNoMoreInteractions(queriesRepository, userQueryRepository, roleMapper);
    }
+
+   @Test
+   @DisplayName("Should throw UserNotVerifiedException")
+   void loadUser_DoesThrow_UserNotVerifiedException() {
+      String email = "user@mail.com";
+      given(queriesRepository.existsButNotVerified(anyString())).willReturn(true);
+
+      assertThrowsExactly(UserNotVerifiedException.class, () -> service.loadUserByUsername(email));
+
+      verify(queriesRepository, atLeastOnce()).existsButNotVerified(anyString());
+      verifyNoMoreInteractions(queriesRepository);
+      verifyNoInteractions(userQueryRepository, roleMapper);
+   }
+
+   @Test
+   @DisplayName("Should throw NoActiveException")
+   void loadUser_DoesThrow_NoActiveException() {
+      String email = "user@mail.com";
+      given(queriesRepository.existsButNotVerified(anyString())).willReturn(false);
+      given(queriesRepository.existsDeactivatedByEmail(anyString())).willReturn(true);
+
+      assertThrowsExactly(NoActiveException.class, () -> service.loadUserByUsername(email));
+
+      verify(queriesRepository, atLeastOnce()).existsButNotVerified(anyString());
+      verify(queriesRepository, atLeastOnce()).existsButNotVerified(anyString());
+      verifyNoMoreInteractions(queriesRepository);
+      verifyNoInteractions(userQueryRepository, roleMapper);
+   }
+
 
    @Test
    @DisplayName("Should throw UserEntityNotFoundException when user does not exist")
    void loadUserByUsernameShouldThrowExceptionWhenUserNotFound() {
       String email = "nonexistent@test.com";
+
+      given(queriesRepository.existsButNotVerified(anyString())).willReturn(false);
+      given(queriesRepository.existsDeactivatedByEmail(anyString())).willReturn(false);
       given(userQueryRepository.findByEmail(email)).willReturn(Optional.empty());
 
       assertThrowsExactly(UserEntityNotFoundException.class, () -> service.loadUserByUsername(email));
-
+      verify(queriesRepository, atLeastOnce()).existsButNotVerified(anyString());
+      verify(queriesRepository, atLeastOnce()).existsButNotVerified(anyString());
+      verify(userQueryRepository, atLeastOnce()).findByEmail(anyString());
+      verifyNoMoreInteractions(queriesRepository, userQueryRepository);
       verifyNoInteractions(roleMapper);
-   }
-
-   @Test
-   @DisplayName("Should throw NoActiveException when user is deactivated")
-   void loadUserByUsernameShouldThrowExceptionWhenUserIsInactive() {
-      String email = "inactive@test.com";
-      UserEntity userEntity = mock(UserEntity.class);
-
-      given(userQueryRepository.findByEmail(email)).willReturn(Optional.of(userEntity));
-      given(userEntity.isActive()).willReturn(false);
-
-      assertThrowsExactly(NoActiveException.class, () -> service.loadUserByUsername(email));
-
       verifyNoInteractions(roleMapper);
    }
 }

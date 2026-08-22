@@ -2,8 +2,10 @@ package com.jame.dev.gymApp.features.auth.application.service;
 
 import com.jame.dev.gymApp.domain.exception.NoActiveException;
 import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
+import com.jame.dev.gymApp.features.auth.domain.repository.AuthenticationChecksQueriesRepository;
 import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
 import com.jame.dev.gymApp.features.user.domain.exception.UserEntityNotFoundException;
+import com.jame.dev.gymApp.features.user.domain.exception.UserNotVerifiedException;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.features.user.domain.repository.UserQueryRepository;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
@@ -21,16 +23,19 @@ import org.springframework.stereotype.Service;
 public class UserDetailsApplicationService implements UserDetailsService {
    private final UserQueryRepository userQueryRepository;
    private final RoleMapper roleMapper;
+   private final AuthenticationChecksQueriesRepository queriesRepository;
 
    @Override
    @NonNull
    public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
-      final UserEntity userEntity = userQueryRepository.findByEmail(username)
-         .orElseThrow(() -> new UserEntityNotFoundException("User Not Found."));
+      if (queriesRepository.existsButNotVerified(username))
+         throw new UserNotVerifiedException(username + " exists but isn't verified.");
 
-      if (!userEntity.isActive()) {
-         throw new NoActiveException("This account is deactivated.");
-      }
+      if (queriesRepository.existsDeactivatedByEmail(username))
+         throw new NoActiveException(username + " is linked to a deactivated account.");
+
+      final UserEntity userEntity = userQueryRepository.findByEmail(username)
+         .orElseThrow(() -> new UserEntityNotFoundException("User Not Found for: " + username));
 
       return UserPrincipal.builder()
          .id(userEntity.getId())

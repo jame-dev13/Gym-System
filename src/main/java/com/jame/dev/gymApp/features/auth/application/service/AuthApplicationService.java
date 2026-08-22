@@ -8,18 +8,12 @@ import com.jame.dev.gymApp.features.auth.api.request.SignInRequest;
 import com.jame.dev.gymApp.features.auth.api.response.CookieResponse;
 import com.jame.dev.gymApp.features.auth.api.response.SignInResponse;
 import com.jame.dev.gymApp.features.auth.application.contract.AuthService;
-import com.jame.dev.gymApp.features.auth.application.model.AuthProvider;
 import com.jame.dev.gymApp.features.auth.application.support.factory.AuthResponsesFactory;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationAttemptFailureException;
 import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
-import com.jame.dev.gymApp.features.auth.infrastructure.annotation.CheckExistence;
-import com.jame.dev.gymApp.features.auth.infrastructure.annotation.CheckSignIn;
-import com.jame.dev.gymApp.features.auth.infrastructure.annotation.PublishVerify;
-import com.jame.dev.gymApp.features.user.api.request.UserRequest;
+import com.jame.dev.gymApp.features.auth.infrastructure.annotation.RegisterFlow;
 import com.jame.dev.gymApp.features.user.application.contract.UserFactory;
-import com.jame.dev.gymApp.features.user.domain.model.Role;
-import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
-import com.jame.dev.gymApp.features.user.infrastructure.persistence.UserRepository;
+import com.jame.dev.gymApp.features.user.domain.repository.UserMutationRepository;
 import com.jame.dev.gymApp.infrastructure.cache.BlacklistService;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Set;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -39,7 +34,7 @@ import java.util.Set;
 @Validated
 @CheckLockProcess
 public class AuthApplicationService implements AuthService {
-   private final UserRepository userRepository;
+   private final UserMutationRepository userRepository;
    private final UserFactory userFactory;
    private final AuthenticationManager authenticationManager;
    private final BlacklistService blacklistService;
@@ -47,27 +42,26 @@ public class AuthApplicationService implements AuthService {
 
    @Override
    @Transactional
-   @CheckExistence
-   @PublishVerify
+   @RegisterFlow
    @AuditLog(
       input = "#register",
       action = AuditLogAction.REGISTER,
       entityType = AuditLogEntityType.AUTHENTICATION
    )
-   public void signUp(final RegisterRequest register) {
-      final UserRequest userRequest = UserRequest.builder()
-         .name(register.name())
-         .email(register.email())
-         .password(register.password())
-         .authProvider(AuthProvider.LOCAL)
-         .roles(Set.of(Role.USER))
-         .build();
-      final UserEntity user = userFactory.createFromInput(userRequest);
-      userRepository.saveAndFlush(user);
+   public boolean signUp(final RegisterRequest register) {
+      final var userEntity = userFactory.fromRegister(register);
+
+      final boolean present = Optional.ofNullable(userRepository.save(userEntity))
+         .isPresent();
+
+      if (!present) {
+         throw new NoSuchElementException("Something went wrong while processing user.");
+      }
+
+      return Boolean.TRUE;
    }
 
    @Override
-   @CheckSignIn
    @AuditLog(
       input = "#dto",
       action = AuditLogAction.SIGN_IN,
@@ -82,7 +76,7 @@ public class AuthApplicationService implements AuthService {
 
       final Object principal = authentication.getPrincipal();
 
-      if(!(principal instanceof UserPrincipal userAuthenticated))
+      if (!(principal instanceof UserPrincipal userAuthenticated))
          throw new AuthenticationAttemptFailureException("Cannot resolve the authenticated subject.");
 
       return authFactory.createSigInResponseFrom(userAuthenticated);
