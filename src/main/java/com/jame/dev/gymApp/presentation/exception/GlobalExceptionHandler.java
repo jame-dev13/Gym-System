@@ -481,4 +481,9 @@ public class GlobalExceptionHandler {
          new InputError(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.INTERNAL)
       );
    }
+
+   @ExceptionHandler(UnrelatedDataAccessException.class)
+   public ResponseEntity<ApiErrorResponse> handleUnrelatedDataAccessException(UnrelatedDataAccessException ex, HttpServletRequest request) {
+      return responseFactory.buildResponse(new InputError(ex, request, HttpStatus.FORBIDDEN, ErrorCodes.ARGUMENT));
+   }
 }

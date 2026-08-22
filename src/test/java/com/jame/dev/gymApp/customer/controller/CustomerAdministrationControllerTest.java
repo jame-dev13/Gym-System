@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.customer.controller;
 
 import com.jame.dev.gymApp.application.dto.PageDto;
 import com.jame.dev.gymApp.domain.exception.NoActiveException;
+import com.jame.dev.gymApp.domain.exception.UnrelatedDataAccessException;
 import com.jame.dev.gymApp.features.auth.api.request.RecoveryRequest;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
@@ -312,6 +313,20 @@ class CustomerAdministrationControllerTest {
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.*").exists())
             .andExpect(jsonPath("$.status").value(404));
+         verify(update, times(1)).update(anyLong(), any(CustomerRequest.class));
+      }
+
+      @Test
+      @DisplayName("PUT[403] Unrelated data")
+      void customerUnrelatedData() throws Exception {
+         given(update.update(anyLong(), any(CustomerRequest.class))).willThrow(UnrelatedDataAccessException.class);
+         mockMvc.perform(put(URI_TEMPLATE + '/' + 1L)
+               .accept(MediaType.APPLICATION_JSON)
+               .contentType(MediaType.APPLICATION_JSON)
+               .content(payload))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.*").exists())
+            .andExpect(jsonPath("$.status").value(403));
          verify(update, times(1)).update(anyLong(), any(CustomerRequest.class));
       }
 

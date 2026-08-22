@@ -3,6 +3,7 @@ package com.jame.dev.gymApp.subscription.controller;
 import com.jame.dev.gymApp.application.dto.PageDto;
 import com.jame.dev.gymApp.domain.exception.MissMatchException;
 import com.jame.dev.gymApp.domain.exception.NoActiveException;
+import com.jame.dev.gymApp.domain.exception.UnrelatedDataAccessException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
 import com.jame.dev.gymApp.features.notification.domain.exception.NotificationException;
@@ -339,6 +340,21 @@ class SubscriptionAdministrationControllerTest {
                .content(payload))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.*").exists());
+         verify(subscriptionUpdate, times(1)).update(anyLong(), any(SubscriptionRequest.class));
+      }
+
+      @Test
+      @DisplayName("PUT[403] FORBIDDEN BY ILLEGAL ARGUMENT")
+      void unrelatedSubscriptionData() throws Exception {
+         given(subscriptionUpdate.update(anyLong(), any(SubscriptionRequest.class)))
+            .willThrow(UnrelatedDataAccessException.class);
+         mockMvc.perform(put(URI_TEMPLATE + '/' + 1L)
+               .accept(MediaType.APPLICATION_JSON)
+               .contentType(MediaType.APPLICATION_JSON)
+               .content(payload))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.*").exists())
+            .andExpect(jsonPath("$.status").value(403));
          verify(subscriptionUpdate, times(1)).update(anyLong(), any(SubscriptionRequest.class));
       }
 

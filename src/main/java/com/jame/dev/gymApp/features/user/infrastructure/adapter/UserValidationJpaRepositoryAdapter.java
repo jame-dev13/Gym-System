@@ -19,4 +19,14 @@ public class UserValidationJpaRepositoryAdapter implements UserValidationReposit
    public boolean existsAndIsDeactivatedByEmail(String email) {
       return userRepository.existsAndIsDeactivatedByEmail(email);
    }
+
+   @Override
+   public boolean existsByIdAndEmail(long id, String email) {
+      return userRepository.existsByIdAndEmail(id, email);
+   }
+
+   @Override
+   public boolean existsByIdAndNotActive(long id) {
+      return userRepository.existsByIdAndActiveFalse(id);
+   }
 }
