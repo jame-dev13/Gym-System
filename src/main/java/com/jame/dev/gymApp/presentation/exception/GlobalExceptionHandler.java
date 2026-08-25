@@ -6,6 +6,7 @@ import com.jame.dev.gymApp.features.auth.domain.exception.*;
 import com.jame.dev.gymApp.features.backup.domain.exception.BackupException;
 import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.features.notification.domain.exception.NotificationException;
+import com.jame.dev.gymApp.features.notification.domain.exception.SubscriberException;
 import com.jame.dev.gymApp.features.subscription.domain.exception.*;
 import com.jame.dev.gymApp.features.user.domain.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -405,5 +406,10 @@ public class GlobalExceptionHandler {
    @ExceptionHandler(UnrelatedDataAccessException.class)
    public ResponseEntity<ApiErrorResponse> handleUnrelatedDataAccessException(UnrelatedDataAccessException ex, HttpServletRequest request) {
       return responseFactory.of(ApiErrorKind.DATA_ACCESS_FORBIDDEN, ex, request);
+   }
+
+   @ExceptionHandler(SubscriberException.class)
+   public ResponseEntity<ApiErrorResponse> handleSubscriberException(SubscriberException ex, HttpServletRequest request) {
+      return responseFactory.of(ApiErrorKind.OPERATION_UNSUPPORTED, ex, request);
    }
 }

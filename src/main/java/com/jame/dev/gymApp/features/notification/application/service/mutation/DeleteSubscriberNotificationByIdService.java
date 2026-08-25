@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Deprecated
 @Service
 @RequiredArgsConstructor
 @CheckLockProcess
