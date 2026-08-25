@@ -4,6 +4,7 @@ import com.jame.dev.gymApp.features.notification.api.response.SubscriberNotifica
 
 import java.util.UUID;
 
+@Deprecated
 public interface GetByIdSubscriberNotificationUseCase {
    SubscriberNotificationResponse getById(final UUID uuid);
 }

@@ -9,7 +9,6 @@ import com.jame.dev.gymApp.features.notification.domain.model.SubscriberNotifica
 import com.jame.dev.gymApp.features.notification.domain.repository.SubscriberNotificationMutationRepository;
 import com.jame.dev.gymApp.features.notification.domain.repository.SubscriberNotificationQueryRepository;
 import com.jame.dev.gymApp.features.notification.infrastructure.annotation.EvictSubscriberNotification;
-import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,13 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Deprecated
 @Service
 @RequiredArgsConstructor
 @CheckLockProcess
 public class UpdateSubscriberNotificationUseCaseService implements UpdateSubscriberNotificationUseCase {
    private final SubscriberNotificationQueryRepository subscriberNotificationQueryRepository;
    private final SubscriberNotificationMutationRepository subscriberNotificationMutationRepository;
-   private final SubscriptionQueryRepository subscriptionQueryRepository;
    private final SubscriberNotificationFactory subscriberNotificationFactory;
 
    @Override

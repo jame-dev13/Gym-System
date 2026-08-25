@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface SubscriberNotificationRepository extends JpaRepository<SubscriberNotificationEntity, UUID> {
-    Optional<SubscriberNotificationEntity> findBySubscriptionId(final long subscriptionId);
-    boolean existsBySubscription(final SubscriptionEntity subscription);
+   Optional<SubscriberNotificationEntity> findBySubscriptionId(final long subscriptionId);
+
+   boolean existsBySubscription(final SubscriptionEntity subscription);
 }

@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 public interface SubscriberNotificationMapper extends BaseMapper<SubscriberNotificationEntity, SubscriberNotificationResponse> {
 
    @Override
-   @Mapping(target = "uuid", source = "entity.id")
    @Mapping(target = "rangeDaysNotification", source = "entity.rangeNotificationDays")
    @Mapping(target = "nextNotificationDate", source = "entity.nextNotificationDate", dateFormat = "EEEE, MMMM dd, yyyy")
    SubscriberNotificationResponse toDto(SubscriberNotificationEntity entity);

@@ -7,6 +7,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -21,11 +22,20 @@ public interface SubscriberNotifiableRetrieverRepository extends Repository<Subs
          JOIN sfe.subscription s
          JOIN s.customer c
          JOIN c.user u
-      WHERE sfe.nextNotificationDate >= :start
-         AND sfe.nextNotificationDate < :end
+      WHERE sfe.notifiable = true AND
+         (sfe.nextNotificationDate >= :start AND sfe.nextNotificationDate < :end)
       """)
    Set<NotifiableInfo> findAllNotificationAvailableMailAddressesByStartAndEnd(
       @Param("start") LocalDateTime start,
       @Param("end") LocalDateTime end
    );
+
+
+   @Query("""
+      SELECT DISTINCT
+         sne
+      FROM SubscriberNotificationEntity sne
+      WHERE sne.subscription.customer.user.email = :username
+      """)
+   Optional<SubscriberNotificationEntity> findByCurrentUsername(@Param("username") final String username);
 }

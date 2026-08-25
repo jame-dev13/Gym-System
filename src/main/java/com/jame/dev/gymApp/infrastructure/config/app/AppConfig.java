@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jame.dev.gymApp.application.model.LockProperties;
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.auth.infrastructure.auth.AuthenticationUserResolver;
 import com.jame.dev.gymApp.features.backup.domain.model.BackupMapping;
 import com.jame.dev.gymApp.infrastructure.properties.SchedulerProperties;
@@ -110,6 +111,22 @@ public class AppConfig {
          final Long userId = authenticationUserResolver.resolveUserId(authentication);
 
          return "auth-current:" + userId;
+      };
+   }
+
+   @Bean("authPrincipalCurrentKeyGen")
+   public KeyGenerator authPrincipalCurrentKeyGenerator() {
+      return (targetIgnored, methodIgnored, params) -> {
+
+         final AuthPrincipal principal = Arrays.stream(params)
+            .filter(AuthPrincipal.class::isInstance)
+            .map(AuthPrincipal.class::cast)
+            .findFirst()
+            .orElseThrow(
+               () -> new IllegalArgumentException("Auth Principal param not found.")
+            );
+
+         return ":auth-current:" + principal.id();
       };
    }
 }

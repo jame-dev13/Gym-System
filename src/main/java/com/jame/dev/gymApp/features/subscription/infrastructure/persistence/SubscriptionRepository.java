@@ -3,6 +3,7 @@ package com.jame.dev.gymApp.features.subscription.infrastructure.persistence;
 import com.jame.dev.gymApp.domain.repository.CustomJpaRepository;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,4 +43,8 @@ public interface SubscriptionRepository extends CustomJpaRepository<Subscription
       WHERE s.customer.user.email = :email
       """)
    Optional<Long> findIdByCustomerUserEmail(@Param("email") final String email);
+
+   boolean existsByCustomer_User_Email(final String customerEmail);
+
+   boolean existsByCustomer_User_EmailAndStatus(final String customerEmail, final SubscriptionStatus status);
 }
