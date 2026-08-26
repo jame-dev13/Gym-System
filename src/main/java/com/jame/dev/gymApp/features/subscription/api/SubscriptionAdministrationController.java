@@ -93,9 +93,10 @@ public class SubscriptionAdministrationController {
             .build()
       );
 
-      completedCheckoutUseCase.execute(checkoutEvent);
+      final var checkoutResult = completedCheckoutUseCase.execute(checkoutEvent);
 
-      return ResponseEntity.created(location).body(subscription);
+      return ResponseEntity.created(location)
+         .body(checkoutResult.subscription());
    }
 
    @PostMapping("/notify")
