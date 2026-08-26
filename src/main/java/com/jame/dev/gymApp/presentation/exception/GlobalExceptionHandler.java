@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.presentation.exception;
 
 import com.jame.dev.gymApp.domain.exception.*;
 import com.jame.dev.gymApp.features.audit.domain.exception.AuditLogNotFoundException;
+import com.jame.dev.gymApp.features.audit.domain.exception.AuditResolverException;
 import com.jame.dev.gymApp.features.auth.domain.exception.*;
 import com.jame.dev.gymApp.features.backup.domain.exception.BackupException;
 import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
@@ -411,5 +412,10 @@ public class GlobalExceptionHandler {
    @ExceptionHandler(SubscriberException.class)
    public ResponseEntity<ApiErrorResponse> handleSubscriberException(SubscriberException ex, HttpServletRequest request) {
       return responseFactory.of(ApiErrorKind.OPERATION_UNSUPPORTED, ex, request);
+   }
+
+   @ExceptionHandler(AuditResolverException.class)
+   public ResponseEntity<ApiErrorResponse> handleAuditResolverException(AuditResolverException ex, HttpServletRequest request) {
+      return responseFactory.of(ApiErrorKind.INTERNAL_FAILURE, ex, request);
    }
 }
