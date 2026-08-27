@@ -1,9 +1,10 @@
 package com.jame.dev.gymApp.features.customer.application.service.mutation;
 
-import com.jame.dev.gymApp.features.auth.application.service.IdentityExtractorApplicationService;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
+import com.jame.dev.gymApp.features.auth.application.service.IdentityExtractorApplicationService;
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerCurrentRequest;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
 import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
@@ -17,7 +18,6 @@ import com.jame.dev.gymApp.features.customer.infrastructure.annotations.EvictOnS
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateCurrentCustomerUseCaseService implements CreateCurrentCustomerUseCase {
    private final CustomerMutationRepository mutationRepository;
    private final CustomerValidator customerValidator;
-   private final IdentityExtractorApplicationService identityExtractorApplicationService;
    private final CustomerFactory customerFactory;
 
    @Override
@@ -38,11 +37,11 @@ public class CreateCurrentCustomerUseCaseService implements CreateCurrentCustome
       action = AuditLogAction.INSERT,
       result = "#result",
       entityId = "#result.id",
-      input = "#authentication"
+      input = "#principal"
    )
-   public CustomerResponse createCurrent(final Authentication authentication, final CustomerCurrentRequest request) {
-      final String authenticated = identityExtractorApplicationService.extract(authentication);
-      final CustomerRequest input = new CustomerRequest(authenticated, request.phoneContact());
+   public CustomerResponse createCurrent(final AuthPrincipal principal, final CustomerCurrentRequest request) {
+      final String username = principal.username();
+      final CustomerRequest input = new CustomerRequest(username, request.phoneContact());
       final UserEntity userRelated = customerValidator.validateUserBeforeCreation(input);
       final CustomerEntity customer = mutationRepository.save(
          customerFactory.createFromInput(new CustomerFactoryDtoInput(userRelated, input))

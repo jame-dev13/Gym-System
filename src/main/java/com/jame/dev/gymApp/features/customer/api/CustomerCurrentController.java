@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.customer.api;
 
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerCurrentRequest;
 import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
 import com.jame.dev.gymApp.features.customer.application.usecases.mutation.CreateCurrentCustomerUseCase;
@@ -11,7 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -33,9 +34,9 @@ public class CustomerCurrentController {
    public ResponseEntity<CustomerResponse> register(
       @RequestBody
       @Valid final CustomerCurrentRequest request,
-      final Authentication authentication
-   ) {
-      final CustomerResponse customerResponse = createCurrentCustomerUseCase.createCurrent(authentication, request);
+      @AuthenticationPrincipal final AuthPrincipal principal
+      ) {
+      final CustomerResponse customerResponse = createCurrentCustomerUseCase.createCurrent(principal, request);
       return ResponseEntity
          .created(ServletUriComponentsBuilder.fromCurrentRequest()
             .build()
@@ -44,8 +45,8 @@ public class CustomerCurrentController {
    }
 
    @GetMapping
-   public ResponseEntity<CustomerResponse> getCurrent(final Authentication authentication) {
-      final CustomerResponse customerResponse = currentCustomerUseCase.getCurrent(authentication);
+   public ResponseEntity<CustomerResponse> getCurrent(@AuthenticationPrincipal final AuthPrincipal principal) {
+      final CustomerResponse customerResponse = currentCustomerUseCase.getCurrent(principal);
       return ResponseEntity.ok(customerResponse);
    }
 
@@ -54,15 +55,15 @@ public class CustomerCurrentController {
       @RequestBody
       @Valid
       @NotNullObject final CustomerCurrentRequest request,
-      final Authentication authentication
+      @AuthenticationPrincipal final AuthPrincipal principal
    ) {
-      final CustomerResponse customerResponse = updateCurrentCustomerUseCase.updateCurrent(authentication, request);
+      final CustomerResponse customerResponse = updateCurrentCustomerUseCase.updateCurrent(principal, request);
       return ResponseEntity.ok(customerResponse);
    }
 
    @DeleteMapping
-   public ResponseEntity<Void> downRegister(final Authentication authentication) {
-      deleteCurrentCustomerUseCase.deleteCurrent(authentication);
+   public ResponseEntity<Void> downRegister(@AuthenticationPrincipal final AuthPrincipal principal) {
+      deleteCurrentCustomerUseCase.deleteCurrent(principal);
       return ResponseEntity.noContent().build();
    }
 }

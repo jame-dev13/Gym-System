@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.api;
 
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.subscription.api.request.PaymentRequest;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionCurrentRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionCheckoutResponse;
@@ -19,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -43,8 +44,8 @@ public class SubscriptionCurrentController {
    private final CreatePaymentUseCase createPaymentUseCase;
 
    @GetMapping
-   public ResponseEntity<SubscriptionResponse> getCurrentSub (final Authentication authentication) {
-      return ResponseEntity.ok(subscriptionByCurrentUseCase.getCurrent(authentication));
+   public ResponseEntity<SubscriptionResponse> getCurrentSub (final @AuthenticationPrincipal AuthPrincipal principal) {
+      return ResponseEntity.ok(subscriptionByCurrentUseCase.getCurrent(principal));
    }
 
    @PostMapping
@@ -52,11 +53,11 @@ public class SubscriptionCurrentController {
       @Valid
       @RequestBody
       @NotNullObject final SubscriptionCurrentRequest request,
-      final Authentication authentication) {
+      final @AuthenticationPrincipal AuthPrincipal principal) {
       final SubscriptionCheckoutResponse checkoutResponse = AsyncResolver.getResult(
-         () -> stripeCheckoutService.createCheckoutSessionFrom(authentication, request), 20);
+         () -> stripeCheckoutService.createCheckoutSessionFrom(principal, request), 20);
 
-      final SubscriptionResponse subscription = subscriptionCreate.create(authentication, request);
+      final SubscriptionResponse subscription = subscriptionCreate.create(principal, request);
 
       final PaymentRequest paymentRequest = PaymentRequest.builder()
          .sessionId(checkoutResponse.sessionId())
@@ -80,15 +81,15 @@ public class SubscriptionCurrentController {
 
    @PutMapping
    public ResponseEntity<SubscriptionSessionResponse> renew(
-      final Authentication authentication,
+      final @AuthenticationPrincipal AuthPrincipal principal,
       @Valid
       @RequestBody
       @NotNullObject final SubscriptionCurrentRequest request) {
 
       final SubscriptionCheckoutResponse checkoutResponse = AsyncResolver.getResult(
-         () -> stripeCheckoutService.createCheckoutSessionFrom(authentication, request), 20);
+         () -> stripeCheckoutService.createCheckoutSessionFrom(principal, request), 20);
 
-      final SubscriptionResponse subscription = subscriptionRenew.renew(authentication, request);
+      final SubscriptionResponse subscription = subscriptionRenew.renew(principal, request);
 
       final PaymentRequest paymentRequest = PaymentRequest.builder()
          .sessionId(checkoutResponse.sessionId())
@@ -104,15 +105,15 @@ public class SubscriptionCurrentController {
    }
 
    @PatchMapping
-   public ResponseEntity<SubscriptionResponse> finalizeSubscription(final Authentication auth) {
+   public ResponseEntity<SubscriptionResponse> finalizeSubscription(final @AuthenticationPrincipal AuthPrincipal principal) {
       log.info("HIT PATCH finalizeSubscription");
-      final SubscriptionResponse response = subscriptionFinalize.finalizeCurrent(auth);
+      final SubscriptionResponse response = subscriptionFinalize.finalizeCurrent(principal);
       return ResponseEntity.ok(response);
    }
 
    @DeleteMapping
-   public ResponseEntity<Void> dropSubscription(final Authentication authentication) {
-      subscriptionDelete.delete(authentication);
+   public ResponseEntity<Void> dropSubscription(final @AuthenticationPrincipal AuthPrincipal principal) {
+      subscriptionDelete.delete(principal);
       return ResponseEntity.noContent().build();
    }
 }

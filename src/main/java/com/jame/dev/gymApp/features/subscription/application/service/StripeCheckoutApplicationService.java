@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.features.subscription.application.service;
 
 import com.jame.dev.gymApp.domain.exception.NotFoundException;
-import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionCurrentRequest;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionCheckoutResponse;
@@ -16,7 +16,6 @@ import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +29,6 @@ public class StripeCheckoutApplicationService implements StripeCheckoutService {
    private final MembershipRepository membershipRepository;
    private final StripeCheckoutGateway stripeCheckoutGateway;
    private final SessionParams sessionParams;
-   private final IdentityExtractorService identityExtractorService;
 
    @Override
    public SubscriptionCheckoutResponse createCheckoutSessionFrom(SubscriptionRequest request) {
@@ -53,13 +51,13 @@ public class StripeCheckoutApplicationService implements StripeCheckoutService {
    }
 
    @Override
-   public SubscriptionCheckoutResponse createCheckoutSessionFrom(Authentication authentication, SubscriptionCurrentRequest request) {
+   public SubscriptionCheckoutResponse createCheckoutSessionFrom(AuthPrincipal principal, SubscriptionCurrentRequest request) {
       final MembershipEntity membershipEntity = membershipRepository.findByMembership(request.membership())
          .orElseThrow(() -> new NotFoundException("Membership not found for membership given: " + request.membership()));
 
       final SessionCreateParams params = sessionParams.getParams(
          membershipEntity,
-         identityExtractorService.extract(authentication)
+         principal.username()
       );
 
       final Session session = stripeCheckoutGateway.createSession(params);

@@ -1,7 +1,7 @@
 package com.jame.dev.gymApp.features.customer.application.usecases.mutation;
 
-import org.springframework.security.core.Authentication;
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 
 public interface DeleteCurrentCustomerUseCase {
-   void deleteCurrent(final Authentication authentication);
+   void deleteCurrent(final AuthPrincipal principal);
 }

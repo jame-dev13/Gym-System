@@ -69,7 +69,7 @@ public interface PaymentMetricsRepository extends MetricsRepository<PaymentEntit
                     INNER JOIN users u
                           ON u.id = c.user_id
                     WHERE
-                        p.customer_id = c.id AND u.email = 'user1@mail.com'
+                        p.customer_id = c.id AND u.email = :subject
                 )
       GROUP BY m.month_number
       ORDER BY m.month_number

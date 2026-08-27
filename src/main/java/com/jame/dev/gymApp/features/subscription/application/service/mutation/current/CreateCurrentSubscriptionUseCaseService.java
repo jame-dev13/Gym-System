@@ -5,7 +5,7 @@ import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
-import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerQueryRepository;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionCurrentRequest;
@@ -21,7 +21,6 @@ import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.Evic
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +33,6 @@ public class CreateCurrentSubscriptionUseCaseService implements CreateCurrentSub
    private final MembershipRepository membershipRepository;
    private final SubscriptionValidationRepository subscriptionValidationRepository;
    private final SubscriptionFactory subscriptionFactory;
-   private final IdentityExtractorService identityExtractorService;
 
    @Override
    @Transactional
@@ -42,17 +40,17 @@ public class CreateCurrentSubscriptionUseCaseService implements CreateCurrentSub
    @AuditLog(
       action = AuditLogAction.INSERT,
       entityType = AuditLogEntityType.SUBSCRIPTION,
-      input = "#authentication",
+      input = "#principal",
       entityId = "#result.id",
       result = "#result"
    )
-   public SubscriptionResponse create(Authentication authentication, SubscriptionCurrentRequest request) {
-      final String authName = identityExtractorService.extract(authentication);
-      final CustomerEntity customer = customerQueryRepository.findByUserEmail(authName)
-         .orElseThrow(() -> new NotFoundException("Customer Not Found for: " + authName));
+   public SubscriptionResponse create(AuthPrincipal principal, SubscriptionCurrentRequest request) {
+      final String username = principal.username();
+      final CustomerEntity customer = customerQueryRepository.findByUserEmail(username)
+         .orElseThrow(() -> new NotFoundException("Customer Not Found for: " + username));
 
       if (subscriptionValidationRepository.existsByCustomer(customer)) {
-         throw new AlreadyExistsException("There's a subscription linked to the customer with: " + authName);
+         throw new AlreadyExistsException("There's a subscription linked to the customer with: " + username);
       }
 
       final var membership = membershipRepository.findByMembership(request.membership())

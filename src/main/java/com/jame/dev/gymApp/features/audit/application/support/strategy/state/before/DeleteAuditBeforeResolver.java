@@ -6,8 +6,8 @@ import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.infrastructure.audit_strategy.AuditBeforeResolver;
 import com.jame.dev.gymApp.features.audit.infrastructure.parser.LongParser;
 import com.jame.dev.gymApp.features.audit.infrastructure.spel_evaluator.AuditLogExpressionEvaluator;
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,7 +27,8 @@ public class DeleteAuditBeforeResolver implements AuditBeforeResolver {
    public void resolve(AuditExecutionContext context) {
       final Object input = evaluator.evaluateAsObject(context.getAnnotation().input(), context.getParamNames(), context.getArgs());
       final Long entityId = switch (input) {
-         case Authentication auth -> entityIdBeforeResolver.getEntityIdByCurrentAuthentication(auth, context.getAnnotation().entityType());
+         case AuthPrincipal principal ->
+            entityIdBeforeResolver.getEntityIdByCurrentAuthentication(principal, context.getAnnotation().entityType());
          case null -> longParser.parseString(
             evaluator.evaluate(context.getAnnotation().entityId(), context.getParamNames(), context.getArgs())
          );
