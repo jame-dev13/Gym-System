@@ -5,6 +5,7 @@ import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
+import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerQueryRepository;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionCurrentRequest;
@@ -13,20 +14,16 @@ import com.jame.dev.gymApp.features.subscription.application.contract.Subscripti
 import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionFactoryDtoInput;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.current.CreateCurrentSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.domain.exception.PricingNotFoundException;
-import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionValidationRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictSubsOnSave;
-import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
-import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +31,7 @@ import java.time.LocalDate;
 public class CreateCurrentSubscriptionUseCaseService implements CreateCurrentSubscriptionUseCase {
    private final SubscriptionMutationRepository subscriptionMutationRepository;
    private final CustomerQueryRepository customerQueryRepository;
-   private final PricingRepository pricingRepository;
+   private final MembershipRepository membershipRepository;
    private final SubscriptionValidationRepository subscriptionValidationRepository;
    private final SubscriptionFactory subscriptionFactory;
    private final IdentityExtractorService identityExtractorService;
@@ -58,11 +55,11 @@ public class CreateCurrentSubscriptionUseCaseService implements CreateCurrentSub
          throw new AlreadyExistsException("There's a subscription linked to the customer with: " + authName);
       }
 
-      final PricingEntity pricing = pricingRepository.findByMemberShipEntity_Membership(request.membership())
+      final var membership = membershipRepository.findByMembership(request.membership())
          .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
 
       final SubscriptionEntity subscriptionEntity = subscriptionFactory.createFromInput(
-         new SubscriptionFactoryDtoInput(customer, pricing, LocalDate.now()));
+         new SubscriptionFactoryDtoInput(customer, membership));
 
       final SubscriptionEntity subscriptionSaved = subscriptionMutationRepository.save(subscriptionEntity);
 

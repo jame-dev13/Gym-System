@@ -9,11 +9,11 @@ import com.jame.dev.gymApp.features.subscription.application.support.mapper.Subs
 import com.jame.dev.gymApp.features.subscription.application.support.validator.SubscriptionValidator;
 import com.jame.dev.gymApp.features.subscription.domain.exception.RenewSubscriptionException;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
-import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.MembershipEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
-import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
 import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class RenewCurrentSubscriptionUseCaseServiceTest {
     private SubscriptionValidator validator;
 
     @Mock
-    private PricingRepository pricingRepository;
+    private MembershipRepository membershipRepository;
 
     @Mock
     private SubscriptionUpdater subscriptionUpdater;
@@ -71,15 +71,15 @@ class RenewCurrentSubscriptionUseCaseServiceTest {
     @DisplayName("Should renew current subscription and return SubscriptionResponse")
     void renew_renewsAndReturnsResponse() {
         var subscription = mock(SubscriptionEntity.class);
-        var pricing = mock(PricingEntity.class);
+        var membership = mock(MembershipEntity.class);
         var savedEntity = mock(SubscriptionEntity.class);
         var response = mock(SubscriptionResponse.class);
 
         given(identityExtractorService.extract(any())).willReturn(customerEmail);
         given(subscriptionQueryRepository.findByCustomerEmail(anyString())).willReturn(Optional.of(subscription));
         given(validator.canRenewSubscription(any(SubscriptionEntity.class))).willReturn(true);
-        given(pricingRepository.findByMemberShipEntity_Membership(any(Membership.class))).willReturn(Optional.of(pricing));
-        willDoNothing().given(subscriptionUpdater).applyRenew(any(SubscriptionEntity.class), any(PricingEntity.class));
+        given(membershipRepository.findByMembership(any(Membership.class))).willReturn(Optional.of(membership));
+        willDoNothing().given(subscriptionUpdater).applyRenew(any(SubscriptionEntity.class), any(MembershipEntity.class));
         given(subscriptionMutationRepository.save(any(SubscriptionEntity.class))).willReturn(savedEntity);
         given(subscriptionMapper.toDto(any(SubscriptionEntity.class))).willReturn(response);
 
@@ -89,11 +89,11 @@ class RenewCurrentSubscriptionUseCaseServiceTest {
         verify(identityExtractorService).extract(any());
         verify(subscriptionQueryRepository).findByCustomerEmail(anyString());
         verify(validator).canRenewSubscription(any(SubscriptionEntity.class));
-        verify(pricingRepository).findByMemberShipEntity_Membership(any(Membership.class));
-        verify(subscriptionUpdater).applyRenew(any(SubscriptionEntity.class), any(PricingEntity.class));
+        verify(membershipRepository).findByMembership(any(Membership.class));
+        verify(subscriptionUpdater).applyRenew(any(SubscriptionEntity.class), any(MembershipEntity.class));
         verify(subscriptionMutationRepository).save(any(SubscriptionEntity.class));
         verify(subscriptionMapper).toDto(any(SubscriptionEntity.class));
-        verifyNoMoreInteractions(validator, pricingRepository, subscriptionUpdater, subscriptionMutationRepository,
+        verifyNoMoreInteractions(validator, membershipRepository, subscriptionUpdater, subscriptionMutationRepository,
                 subscriptionMapper, subscriptionQueryRepository, identityExtractorService);
     }
 
@@ -107,7 +107,7 @@ class RenewCurrentSubscriptionUseCaseServiceTest {
 
         verify(identityExtractorService).extract(any());
         verify(subscriptionQueryRepository).findByCustomerEmail(anyString());
-        verifyNoInteractions(validator, pricingRepository, subscriptionUpdater, subscriptionMutationRepository, subscriptionMapper);
+        verifyNoInteractions(validator, membershipRepository, subscriptionUpdater, subscriptionMutationRepository, subscriptionMapper);
     }
 
     @Test
@@ -124,25 +124,25 @@ class RenewCurrentSubscriptionUseCaseServiceTest {
         verify(identityExtractorService).extract(any());
         verify(subscriptionQueryRepository).findByCustomerEmail(anyString());
         verify(validator).canRenewSubscription(any(SubscriptionEntity.class));
-        verifyNoInteractions(pricingRepository, subscriptionUpdater, subscriptionMutationRepository, subscriptionMapper);
+        verifyNoInteractions(membershipRepository, subscriptionUpdater, subscriptionMutationRepository, subscriptionMapper);
     }
 
     @Test
-    @DisplayName("Should throw NotFoundException when pricing not found")
-    void renew_whenPricingNotFound_throwsException() {
+    @DisplayName("Should throw NotFoundException when membership not found")
+    void renew_whenMembershipNotFound_throwsException() {
         var subscription = mock(SubscriptionEntity.class);
 
         given(identityExtractorService.extract(any())).willReturn(customerEmail);
         given(subscriptionQueryRepository.findByCustomerEmail(anyString())).willReturn(Optional.of(subscription));
         given(validator.canRenewSubscription(any(SubscriptionEntity.class))).willReturn(true);
-        given(pricingRepository.findByMemberShipEntity_Membership(any(Membership.class))).willReturn(Optional.empty());
+        given(membershipRepository.findByMembership(any(Membership.class))).willReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> service.renew(authentication, request));
 
         verify(identityExtractorService).extract(any());
         verify(subscriptionQueryRepository).findByCustomerEmail(anyString());
         verify(validator).canRenewSubscription(any(SubscriptionEntity.class));
-        verify(pricingRepository).findByMemberShipEntity_Membership(any(Membership.class));
+        verify(membershipRepository).findByMembership(any(Membership.class));
         verifyNoInteractions(subscriptionUpdater, subscriptionMutationRepository, subscriptionMapper);
     }
 }

@@ -6,6 +6,7 @@ import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.notification.domain.model.SubscriberNotificationEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.SQLDelete;
 
 import java.util.LinkedList;
@@ -29,6 +30,7 @@ import java.util.List;
       status = 'DROPPED'
    WHERE id = ?
    """)
+@DynamicUpdate
 public class SubscriptionEntity extends BaseEntity {
 
    @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -44,9 +46,9 @@ public class SubscriptionEntity extends BaseEntity {
    private CustomerEntity customer;
 
    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-   @JoinColumn(name = "pricing_id")
+   @JoinColumn(name = "membership_id")
    @NonNull
-   private PricingEntity pricing;
+   private MembershipEntity membership;
 
    @OneToMany(fetch = FetchType.LAZY, cascade = {
       CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH
@@ -92,13 +94,13 @@ public class SubscriptionEntity extends BaseEntity {
          SubscriptionEntity{
              id=%d,
              customerId=%d,
-             pricingId=%d,
+             membership=%s,
              active=%b,
              status=%s
          }""".formatted(
          super.getId(),
          customer.getId(),
-         pricing.getId(),
+         membership.getMembership(),
          active,
          status.name()
       );

@@ -11,11 +11,11 @@ import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionFac
 import com.jame.dev.gymApp.features.subscription.application.service.mutation.current.CreateCurrentSubscriptionUseCaseService;
 import com.jame.dev.gymApp.features.subscription.domain.exception.PricingNotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
-import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.MembershipEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionValidationRepository;
-import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
 import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,7 +47,7 @@ class CreateCurrentSubscriptionUseCaseServiceTest {
     private CustomerQueryRepository customerQueryRepository;
 
     @Mock
-    private PricingRepository pricingRepository;
+    private MembershipRepository membershipRepository;
 
     @Mock
     private SubscriptionValidationRepository subscriptionValidationRepository;
@@ -69,7 +69,7 @@ class CreateCurrentSubscriptionUseCaseServiceTest {
     @DisplayName("Should create current subscription and return SubscriptionResponse")
     void create_createsAndReturnsResponse() {
         var customer = mock(CustomerEntity.class);
-        var pricing = mock(PricingEntity.class);
+        var membership = mock(MembershipEntity.class);
         var entity = mock(SubscriptionEntity.class);
         var savedEntity = mock(SubscriptionEntity.class);
         var response = mock(SubscriptionResponse.class);
@@ -77,7 +77,7 @@ class CreateCurrentSubscriptionUseCaseServiceTest {
         given(identityExtractorService.extract(any())).willReturn(customerEmail);
         given(customerQueryRepository.findByUserEmail(anyString())).willReturn(Optional.of(customer));
         given(subscriptionValidationRepository.existsByCustomer(any(CustomerEntity.class))).willReturn(false);
-        given(pricingRepository.findByMemberShipEntity_Membership(any(Membership.class))).willReturn(Optional.of(pricing));
+        given(membershipRepository.findByMembership(any(Membership.class))).willReturn(Optional.of(membership));
         given(subscriptionFactory.createFromInput(any(SubscriptionFactoryDtoInput.class))).willReturn(entity);
         given(subscriptionMutationRepository.save(any(SubscriptionEntity.class))).willReturn(savedEntity);
         given(subscriptionFactory.createFromEntity(any(SubscriptionEntity.class))).willReturn(response);
@@ -88,11 +88,11 @@ class CreateCurrentSubscriptionUseCaseServiceTest {
         verify(identityExtractorService).extract(any());
         verify(customerQueryRepository).findByUserEmail(anyString());
         verify(subscriptionValidationRepository).existsByCustomer(any(CustomerEntity.class));
-        verify(pricingRepository).findByMemberShipEntity_Membership(any(Membership.class));
+        verify(membershipRepository).findByMembership(any(Membership.class));
         verify(subscriptionFactory).createFromInput(any(SubscriptionFactoryDtoInput.class));
         verify(subscriptionMutationRepository).save(any(SubscriptionEntity.class));
         verify(subscriptionFactory).createFromEntity(any(SubscriptionEntity.class));
-        verifyNoMoreInteractions(subscriptionMutationRepository, customerQueryRepository, pricingRepository,
+        verifyNoMoreInteractions(subscriptionMutationRepository, customerQueryRepository, membershipRepository,
                 subscriptionValidationRepository, subscriptionFactory, identityExtractorService);
     }
 
@@ -106,7 +106,7 @@ class CreateCurrentSubscriptionUseCaseServiceTest {
 
         verify(identityExtractorService).extract(any());
         verify(customerQueryRepository).findByUserEmail(anyString());
-        verifyNoInteractions(subscriptionMutationRepository, pricingRepository,
+        verifyNoInteractions(subscriptionMutationRepository, membershipRepository,
                 subscriptionValidationRepository, subscriptionFactory);
     }
 
@@ -124,25 +124,25 @@ class CreateCurrentSubscriptionUseCaseServiceTest {
         verify(identityExtractorService).extract(any());
         verify(customerQueryRepository).findByUserEmail(anyString());
         verify(subscriptionValidationRepository).existsByCustomer(any(CustomerEntity.class));
-        verifyNoInteractions(subscriptionMutationRepository, pricingRepository, subscriptionFactory);
+        verifyNoInteractions(subscriptionMutationRepository, membershipRepository, subscriptionFactory);
     }
 
     @Test
-    @DisplayName("Should throw PricingNotFoundException when pricing not found")
+    @DisplayName("Should throw PricingNotFoundException when membership not found")
     void create_whenPricingNotFound_throwsException() {
         var customer = mock(CustomerEntity.class);
 
         given(identityExtractorService.extract(any())).willReturn(customerEmail);
         given(customerQueryRepository.findByUserEmail(anyString())).willReturn(Optional.of(customer));
         given(subscriptionValidationRepository.existsByCustomer(any(CustomerEntity.class))).willReturn(false);
-        given(pricingRepository.findByMemberShipEntity_Membership(any(Membership.class))).willReturn(Optional.empty());
+        given(membershipRepository.findByMembership(any(Membership.class))).willReturn(Optional.empty());
 
         assertThrows(PricingNotFoundException.class, () -> service.create(authentication, request));
 
         verify(identityExtractorService).extract(any());
         verify(customerQueryRepository).findByUserEmail(anyString());
         verify(subscriptionValidationRepository).existsByCustomer(any(CustomerEntity.class));
-        verify(pricingRepository).findByMemberShipEntity_Membership(any(Membership.class));
+        verify(membershipRepository).findByMembership(any(Membership.class));
         verifyNoInteractions(subscriptionMutationRepository, subscriptionFactory);
     }
 }

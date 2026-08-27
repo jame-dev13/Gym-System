@@ -1,15 +1,13 @@
 package com.jame.dev.gymApp.features.subscription.application.dto;
 
-import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
-import com.jame.dev.gymApp.infrastructure.annotation.NotNullObject;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
-import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.MembershipEntity;
+import com.jame.dev.gymApp.infrastructure.annotation.NotNullObject;
+import lombok.Builder;
 
-import java.time.LocalDate;
-
+@Builder
 public record SubscriptionFactoryDtoInput(
         @NotNullObject CustomerEntity customer,
-        @NotNullObject PricingEntity pricing,
-        @NotNullObject LocalDate startDate
+        @NotNullObject MembershipEntity membership
 ) {
 }

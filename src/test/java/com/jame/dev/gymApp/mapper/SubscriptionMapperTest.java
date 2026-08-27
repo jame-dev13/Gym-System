@@ -23,7 +23,7 @@ public class SubscriptionMapperTest {
    private final SubscriptionMapper subscriptionMapper =
            new SubscriptionMapperImpl(periodMapper);
    private CustomerEntity customer;
-   private PricingEntity pricing;
+   private MembershipEntity membership;
    private SubscriptionEntity subs;
 
    @BeforeEach
@@ -32,14 +32,14 @@ public class SubscriptionMapperTest {
               .user(new UserEntity())
               .phoneContact("3926441")
               .build();
-      this.pricing = PricingEntity.builder()
+      this.membership = MembershipEntity.builder()
               .id(1)
-              .memberShipEntity(new MemberShipEntity(1, Membership.MONTHLY))
+              .membership(Membership.MONTHLY)
               .price(BigDecimal.valueOf(300.00d))
               .build();
       this.subs = SubscriptionEntity.builder()
               .customer(customer)
-              .pricing(pricing)
+              .membership(membership)
               .subscriptionPeriods(List.of(new PeriodEntity()))
               .status(SubscriptionStatus.PAID)
               .build();
@@ -49,12 +49,12 @@ public class SubscriptionMapperTest {
    @DisplayName("To Dto")
    void toDto() {
       final SubscriptionResponse dto = subscriptionMapper.toDto(this.subs);
-      final Membership membership = this.subs.getPricing().getMemberShipEntity().getMembership();
-      final BigDecimal price = this.subs.getPricing().getPrice();
+      final Membership membershipType = this.subs.getMembership().getMembership();
+      final BigDecimal price = this.subs.getMembership().getPrice();
       assertAll("Not null, properties equals and not finished.",
               () -> assertNotNull(dto, "Should not be null."),
               () -> assertEquals(price, dto.price(), "Should be the same."),
-              () -> assertEquals(membership, dto.membership(), "Should be the same."),
+              () -> assertEquals(membershipType, dto.membership(), "Should be the same."),
               () -> assertEquals(SubscriptionStatus.PAID, dto.status(), "Status should be equals."));
    }
 
@@ -63,11 +63,11 @@ public class SubscriptionMapperTest {
    void toEntity() {
       final List<PeriodEntity> periods = new ArrayList<>();
 
-      SubscriptionEntity subs = subscriptionMapper.toEntity(customer, pricing, periods);
+      SubscriptionEntity subs = subscriptionMapper.toEntity(customer, membership, periods);
       assertAll("Not null, properties equals and not finished.",
               () -> assertNotNull(subs, "Should not be null."),
               () -> assertEquals(customer, subs.getCustomer(), "Should be the same."),
-              () -> assertEquals(pricing, subs.getPricing(), "Should be the same."),
+              () -> assertEquals(membership, subs.getMembership(), "Should be the same."),
               () -> assertEquals(periods, subs.getSubscriptionPeriods(), "Should be the same."),
               () -> assertEquals(SubscriptionStatus.NOT_PAID, subs.getStatus(), "Status should be equals."));
    }

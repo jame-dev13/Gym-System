@@ -1,9 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.application.support.factory;
 
-import com.jame.dev.gymApp.features.subscription.domain.model.Period;
-import com.jame.dev.gymApp.features.subscription.domain.model.PeriodEntity;
-import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
-import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +13,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PeriodFactory {
 
-   public PeriodEntity createPeriodFrom(final PricingEntity pricing) {
-      final String valueName = pricing.getMemberShipEntity().getMembership().name();
+   public PeriodEntity createPeriodFrom(final MembershipEntity membership) {
+      final String valueName = membership.getMembership().name();
       final Optional<Period> periodOptional = Optional.of(Period.valueOf(valueName));
       final Period period = periodOptional
          .orElseThrow(() -> new IllegalArgumentException("No period value present for: " + valueName));
@@ -25,8 +22,8 @@ public class PeriodFactory {
    }
 
    public List<PeriodEntity> createPeriodsFrom(
-      final PricingEntity pricing) {
-      return List.of(createPeriodFrom(pricing));
+      final MembershipEntity membership) {
+      return List.of(createPeriodFrom(membership));
    }
 
    public List<PeriodEntity> createNewPeriodsFrom(

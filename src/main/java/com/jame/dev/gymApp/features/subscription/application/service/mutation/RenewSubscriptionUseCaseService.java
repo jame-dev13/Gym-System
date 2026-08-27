@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 
+import com.jame.dev.gymApp.domain.exception.NotFoundException;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
@@ -9,12 +10,11 @@ import com.jame.dev.gymApp.features.subscription.application.contract.Subscripti
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionUpdater;
 import com.jame.dev.gymApp.features.subscription.application.support.validator.SubscriptionValidator;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.RenewSubscriptionUseCase;
-import com.jame.dev.gymApp.features.subscription.domain.exception.PricingNotFoundException;
-import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.MembershipEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictSubsOnUpdate;
-import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @CheckLockProcess
 public class RenewSubscriptionUseCaseService implements RenewSubscriptionUseCase {
     private final SubscriptionValidator validator;
-    private final PricingRepository pricingRepository;
+    private final MembershipRepository membershipRepository;
     private final SubscriptionUpdater subscriptionUpdater;
     private final SubscriptionMutationRepository subscriptionMutationRepository;
     private final SubscriptionFactory subscriptionFactory;
@@ -43,10 +43,10 @@ public class RenewSubscriptionUseCaseService implements RenewSubscriptionUseCase
     public SubscriptionResponse renew(long id, SubscriptionRequest input) {
         final SubscriptionEntity subscriptionEntity = validator.validateOnRenew(id, input);
 
-        final PricingEntity pricing = pricingRepository.findByMemberShipEntity_Membership(input.membership())
-            .orElseThrow(() -> new PricingNotFoundException("Pricing not found."));
+        final MembershipEntity membership = membershipRepository.findByMembership(input.membership())
+            .orElseThrow(() -> new NotFoundException("Membership not found: " + input.membership()));
 
-        subscriptionUpdater.applyRenew(subscriptionEntity, pricing);
+        subscriptionUpdater.applyRenew(subscriptionEntity, membership);
         final SubscriptionEntity subscriptionRenewed = subscriptionMutationRepository.save(subscriptionEntity);
 
         return subscriptionFactory.createFromEntity(subscriptionRenewed);

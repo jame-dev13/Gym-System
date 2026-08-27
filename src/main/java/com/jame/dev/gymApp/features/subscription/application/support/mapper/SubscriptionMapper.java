@@ -18,18 +18,18 @@ public interface SubscriptionMapper extends BaseMapper<SubscriptionEntity, Subsc
 
    @Override
    @Mapping(source = "customer.user.email", target = "customerEmail")
-   @Mapping(source = "pricing.memberShipEntity.membership", target = "membership")
-   @Mapping(source = "pricing.price", target = "price")
+   @Mapping(source = "membership.membership", target = "membership")
+   @Mapping(source = "membership.price", target = "price")
    @Mapping(source = "subscriptionPeriods", target = "periods")
    SubscriptionResponse toDto(SubscriptionEntity entity);
 
    default SubscriptionEntity toEntity(
       CustomerEntity customerEntity,
-      PricingEntity pricingEntity,
+      MembershipEntity membershipEntity,
       List<PeriodEntity> periods) {
       return SubscriptionEntity.builder()
          .customer(customerEntity)
-         .pricing(pricingEntity)
+         .membership(membershipEntity)
          .subscriptionPeriods(periods)
          .status(SubscriptionStatus.NOT_PAID)
          .build();

@@ -25,10 +25,9 @@ public interface SubscriptionMetricsRepository extends
       SELECT
           m.membership AS membership,
           COUNT(m.membership) AS subsCount,
-          RANK() OVER (ORDER BY COUNT(*) DESC, COALESCE(SUM(mp.price), 0) DESC) AS rank
+          RANK() OVER (ORDER BY COUNT(*) DESC, COALESCE(SUM(m.price), 0) DESC) AS rank
       FROM subscriptions s
-      INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
-      INNER JOIN memberships m ON m.id = mp.membership_id
+      INNER JOIN memberships m ON m.id = s.membership_id
       WHERE s.status = 'PAID'
       GROUP BY m.membership
       """)
@@ -45,10 +44,9 @@ public interface SubscriptionMetricsRepository extends
                )) AS VARCHAR(10)) AS period,
          CAST(p.period AS varchar(10)) AS subscriptionType,
          COUNT(s) AS subscriptionCount,
-         RANK() OVER (ORDER BY COUNT(s) DESC, COALESCE(SUM(mp.price), 0) DESC, EXTRACT(YEAR FROM p.start_period) DESC) AS rank
+         RANK() OVER (ORDER BY COUNT(s) DESC, COALESCE(SUM(m.price), 0) DESC, EXTRACT(YEAR FROM p.start_period) DESC) AS rank
       FROM subscriptions s
-      INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
-      INNER JOIN memberships m ON m.id = mp.membership_id
+      INNER JOIN memberships m ON m.id = s.membership_id
       INNER JOIN subscription_periods sp ON sp.subscription_id = s.id
       INNER JOIN periods p ON p.id = sp.period_id
       WHERE s.status = 'PAID'
@@ -84,8 +82,7 @@ public interface SubscriptionMetricsRepository extends
         CAST(m.membership as varchar(15)) AS membership,
         COUNT(s) AS subsCount
       FROM subscriptions s
-      INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
-      INNER JOIN memberships m ON m.id = mp.membership_id
+      INNER JOIN memberships m ON m.id = s.membership_id
       GROUP BY m.membership
       ORDER BY m.membership DESC
       """)
@@ -96,10 +93,9 @@ public interface SubscriptionMetricsRepository extends
         SELECT
             m.membership,
             COUNT(*) AS total,
-            COALESCE(SUM(mp.price), 0) AS amount
+            COALESCE(SUM(m.price), 0) AS amount
         FROM subscriptions s
-        JOIN membership_pricing mp ON mp.id = s.pricing_id
-        JOIN memberships m ON m.id = mp.membership_id
+        JOIN memberships m ON m.id = s.membership_id
         WHERE EXTRACT(YEAR FROM s.created_at) <= EXTRACT(YEAR FROM CURRENT_DATE)
         GROUP BY m.membership
       )

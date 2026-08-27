@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.application.service;
 
-import com.jame.dev.gymApp.features.subscription.domain.model.MemberShipEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.MembershipEntity;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
 import com.jame.dev.gymApp.features.subscription.application.contract.MembershipService;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
@@ -20,18 +20,18 @@ public class MembershipApplicationService implements MembershipService {
    private final MembershipRepository repo;
 
    @Override
-   public List<MemberShipEntity> getAll() {
+   public List<MembershipEntity> getAll() {
       return repo.findAll();
    }
 
    @Override
-   public Optional<MemberShipEntity> getByMembership(@NonNull Membership membership) {
+   public Optional<MembershipEntity> getByMembership(@NonNull Membership membership) {
       return repo.findByMembership(membership);
    }
 
    @Override
    @Transactional
-   public MemberShipEntity save(@NonNull MemberShipEntity entity) {
+   public MembershipEntity save(@NonNull MembershipEntity entity) {
       return repo.save(entity);
    }
 }

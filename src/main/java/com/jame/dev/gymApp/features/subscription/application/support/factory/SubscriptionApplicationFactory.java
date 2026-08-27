@@ -33,7 +33,7 @@ public class SubscriptionApplicationFactory implements SubscriptionFactory {
 
    @Override
    public SubscriptionEntity createFromInput(SubscriptionFactoryDtoInput input) {
-      final List<PeriodEntity> periods = periodFactory.createPeriodsFrom(input.pricing());
-      return subscriptionMapper.toEntity(input.customer(), input.pricing(), periods);
+      final List<PeriodEntity> periods = periodFactory.createPeriodsFrom(input.membership());
+      return subscriptionMapper.toEntity(input.customer(), input.membership(), periods);
    }
 }

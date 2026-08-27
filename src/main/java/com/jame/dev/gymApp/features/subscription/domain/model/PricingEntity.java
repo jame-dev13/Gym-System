@@ -6,6 +6,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+@Deprecated
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,7 +27,7 @@ public class PricingEntity {
    @JoinColumn(name = "membership_id")
    @ToString.Exclude
    @NonNull
-   private MemberShipEntity memberShipEntity;
+   private MembershipEntity memberShipEntity;
 
    @Column(name = "price", nullable = false, precision = 10, scale = 2)
    @JoinColumn(name = "price_id")
