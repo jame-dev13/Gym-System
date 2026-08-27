@@ -80,7 +80,7 @@ Follow this exact workflow when opening a PR (works for both `git` CLI + the Git
 1. **Inspect the change against `main` first.** Run `git diff main --stat` (and review the full `git diff main`) so you have a clear, complete picture of what is changing before staging anything.
 2. **Stage explicitly, never blindly.** Prefer `git add <files changed>` (list the specific modified files). Avoid `git add .` / `git add -A` unless the user explicitly asks — staging only the intended files is the safer, more professional option.
 3. **Ask the user for the commit message.** Do not invent it. Request it (you may suggest one following the repo style: imperative, `refactor:`/`feat:`/`fix:` prefix) and use exactly what the user provides for `git commit`.
-4. **Push, then open the PR.** `git push -u origin <branch>` (set upstream on first push), then create the PR via the GitHub MCP server (`github_create_pull_request`, owner `jame-dev13`, repo `GymAppViewReact`, base `main`).
+4. **Push, then open the PR.** `git push -u origin <branch>` (set upstream on first push), then create the PR via the GitHub MCP server (`github_create_pull_request`, owner `jame-dev13`, repo `GymAdmin`, base `main`).
 
 ### PR description structure
 
