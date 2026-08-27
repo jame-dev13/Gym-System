@@ -7,8 +7,8 @@ import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.infrastructure.audit_strategy.AuditBeforeResolver;
 import com.jame.dev.gymApp.features.audit.infrastructure.parser.LongParser;
 import com.jame.dev.gymApp.features.audit.infrastructure.spel_evaluator.AuditLogExpressionEvaluator;
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -29,8 +29,8 @@ public class UpdateAuditBeforeResolver implements AuditBeforeResolver {
       final var annotation = context.getAnnotation();
       final Object input = evaluator.evaluateAsObject(annotation.input(), context.getParamNames(), context.getArgs());
 
-      final Long entityId = input instanceof Authentication auth ?
-         entityIdBeforeResolver.getEntityIdByCurrentAuthentication(auth, annotation.entityType()) :
+      final Long entityId = input instanceof AuthPrincipal principal ?
+         entityIdBeforeResolver.getEntityIdByCurrentAuthentication(principal, annotation.entityType()) :
          longParser.parseString(
             evaluator.evaluate(annotation.entityId(), context.getParamNames(), context.getArgs())
          );

@@ -264,7 +264,7 @@ class CustomerCurrentControllerTest {
       @DisplayName("PUT[200] OK: Editing current customer info contact.")
       void updateInfoContact() throws Exception {
          given(update.updateCurrent(any(), any(CustomerCurrentRequest.class))).willReturn(customerResponse);
-         mockMvc.perform(put(URI_TEMPLATE + "/currrent")
+         mockMvc.perform(put(URI_TEMPLATE + "/current")
                .accept(MediaType.APPLICATION_JSON)
                .contentType(MediaType.APPLICATION_JSON)
                .content(payload))
@@ -277,7 +277,7 @@ class CustomerCurrentControllerTest {
       @DisplayName("PUT[404] Not Found: No customer related to the authenticated user")
       void customerNotFound() throws Exception {
          given(update.updateCurrent(any(), any(CustomerCurrentRequest.class))).willThrow(NotFoundException.class);
-         mockMvc.perform(put(URI_TEMPLATE + "/currrent")
+         mockMvc.perform(put(URI_TEMPLATE + "/current")
                .accept(MediaType.APPLICATION_JSON)
                .contentType(MediaType.APPLICATION_JSON)
                .content(payload))
@@ -292,7 +292,7 @@ class CustomerCurrentControllerTest {
       @DisplayName("PUT[401]: Unauthorized: No authenticated user in session")
       void unauthenticated() throws Exception {
          given(update.updateCurrent(any(), any(CustomerCurrentRequest.class))).willThrow(AuthenticationNullException.class);
-         mockMvc.perform(put(URI_TEMPLATE + "/currrent")
+         mockMvc.perform(put(URI_TEMPLATE + "/current")
                .accept(MediaType.APPLICATION_JSON)
                .contentType(MediaType.APPLICATION_JSON)
                .content(payload))
@@ -325,7 +325,7 @@ class CustomerCurrentControllerTest {
                }
                """.formatted(phone);
          }
-         mockMvc.perform(put(URI_TEMPLATE + "/currrent")
+         mockMvc.perform(put(URI_TEMPLATE + "/current")
                .accept(MediaType.APPLICATION_JSON)
                .contentType(MediaType.APPLICATION_JSON)
                .content(payload))
@@ -344,7 +344,7 @@ class CustomerCurrentControllerTest {
       @DisplayName("PUT[400]: Bad Request: Invalid payload")
       void badRequestInvalidPayload(String value, String codeExpected) throws Exception {
          mockMvc.perform(
-               put(URI_TEMPLATE + "/currrent")
+               put(URI_TEMPLATE + "/current")
                   .accept(MediaType.APPLICATION_JSON)
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(value)

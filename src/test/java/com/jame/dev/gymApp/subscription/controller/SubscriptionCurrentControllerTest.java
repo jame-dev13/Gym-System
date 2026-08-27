@@ -3,6 +3,8 @@ package com.jame.dev.gymApp.subscription.controller;
 import com.jame.dev.gymApp.domain.exception.NotFoundException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationNullException;
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
+import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
 import com.jame.dev.gymApp.features.auth.infrastructure.security.CustomAuthorizationFilter;
 import com.jame.dev.gymApp.features.subscription.api.SubscriptionCurrentController;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionCurrentRequest;
@@ -102,6 +104,10 @@ class SubscriptionCurrentControllerTest {
 
    private final String URI_TEMPLATE = "/app/v1/subscriptions/current";
    private final String customerEmail = "user@mail.com";
+   private final AuthPrincipal principal = UserPrincipal.builder()
+      .id(1L)
+      .username(customerEmail)
+      .build();
 
    private final SubscriptionCheckoutResponse checkoutResponse = SubscriptionCheckoutResponse.builder()
       .sessionUrl("https://stripe.com/session_123")

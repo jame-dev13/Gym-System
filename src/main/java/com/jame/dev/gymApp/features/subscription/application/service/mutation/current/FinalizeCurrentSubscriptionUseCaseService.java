@@ -4,6 +4,7 @@ import com.jame.dev.gymApp.domain.exception.NotFoundException;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.current.FinalizeCurrentSubscriptionUseCase;
@@ -15,10 +16,8 @@ import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQ
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictCurrentOnUpdateSub;
 import com.jame.dev.gymApp.features.subscription.infrastructure.publisher.SubscriptionMutationEventPublisher;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
-import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,21 +34,19 @@ public class FinalizeCurrentSubscriptionUseCaseService implements FinalizeCurren
    private final SubscriptionMutationRepository subscriptionMutationRepository;
    private final SubscriptionFactory subscriptionFactory;
    private final SubscriptionMutationEventPublisher subscriptionMutationEventPublisher;
-   private final IdentityExtractorService identityExtractorService;
 
    @Override
    @Transactional
    @AuditLog(
       entityType = AuditLogEntityType.SUBSCRIPTION,
       action = AuditLogAction.UPDATE,
-      input = "#authentication",
+      input = "#principal",
       result = "#result"
    )
    @EvictCurrentOnUpdateSub
-   public SubscriptionResponse finalizeCurrent(Authentication authentication) {
+   public SubscriptionResponse finalizeCurrent(AuthPrincipal principal) {
       log.info("Hit finalizeCurrent");
-      final String email = identityExtractorService.extract(authentication);
-      final SubscriptionEntity subscription = subscriptionQueryRepository.findByCustomerEmail(email)
+      final SubscriptionEntity subscription = subscriptionQueryRepository.findByCustomerEmail(principal.username())
          .orElseThrow(() -> new NotFoundException("Subscription Not Found."));
 
       Optional.ofNullable(subscription.getPayments())

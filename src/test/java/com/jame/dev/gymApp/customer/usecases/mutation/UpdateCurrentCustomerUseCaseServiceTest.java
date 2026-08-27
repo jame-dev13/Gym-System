@@ -1,8 +1,8 @@
 package com.jame.dev.gymApp.customer.usecases.mutation;
 
-import com.jame.dev.gymApp.features.auth.application.service.IdentityExtractorApplicationService;
 import com.jame.dev.gymApp.domain.exception.NotFoundException;
-import com.jame.dev.gymApp.features.auth.domain.exception.AuthenticationNullException;
+import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
+import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerCurrentRequest;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
 import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
@@ -20,7 +20,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
 
 import java.util.Optional;
 
@@ -43,9 +42,6 @@ class UpdateCurrentCustomerUseCaseServiceTest {
     private CustomerUpdater customerUpdater;
 
     @Mock
-    private IdentityExtractorApplicationService identityExtractorApplicationService;
-
-    @Mock
     private CustomerFactory customerFactory;
 
     @InjectMocks
@@ -57,32 +53,33 @@ class UpdateCurrentCustomerUseCaseServiceTest {
     @Captor
     private ArgumentCaptor<CustomerRequest> appliedRequestCaptor;
 
-    private final Authentication authentication = mock(Authentication.class);
+    private final String authenticatedEmail = "user@mail.com";
+    private final AuthPrincipal principal = UserPrincipal.builder()
+        .id(1L)
+        .username(authenticatedEmail)
+        .build();
     private final CustomerCurrentRequest request = new CustomerCurrentRequest("292134525");
 
     @Test
-    @DisplayName("Should update and return CustomerResponse building the dto from the authenticated email")
+    @DisplayName("Should update and return CustomerResponse building the dto from the authenticated user")
     void updateCurrent_whenCustomerExists_updatesAndReturnsResponse() {
-        final String authenticatedEmail = "user@mail.com";
         final CustomerEntity entity = new CustomerEntity();
         final CustomerEntity savedEntity = new CustomerEntity();
         final CustomerResponse response = mock(CustomerResponse.class);
 
-        given(identityExtractorApplicationService.extract(any(Authentication.class))).willReturn(authenticatedEmail);
         given(customerQueryRepository.findByUserEmail(authenticatedEmail)).willReturn(Optional.of(entity));
         willDoNothing().given(customerUpdater).apply(any(CustomerEntity.class), any(CustomerRequest.class));
         given(customerMutationRepository.save(any(CustomerEntity.class))).willReturn(savedEntity);
         given(customerFactory.createFromEntity(any(CustomerEntity.class))).willReturn(response);
 
         final CustomerResponse result = assertDoesNotThrow(
-            () -> service.updateCurrent(authentication, request));
+            () -> service.updateCurrent(principal, request));
 
         assertAll(
             () -> assertNotNull(result, "Result should not be null."),
             () -> assertSame(response, result, "Result should be the mapped CustomerResponse.")
         );
 
-        verify(identityExtractorApplicationService).extract(authentication);
         verify(customerQueryRepository).findByUserEmail(authenticatedEmail);
         verify(customerUpdater).apply(same(entity), appliedRequestCaptor.capture());
         verify(customerMutationRepository).save(customerEntityCaptor.capture());
@@ -90,38 +87,22 @@ class UpdateCurrentCustomerUseCaseServiceTest {
 
         final CustomerRequest applied = appliedRequestCaptor.getValue();
         assertAll(
-            () -> assertEquals(authenticatedEmail, applied.email(), "Email should be sourced from authentication."),
+            () -> assertEquals(authenticatedEmail, applied.email(), "Email should be sourced from the authenticated principal."),
             () -> assertEquals(request.phoneContact(), applied.contact(), "Contact should keep the request phone contact.")
         );
         assertSame(entity, customerEntityCaptor.getValue());
 
-        verifyNoMoreInteractions(customerQueryRepository, customerMutationRepository, customerUpdater, identityExtractorApplicationService, customerFactory);
+        verifyNoMoreInteractions(customerQueryRepository, customerMutationRepository, customerUpdater, customerFactory);
     }
 
     @Test
     @DisplayName("Should throw NotFoundException when no customer is related to the authenticated user")
     void updateCurrent_whenCustomerNotFound_throwsNotFoundException() {
-        final String authenticatedEmail = "user@mail.com";
-
-        given(identityExtractorApplicationService.extract(any(Authentication.class))).willReturn(authenticatedEmail);
         given(customerQueryRepository.findByUserEmail(authenticatedEmail)).willReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> service.updateCurrent(authentication, request));
+        assertThrows(NotFoundException.class, () -> service.updateCurrent(principal, request));
 
-        verify(identityExtractorApplicationService).extract(any(Authentication.class));
         verify(customerQueryRepository).findByUserEmail(authenticatedEmail);
         verifyNoInteractions(customerUpdater, customerMutationRepository, customerFactory);
-    }
-
-    @Test
-    @DisplayName("Should throw AuthenticationNullException when no authenticated user is found")
-    void updateCurrent_whenAuthenticationIsNull_throwsAuthenticationNullException() {
-        given(identityExtractorApplicationService.extract(any(Authentication.class)))
-            .willThrow(new AuthenticationNullException("No Authenticated user were found."));
-
-        assertThrows(AuthenticationNullException.class, () -> service.updateCurrent(authentication, request));
-
-        verify(identityExtractorApplicationService).extract(any(Authentication.class));
-        verifyNoInteractions(customerQueryRepository, customerUpdater, customerMutationRepository, customerFactory);
     }
 }
