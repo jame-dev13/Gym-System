@@ -7,7 +7,6 @@ import com.jame.dev.gymApp.features.customer.infrastructure.persistence.Customer
 import com.jame.dev.gymApp.features.subscription.domain.model.*;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PaymentRepository;
-import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.SubscriptionRepository;
 import com.jame.dev.gymApp.features.user.api.request.UserRequest;
 import com.jame.dev.gymApp.features.user.application.contract.UserFactory;
@@ -28,6 +27,8 @@ import org.springframework.context.annotation.Profile;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.jame.dev.gymApp.features.subscription.domain.model.Membership.*;
@@ -51,14 +52,14 @@ public class InitConfig {
    private String passwordUser;
 
    private final Random random = new Random();
-   private final Map<String, BigDecimal> prices = Map.ofEntries(
-      Map.entry("biweekly", BigDecimal.valueOf(150.00d)),
-      Map.entry("monthly", BigDecimal.valueOf(300.00d)),
-      Map.entry("quarterly", BigDecimal.valueOf(900.00d)),
-      Map.entry("annual", BigDecimal.valueOf(3600.00d))
-   );
 
-   private final Map<Membership, PricingEntity> pricingMap = new HashMap<>();
+   private final Set<MembershipEntity> memberships = Set.of(
+      new MembershipEntity(null, BIWEEKLY, BigDecimal.valueOf(150.00d)),
+      new MembershipEntity(null, MONTHLY, BigDecimal.valueOf(300.00d)),
+      new MembershipEntity(null, QUARTERLY, BigDecimal.valueOf(900.00d)),
+      new MembershipEntity(null, ANNUAL, BigDecimal.valueOf(3600.00d))
+   );
+   private Map<Membership, MembershipEntity> membershipMap;
 
    @Bean
    @Priority(0)
@@ -112,17 +113,14 @@ public class InitConfig {
    @Bean
    @Priority(2)
    public CommandLineRunner runnerMembershipsAndPrices(
-      final MembershipRepository membershipRepository,
-      final PricingRepository pricingRepository) {
+      final MembershipRepository membershipRepository) {
       return args -> {
-
-         prices.forEach((membership, price) -> {
-            final Membership type = Membership.valueOf(membership.toUpperCase());
-            final MemberShipEntity memberShipEntity = membershipRepository.saveAndFlush(new MemberShipEntity(null, type));
-            final PricingEntity pricingEntity = pricingRepository.saveAndFlush(new PricingEntity(null, memberShipEntity, price));
-            pricingMap.putIfAbsent(type, pricingEntity);
-         });
-
+         final var membershipList = membershipRepository.saveAll(memberships);
+         this.membershipMap = membershipList.stream()
+            .collect(Collectors.toUnmodifiableMap(
+               MembershipEntity::getMembership,
+               Function.identity()
+            ));
          log.info("Runner MembershipAndPrices end execution.");
       };
    }
@@ -153,7 +151,7 @@ public class InitConfig {
                final var subscription = createSubscription(customerEntity);
                var sub = subscriptionRepository.save(subscription);
 
-               paymentRepository.saveAndFlush(createPaymentEntity(subscription));
+               paymentRepository.saveAndFlush(createPaymentEntity(sub));
             });
          log.info("Runner CreationOfUsersCustomersAndSubscriptions end execution.");
       };
@@ -182,7 +180,7 @@ public class InitConfig {
       final int randomIdx = random.nextInt(0, memberships.length);
       return SubscriptionEntity.builder()
          .customer(customer)
-         .pricing(pricingMap.get(memberships[randomIdx]))
+         .membership(membershipMap.get(memberships[randomIdx]))
          .subscriptionPeriods(List.of(new PeriodEntity(periods[randomIdx])))
          .status(SubscriptionStatus.PAID)
          .build();
@@ -193,7 +191,7 @@ public class InitConfig {
          .stripeSessionId(UUID.randomUUID().toString())
          .stripePaymentIntentId(PaymentPhysicMeta.PAYMENT_INTEND_ID.getValue())
          .stripeSubscriptionId(PaymentPhysicMeta.STRIPE_SUBSCRIPTION_ID.getValue())
-         .amount(subscriptionEntity.getPricing().getPrice())
+         .amount(subscriptionEntity.getMembership().getPrice())
          .currency("mx")
          .status(PaymentStatus.COMPLETED)
          .paymentMethod(PaymentMethod.PHYSIC)

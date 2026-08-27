@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 
+import com.jame.dev.gymApp.domain.exception.NotFoundException;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
@@ -12,20 +13,17 @@ import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionRespon
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
 import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionFactoryDtoInput;
 import com.jame.dev.gymApp.features.subscription.application.usecases.mutation.CreateSubscriptionUseCase;
-import com.jame.dev.gymApp.features.subscription.domain.exception.PricingNotFoundException;
-import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.MembershipEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionValidationRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.annotations.EvictSubsOnSave;
-import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
 import com.jame.dev.gymApp.infrastructure.security.lock.CheckLockProcess;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
 
 @Slf4j
 @Service
@@ -34,7 +32,7 @@ import java.time.LocalDate;
 public class CreateSubscriptionUseCaseService implements CreateSubscriptionUseCase {
    private final SubscriptionMutationRepository subscriptionMutationRepository;
    private final CustomerQueryRepository customerQueryRepository;
-   private final PricingRepository pricingRepository;
+   private final MembershipRepository membershipRepository;
    private final SubscriptionValidationRepository subscriptionValidationRepository;
    private final SubscriptionFactory subscriptionFactory;
 
@@ -57,11 +55,14 @@ public class CreateSubscriptionUseCaseService implements CreateSubscriptionUseCa
          throw new AlreadyExistsException("There's a subscription linked to the customer with: " + request.customerEmail());
       }
 
-      final PricingEntity pricing = pricingRepository.findByMemberShipEntity_Membership(request.membership())
-         .orElseThrow(() -> new PricingNotFoundException("Pricing Not Found."));
+      final MembershipEntity membershipEntity = membershipRepository.findByMembership(request.membership())
+         .orElseThrow(() -> new NotFoundException("Membership Not Found: " + request.membership()));
 
       final SubscriptionEntity subscriptionEntity = subscriptionFactory.createFromInput(
-         new SubscriptionFactoryDtoInput(customer, pricing, LocalDate.now()));
+         SubscriptionFactoryDtoInput.builder()
+            .customer(customer)
+            .membership(membershipEntity)
+            .build());
 
       final SubscriptionEntity subscriptionSaved = subscriptionMutationRepository.save(subscriptionEntity);
 

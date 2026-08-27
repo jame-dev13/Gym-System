@@ -14,9 +14,9 @@ public interface EarningMetricsRepository extends MetricsRepository<Subscription
 
    @NativeQuery("""
            SELECT
-              DISTINCT COALESCE(SUM(mp.price), 0) as total
+              DISTINCT COALESCE(SUM(m.price), 0) as total
            FROM subscriptions s
-           INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
+           INNER JOIN memberships m ON m.id = s.membership_id
            WHERE s.status = 'PAID'
            """)
    TotalEarned calculateTotalEarned();
@@ -25,11 +25,11 @@ public interface EarningMetricsRepository extends MetricsRepository<Subscription
            SELECT
                CAST(EXTRACT(YEAR FROM p.start_period) AS integer) AS year,
                CAST(TO_CHAR(p.start_period, 'FMMon') AS varchar(4)) AS month,
-               COALESCE(SUM(mp.price), 0) as total
+               COALESCE(SUM(m.price), 0) as total
            FROM subscriptions s
            INNER JOIN subscription_periods sp ON sp.subscription_id = s.id
            INNER JOIN periods p ON p.id = sp.period_id
-           INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
+           INNER JOIN memberships m ON m.id = s.membership_id
            WHERE s.status = 'PAID'
            GROUP BY
                EXTRACT(YEAR FROM p.start_period),
@@ -44,10 +44,9 @@ public interface EarningMetricsRepository extends MetricsRepository<Subscription
    @NativeQuery("""
            SELECT
               m.membership as membership,
-              COALESCE(SUM(mp.price), 0) as total
+              COALESCE(SUM(m.price), 0) as total
            FROM subscriptions s
-           INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
-           INNER JOIN memberships m ON m.id = mp.membership_id
+           INNER JOIN memberships m ON m.id = s.membership_id
            WHERE s.status = 'PAID'
            GROUP BY m.membership
            ORDER BY m.membership DESC
@@ -62,10 +61,10 @@ public interface EarningMetricsRepository extends MetricsRepository<Subscription
              CONCAT(TO_CHAR(p.start_period, 'FMMon'), ' - ', TO_CHAR(p.end_period, 'FMMon'))) AS varchar(12)
            ) AS period,
         CAST(p.period AS varchar(12)) AS membership,
-        COALESCE(SUM(mp.price), 0) AS totalEarned,
-        RANK() OVER (ORDER BY COALESCE(SUM(mp.price), 0) DESC, EXTRACT(YEAR FROM p.start_period) DESC) AS rank
+        COALESCE(SUM(m.price), 0) AS totalEarned,
+        RANK() OVER (ORDER BY COALESCE(SUM(m.price), 0) DESC, EXTRACT(YEAR FROM p.start_period) DESC) AS rank
       FROM subscriptions s
-      INNER JOIN membership_pricing mp ON mp.id = s.pricing_id
+      INNER JOIN memberships m ON m.id = s.membership_id
       INNER JOIN subscription_periods sp ON sp.subscription_id = s.id
       INNER JOIN periods p ON p.id = sp.period_id
       WHERE s.status = 'PAID'

@@ -1,7 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.infrastructure.stripe.session.utils;
 
-import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
-import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.MembershipEntity;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,9 +18,9 @@ public class SessionParams {
    @Value("${stripe.cancel-url}")
    private String cancelUrl;
 
-   public SessionCreateParams getParams(PricingEntity pricing, Membership membership, String customerEmail) {
-      final long unitAmount = pricing.getPrice().multiply(BigDecimal.valueOf(100)).longValue();
-
+   public SessionCreateParams getParams(MembershipEntity membershipEntity, String customerEmail) {
+      final long unitAmount = membershipEntity.getPrice().multiply(BigDecimal.valueOf(100)).longValue();
+      final var membership = membershipEntity.getMembership();
       final SessionCreateParams.LineItem.PriceData.ProductData productData =
          SessionCreateParams.LineItem.PriceData.ProductData.builder()
             .setName("Gym membership - " + membership.name())
@@ -61,7 +60,7 @@ public class SessionParams {
                .build()
          )
          .setCustomerEmail(customerEmail)
-         .putMetadata("pricingId", pricing.getId().toString())
+         .putMetadata("pricingId", membershipEntity.getId().toString())
          .putMetadata("customerEmail", customerEmail)
          .build();
    }

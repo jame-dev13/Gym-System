@@ -1,6 +1,6 @@
 package com.jame.dev.gymApp.service;
 
-import com.jame.dev.gymApp.features.subscription.domain.model.MemberShipEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.MembershipEntity;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
 import com.jame.dev.gymApp.features.subscription.application.service.MembershipApplicationService;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
@@ -28,7 +28,7 @@ class MembershipServiceTest {
    @InjectMocks
    private MembershipApplicationService service;
 
-   private final MemberShipEntity membershipTest = MemberShipEntity.builder()
+   private final MembershipEntity membershipTest = MembershipEntity.builder()
            .id(1)
            .membership(Membership.MONTHLY)
            .build();
@@ -38,7 +38,7 @@ class MembershipServiceTest {
    void getAll() {
       when(repo.findAll()).thenReturn(List.of(membershipTest));
 
-      final List<MemberShipEntity> membershipList = service.getAll();
+      final List<MembershipEntity> membershipList = service.getAll();
       verify(repo, atLeastOnce()).findAll();
       verifyNoMoreInteractions(repo);
 
@@ -54,8 +54,8 @@ class MembershipServiceTest {
       final Membership membership = this.membershipTest.getMembership();
       when(repo.findByMembership(membership)).thenReturn(Optional.of(membershipTest));
 
-      final Optional<MemberShipEntity> optionalMembership = service.getByMembership(membership);
-      final MemberShipEntity membershipGotten = optionalMembership.orElseThrow();
+      final Optional<MembershipEntity> optionalMembership = service.getByMembership(membership);
+      final MembershipEntity membershipGotten = optionalMembership.orElseThrow();
 
       verify(repo, atLeastOnce()).findByMembership(membership);
       verifyNoMoreInteractions(repo);
@@ -66,15 +66,15 @@ class MembershipServiceTest {
 
    @Test
    void save() {
-      when(repo.save(any(MemberShipEntity.class)))
+      when(repo.save(any(MembershipEntity.class)))
               .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
-      final MemberShipEntity membershipAdded = service.save(membershipTest);
+      final MembershipEntity membershipAdded = service.save(membershipTest);
 
-      final ArgumentCaptor<MemberShipEntity> captor = ArgumentCaptor.forClass(MemberShipEntity.class);
+      final ArgumentCaptor<MembershipEntity> captor = ArgumentCaptor.forClass(MembershipEntity.class);
       verify(repo).save(captor.capture());
       verifyNoMoreInteractions(repo);
 
-      final MemberShipEntity membershipSaved = captor.getValue();
+      final MembershipEntity membershipSaved = captor.getValue();
 
       assertNotNull(membershipSaved, "Should not be null.");
       assertEquals(membershipSaved, membershipAdded, "Should be equals.");

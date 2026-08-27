@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum SubscriptionSortProperty {
    ID("id", "id"),
    EMAIL("customerEmail", "customer.user.email"),
-   PRICING("price", "pricing")
+   PRICING("price", "membership.price")
    ;
 
    private final String apiProperty;

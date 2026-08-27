@@ -36,8 +36,8 @@ public class AuditIdQueryBeforeResolver {
             .orElseThrow(() -> new CustomerNotFoundException("Customer entity not found."));
          case SUBSCRIPTION -> subscriptionRepository.findById(id)
             .map(s -> SubscriptionBeforeUpdateModel.builder()
-               .membership(s.getPricing().getMemberShipEntity().getMembership())
-               .price(s.getPricing().getPrice())
+               .membership(s.getMembership().getMembership())
+               .price(s.getMembership().getPrice())
                .status(s.getStatus())
                .build())
             .orElseThrow(() -> new SubscriptionNotFoundException("Subscription entity not found."));

@@ -1,9 +1,9 @@
 package com.jame.dev.gymApp.features.subscription.infrastructure.specification;
 
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
-import com.jame.dev.gymApp.features.subscription.domain.model.MemberShipEntity;
-import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.MembershipEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import jakarta.persistence.criteria.*;
 import org.jspecify.annotations.Nullable;
@@ -24,8 +24,7 @@ public class SubscriptionSpecification implements Specification<SubscriptionEnti
       final String like = "%" + search.toLowerCase() + "%";
       final String trimmed = search.trim();
 
-      final Join<SubscriptionEntity, PricingEntity> pricingJoin = root.join("pricing", JoinType.LEFT);
-      final Join<PricingEntity, MemberShipEntity> membershipJoin = pricingJoin.join("memberShipEntity", JoinType.LEFT);
+      final Join<SubscriptionEntity, MembershipEntity> membershipJoin = root.join("membership", JoinType.LEFT);
       final Join<SubscriptionEntity, CustomerEntity> customerJoin = root.join("customer", JoinType.LEFT);
       final Join<CustomerEntity, UserEntity> userJoin = customerJoin.join("user", JoinType.LEFT);
 
@@ -40,18 +39,20 @@ public class SubscriptionSpecification implements Specification<SubscriptionEnti
       ));
 
       try {
+         predicates.add(cb.equal(
+            root.get("status").as(SubscriptionStatus.class),
+            SubscriptionStatus.valueOf(trimmed.toUpperCase())
+         ));
+      } catch (IllegalArgumentException ignored) {
+      }
+
+      try {
          BigDecimal price = new BigDecimal(trimmed);
          predicates.add(cb.equal(
-            pricingJoin.get("price").as(BigDecimal.class),
+            membershipJoin.get("price").as(BigDecimal.class),
             price
          ));
-      } catch (NumberFormatException ignored) {}
-
-      if ("true".equalsIgnoreCase(trimmed) || "false".equalsIgnoreCase(trimmed)) {
-         predicates.add(cb.equal(
-            root.get("finished").as(Boolean.class),
-            Boolean.parseBoolean(trimmed)
-         ));
+      } catch (NumberFormatException ignored) {
       }
 
       return cb.or(predicates.toArray(new Predicate[0]));

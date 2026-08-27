@@ -12,7 +12,7 @@ public class PaymentFactory {
          .stripeSessionId(paymentEvent.sessionId())
          .stripePaymentIntentId(paymentEvent.intentId())
          .stripeSubscriptionId(paymentEvent.subscriptionId())
-         .amount(paymentEvent.subscriptionEntity().getPricing().getPrice())
+         .amount(paymentEvent.subscriptionEntity().getMembership().getPrice())
          .currency("mx")
          .status(paymentEvent.paymentStatus())
          .paymentMethod(paymentEvent.isPhysicSession() ? PaymentMethod.PHYSIC : PaymentMethod.ELECTRONIC)

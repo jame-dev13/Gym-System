@@ -72,3 +72,23 @@ Each feature module: `api/` (controllers, request/response DTOs) → `applicatio
 - `@EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)` in `AppConfig`.
 - Virtual threads enabled (`spring.threads.virtual.enabled=true`).
 - `@EnableMethodSecurity` — method-level security annotations in use.
+
+## Pull request process
+
+Follow this exact workflow when opening a PR (works for both `git` CLI + the GitHub MCP server, since `gh` is not installed):
+
+1. **Inspect the change against `main` first.** Run `git diff main --stat` (and review the full `git diff main`) so you have a clear, complete picture of what is changing before staging anything.
+2. **Stage explicitly, never blindly.** Prefer `git add <files changed>` (list the specific modified files). Avoid `git add .` / `git add -A` unless the user explicitly asks — staging only the intended files is the safer, more professional option.
+3. **Ask the user for the commit message.** Do not invent it. Request it (you may suggest one following the repo style: imperative, `refactor:`/`feat:`/`fix:` prefix) and use exactly what the user provides for `git commit`.
+4. **Push, then open the PR.** `git push -u origin <branch>` (set upstream on first push), then create the PR via the GitHub MCP server (`github_create_pull_request`, owner `jame-dev13`, repo `GymAppViewReact`, base `main`).
+
+### PR description structure
+
+The PR body must be clear and split into concrete sections:
+
+- **Description** — what this PR introduces / its purpose.
+- **Main Changes** — the most relevant, substantive changes made.
+- **Minimal Changes** — minor edits only: formatting, typos, style tweaks, whitespace, etc.
+- **Notes** — future improvements, key decisions, only related with the application product.
+
+> **Important:** if the PR does **not** contain several distinct changes, collapse `Main Changes` + `Minimal Changes` into a single section called **`Changes`** instead.

@@ -7,10 +7,10 @@ import com.jame.dev.gymApp.features.subscription.application.contract.Subscripti
 import com.jame.dev.gymApp.features.subscription.application.service.mutation.RenewSubscriptionUseCaseService;
 import com.jame.dev.gymApp.features.subscription.application.support.validator.SubscriptionValidator;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
-import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.MembershipEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
-import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +34,7 @@ class RenewSubscriptionUseCaseServiceTest {
     private SubscriptionValidator validator;
 
     @Mock
-    private PricingRepository pricingRepository;
+    private MembershipRepository membershipRepository;
 
     @Mock
     private SubscriptionUpdater subscriptionUpdater;
@@ -54,13 +54,13 @@ class RenewSubscriptionUseCaseServiceTest {
     @DisplayName("Should renew subscription and return SubscriptionResponse")
     void renew_renewsAndReturnsResponse() {
         var subscription = mock(SubscriptionEntity.class);
-        var pricing = mock(PricingEntity.class);
+        var membership = mock(MembershipEntity.class);
         var renewedEntity = mock(SubscriptionEntity.class);
         var response = mock(SubscriptionResponse.class);
 
         given(validator.validateOnRenew(anyLong(), any(SubscriptionRequest.class))).willReturn(subscription);
-        given(pricingRepository.findByMemberShipEntity_Membership(any(Membership.class))).willReturn(Optional.of(pricing));
-        willDoNothing().given(subscriptionUpdater).applyRenew(any(SubscriptionEntity.class), any(PricingEntity.class));
+        given(membershipRepository.findByMembership(any(Membership.class))).willReturn(Optional.of(membership));
+        willDoNothing().given(subscriptionUpdater).applyRenew(any(SubscriptionEntity.class), any(MembershipEntity.class));
         given(subscriptionMutationRepository.save(any(SubscriptionEntity.class))).willReturn(renewedEntity);
         given(subscriptionFactory.createFromEntity(any(SubscriptionEntity.class))).willReturn(response);
 
@@ -68,10 +68,10 @@ class RenewSubscriptionUseCaseServiceTest {
 
         assertNotNull(result);
         verify(validator).validateOnRenew(anyLong(), any(SubscriptionRequest.class));
-        verify(pricingRepository).findByMemberShipEntity_Membership(any(Membership.class));
-        verify(subscriptionUpdater).applyRenew(any(SubscriptionEntity.class), any(PricingEntity.class));
+        verify(membershipRepository).findByMembership(any(Membership.class));
+        verify(subscriptionUpdater).applyRenew(any(SubscriptionEntity.class), any(MembershipEntity.class));
         verify(subscriptionMutationRepository).save(any(SubscriptionEntity.class));
         verify(subscriptionFactory).createFromEntity(any(SubscriptionEntity.class));
-        verifyNoMoreInteractions(validator, pricingRepository, subscriptionUpdater, subscriptionMutationRepository, subscriptionFactory);
+        verifyNoMoreInteractions(validator, membershipRepository, subscriptionUpdater, subscriptionMutationRepository, subscriptionFactory);
     }
 }

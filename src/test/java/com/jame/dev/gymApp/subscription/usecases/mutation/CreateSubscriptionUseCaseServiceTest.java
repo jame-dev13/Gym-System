@@ -9,13 +9,13 @@ import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionRespon
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
 import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionFactoryDtoInput;
 import com.jame.dev.gymApp.features.subscription.application.service.mutation.CreateSubscriptionUseCaseService;
-import com.jame.dev.gymApp.features.subscription.domain.exception.PricingNotFoundException;
+import com.jame.dev.gymApp.domain.exception.NotFoundException;
 import com.jame.dev.gymApp.features.subscription.domain.model.Membership;
-import com.jame.dev.gymApp.features.subscription.domain.model.PricingEntity;
+import com.jame.dev.gymApp.features.subscription.domain.model.MembershipEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionMutationRepository;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionValidationRepository;
-import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.PricingRepository;
+import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.MembershipRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +41,7 @@ class CreateSubscriptionUseCaseServiceTest {
     private CustomerQueryRepository customerQueryRepository;
 
     @Mock
-    private PricingRepository pricingRepository;
+    private MembershipRepository membershipRepository;
 
     @Mock
     private SubscriptionValidationRepository subscriptionValidationRepository;
@@ -58,14 +58,14 @@ class CreateSubscriptionUseCaseServiceTest {
     @DisplayName("Should create and return SubscriptionResponse when all validations pass")
     void create_createsAndReturnsResponse() {
         var customer = mock(CustomerEntity.class);
-        var pricing = mock(PricingEntity.class);
+        var membership = mock(MembershipEntity.class);
         var entity = mock(SubscriptionEntity.class);
         var savedEntity = mock(SubscriptionEntity.class);
         var response = mock(SubscriptionResponse.class);
 
         given(customerQueryRepository.findByUserEmail(anyString())).willReturn(Optional.of(customer));
         given(subscriptionValidationRepository.existsByCustomer(any(CustomerEntity.class))).willReturn(false);
-        given(pricingRepository.findByMemberShipEntity_Membership(any(Membership.class))).willReturn(Optional.of(pricing));
+        given(membershipRepository.findByMembership(any(Membership.class))).willReturn(Optional.of(membership));
         given(subscriptionFactory.createFromInput(any(SubscriptionFactoryDtoInput.class))).willReturn(entity);
         given(subscriptionMutationRepository.save(any(SubscriptionEntity.class))).willReturn(savedEntity);
         given(subscriptionFactory.createFromEntity(any(SubscriptionEntity.class))).willReturn(response);
@@ -75,11 +75,11 @@ class CreateSubscriptionUseCaseServiceTest {
         assertNotNull(result);
         verify(customerQueryRepository).findByUserEmail(anyString());
         verify(subscriptionValidationRepository).existsByCustomer(any(CustomerEntity.class));
-        verify(pricingRepository).findByMemberShipEntity_Membership(any(Membership.class));
+        verify(membershipRepository).findByMembership(any(Membership.class));
         verify(subscriptionFactory).createFromInput(any(SubscriptionFactoryDtoInput.class));
         verify(subscriptionMutationRepository).save(any(SubscriptionEntity.class));
         verify(subscriptionFactory).createFromEntity(any(SubscriptionEntity.class));
-        verifyNoMoreInteractions(subscriptionMutationRepository, customerQueryRepository, pricingRepository, subscriptionValidationRepository, subscriptionFactory);
+        verifyNoMoreInteractions(subscriptionMutationRepository, customerQueryRepository, membershipRepository, subscriptionValidationRepository, subscriptionFactory);
     }
 
     @Test
@@ -90,7 +90,7 @@ class CreateSubscriptionUseCaseServiceTest {
         assertThrows(CustomerNotFoundException.class, () -> service.create(request));
 
         verify(customerQueryRepository).findByUserEmail(anyString());
-        verifyNoInteractions(subscriptionMutationRepository, pricingRepository, subscriptionValidationRepository, subscriptionFactory);
+        verifyNoInteractions(subscriptionMutationRepository, membershipRepository, subscriptionValidationRepository, subscriptionFactory);
     }
 
     @Test
@@ -104,22 +104,22 @@ class CreateSubscriptionUseCaseServiceTest {
 
         verify(customerQueryRepository).findByUserEmail(anyString());
         verify(subscriptionValidationRepository).existsByCustomer(any(CustomerEntity.class));
-        verifyNoInteractions(subscriptionMutationRepository, pricingRepository, subscriptionFactory);
+        verifyNoInteractions(subscriptionMutationRepository, membershipRepository, subscriptionFactory);
     }
 
     @Test
-    @DisplayName("Should throw PricingNotFoundException when pricing not found")
-    void create_whenPricingNotFound_throwsException() {
+    @DisplayName("Should throw NotFoundException when membership not found")
+    void create_whenMembershipNotFound_throwsException() {
         var customer = mock(CustomerEntity.class);
         given(customerQueryRepository.findByUserEmail(anyString())).willReturn(Optional.of(customer));
         given(subscriptionValidationRepository.existsByCustomer(any(CustomerEntity.class))).willReturn(false);
-        given(pricingRepository.findByMemberShipEntity_Membership(any(Membership.class))).willReturn(Optional.empty());
+        given(membershipRepository.findByMembership(any(Membership.class))).willReturn(Optional.empty());
 
-        assertThrows(PricingNotFoundException.class, () -> service.create(request));
+        assertThrows(NotFoundException.class, () -> service.create(request));
 
         verify(customerQueryRepository).findByUserEmail(anyString());
         verify(subscriptionValidationRepository).existsByCustomer(any(CustomerEntity.class));
-        verify(pricingRepository).findByMemberShipEntity_Membership(any(Membership.class));
+        verify(membershipRepository).findByMembership(any(Membership.class));
         verifyNoInteractions(subscriptionMutationRepository, subscriptionFactory);
     }
 }
