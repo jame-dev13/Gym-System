@@ -1,9 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.application.service.mutation.current;
 
 import com.jame.dev.gymApp.domain.exception.NotFoundException;
-import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
-import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
-import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionCurrentRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
@@ -35,12 +32,6 @@ public class RenewCurrentSubscriptionUseCaseService implements RenewCurrentSubsc
    @Override
    @Transactional
    @EvictCurrentOnUpdateSub
-   @AuditLog(
-      action = AuditLogAction.UPDATE,
-      entityType = AuditLogEntityType.SUBSCRIPTION,
-      input = "#principal",
-      result = "#result"
-   )
    public SubscriptionResponse renew(AuthPrincipal principal, SubscriptionCurrentRequest request) {
       final String username = principal.username();
       final var subscription = subscriptionQueryRepository.findByCustomerEmail(username)
