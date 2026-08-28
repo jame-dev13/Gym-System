@@ -1,9 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.application.service.mutation.current;
 
 import com.jame.dev.gymApp.domain.exception.NotFoundException;
-import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
-import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
-import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
@@ -37,13 +34,6 @@ public class CreateCurrentSubscriptionUseCaseService implements CreateCurrentSub
    @Override
    @Transactional
    @EvictSubsOnSave
-   @AuditLog(
-      action = AuditLogAction.INSERT,
-      entityType = AuditLogEntityType.SUBSCRIPTION,
-      input = "#principal",
-      entityId = "#result.id",
-      result = "#result"
-   )
    public SubscriptionResponse create(AuthPrincipal principal, SubscriptionCurrentRequest request) {
       final String username = principal.username();
       final CustomerEntity customer = customerQueryRepository.findByUserEmail(username)

@@ -1,9 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 
 import com.jame.dev.gymApp.domain.exception.NotFoundException;
-import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
-import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
-import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.subscription.api.request.SubscriptionRequest;
 import com.jame.dev.gymApp.features.subscription.api.response.SubscriptionResponse;
 import com.jame.dev.gymApp.features.subscription.application.contract.SubscriptionFactory;
@@ -33,13 +30,6 @@ public class RenewSubscriptionUseCaseService implements RenewSubscriptionUseCase
     @Override
     @Transactional
     @EvictSubsOnUpdate
-    @AuditLog(
-        action = AuditLogAction.UPDATE,
-        entityType = AuditLogEntityType.SUBSCRIPTION,
-        input = "#input",
-        entityId = "#id",
-        result = "#result"
-    )
     public SubscriptionResponse renew(long id, SubscriptionRequest input) {
         final SubscriptionEntity subscriptionEntity = validator.validateOnRenew(id, input);
 

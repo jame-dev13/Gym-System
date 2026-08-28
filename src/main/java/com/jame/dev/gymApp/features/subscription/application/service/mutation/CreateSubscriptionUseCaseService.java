@@ -1,9 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.application.service.mutation;
 
 import com.jame.dev.gymApp.domain.exception.NotFoundException;
-import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
-import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
-import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
@@ -39,13 +36,6 @@ public class CreateSubscriptionUseCaseService implements CreateSubscriptionUseCa
    @Override
    @Transactional
    @EvictSubsOnSave
-   @AuditLog(
-      action = AuditLogAction.INSERT,
-      entityType = AuditLogEntityType.SUBSCRIPTION,
-      input = "#request",
-      entityId = "#result.id",
-      result = "#result"
-   )
    public SubscriptionResponse create(SubscriptionRequest request) {
       log.info("[HIT]: Create subscription.");
       final CustomerEntity customer = customerQueryRepository.findByUserEmail(request.customerEmail())

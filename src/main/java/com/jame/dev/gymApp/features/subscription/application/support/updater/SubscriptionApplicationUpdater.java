@@ -32,6 +32,6 @@ public class SubscriptionApplicationUpdater implements SubscriptionUpdater {
 
       subscriptionEntity.setMembership(newMembership);
       subscriptionEntity.setSubscriptionPeriods(periods);
-      subscriptionEntity.setStatus(SubscriptionStatus.NOT_PAID);
+      subscriptionEntity.setStatus(SubscriptionStatus.ON_RENEWAL);
    }
 }

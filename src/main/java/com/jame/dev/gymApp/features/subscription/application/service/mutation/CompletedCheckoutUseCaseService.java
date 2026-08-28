@@ -23,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.function.Function;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,6 +35,13 @@ public class CompletedCheckoutUseCaseService implements CompletedCheckoutUseCase
    private final SubscriptionMutationRepository subscriptionMutationRepository;
    private final SubscriptionMutationEventPublisher subscriptionMutationEventPublisher;
    private final SubscriptionMapper subscriptionMapper;
+
+   private final Function<SubscriptionStatus, SubscriptionStatus> subscriptionStatusResolver =
+      status -> switch (status) {
+         case ON_RENEWAL -> SubscriptionStatus.RENEWED;
+         case NOT_PAID -> SubscriptionStatus.PAID;
+         default -> throw new IllegalArgumentException(status + " status unreachable at this point.");
+      };
 
    @Override
    @Transactional
@@ -51,7 +60,8 @@ public class CompletedCheckoutUseCaseService implements CompletedCheckoutUseCase
 
       final PaymentEntity paymentSaved = paymentMutationRepository.save(paymentEntity);
       final SubscriptionEntity subscription = paymentSaved.getSubscription();
-      subscription.setStatus(SubscriptionStatus.PAID);
+      subscription.setStatus(subscriptionStatusResolver.apply(subscription.getStatus()));
+
       final SubscriptionEntity subscriptionSaved = subscriptionMutationRepository.save(subscription);
 
       log.info("Payment status: {}", paymentSaved.getStatus());
