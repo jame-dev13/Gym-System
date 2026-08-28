@@ -29,6 +29,7 @@ public class AuditLogCoordinator {
          final Object result = joinPoint.proceed();
          context.setResult(result);
          blockExecutor.resolverAfterState(action, context);
+         blockExecutor.resolveBindingAction(action, context);
          return result;
       } catch (final Throwable th) {
          context.setTh(th);

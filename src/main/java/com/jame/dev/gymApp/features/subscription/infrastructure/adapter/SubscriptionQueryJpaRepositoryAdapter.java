@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.infrastructure.adapter;
 
+import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionActor;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.SubscriptionRepository;
@@ -45,5 +46,10 @@ public class SubscriptionQueryJpaRepositoryAdapter implements SubscriptionQueryR
    @Override
    public Optional<Long> findIdByCustomerEmail(String email) {
       return subscriptionRepository.findIdByCustomerUserEmail(email);
+   }
+
+   @Override
+   public Optional<SubscriptionActor> findSubscriptionActorById(Long subscriptionId) {
+      return subscriptionRepository.findSubscriptionActorById(subscriptionId);
    }
 }

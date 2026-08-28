@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.features.subscription.domain.repository;
 
+import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionActor;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,4 +22,6 @@ public interface SubscriptionQueryRepository {
    Page<SubscriptionEntity> findAllByCustomerEmail(final String email, final Pageable pageable);
 
    Optional<Long> findIdByCustomerEmail(final String email);
+
+   Optional<SubscriptionActor> findSubscriptionActorById(final Long subscriptionId);
 }
