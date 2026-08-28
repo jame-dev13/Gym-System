@@ -2,6 +2,7 @@ package com.jame.dev.gymApp.features.subscription.infrastructure.persistence;
 
 import com.jame.dev.gymApp.domain.repository.CustomJpaRepository;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
+import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionActor;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
 import lombok.NonNull;
@@ -47,4 +48,16 @@ public interface SubscriptionRepository extends CustomJpaRepository<Subscription
    boolean existsByCustomer_User_Email(final String customerEmail);
 
    boolean existsByCustomer_User_EmailAndStatus(final String customerEmail, final SubscriptionStatus status);
+
+   @Query("""
+      SELECT
+         new com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionActor(
+           u.id, u.email
+         )
+      FROM SubscriptionEntity s
+      JOIN s.customer c
+      JOIN c.user u
+      WHERE s.id = :subscriptionId
+      """)
+   Optional<SubscriptionActor> findSubscriptionActorById(@Param("subscriptionId") final Long subscriptionId);
 }
