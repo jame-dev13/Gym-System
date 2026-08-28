@@ -9,6 +9,7 @@ public record AuditLogInput(
    AuditLogAction auditLogAction,
    AuditLogActor actor,
    AuditPayload payload,
+   AuditLogKind auditLogKind,
    boolean success,
    AuditLogMetadata metadata
 ) {

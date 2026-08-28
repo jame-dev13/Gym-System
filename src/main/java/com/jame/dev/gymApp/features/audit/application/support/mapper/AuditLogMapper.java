@@ -17,6 +17,7 @@ public interface AuditLogMapper extends BaseMapper<AuditLogDocument, AuditLogRes
          .action(auditLogInput.auditLogAction())
          .actor(auditLogInput.actor())
          .payload(auditLogInput.payload())
+         .kind(auditLogInput.auditLogKind())
          .success(auditLogInput.success())
          .metadata(auditLogInput.metadata())
          .build();

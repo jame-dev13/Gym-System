@@ -49,6 +49,9 @@ public class AuditLogDocument {
    @Field("payload")
    private final AuditPayload payload;
 
+   @Field("kind")
+   private final AuditLogKind kind;
+
    @Field("success")
    private final boolean success;
 
