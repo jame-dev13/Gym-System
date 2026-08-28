@@ -6,6 +6,7 @@ import com.jame.dev.gymApp.features.audit.application.dto.AuditLogMetadata;
 import com.jame.dev.gymApp.features.audit.application.model.AuditExecutionContext;
 import com.jame.dev.gymApp.features.audit.application.support.helper.ExtractAuditLogActorHelper;
 import com.jame.dev.gymApp.features.audit.application.support.helper.ExtractAuditLogMetadataHelper;
+import com.jame.dev.gymApp.features.audit.application.support.resolver.AuditLogKindResolver;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogErrorPayload;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogInput;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditPayload;
@@ -21,8 +22,10 @@ public class AuditLogInputFactory {
    private final ExtractAuditLogActorHelper extractAuditLogActorHelper;
    private final AuditLogEntityFactory entityFactory;
    private final AuditLogPayloadFactory auditPayloadFactory;
+   private final AuditLogKindResolver auditLogKindResolver;
 
    public AuditLogInput create(AuditExecutionContext context) {
+      auditLogKindResolver.resolveKindForContext(context);
       final var ACTION = context.getAnnotation().action();
       final AuditLogEntity entity = entityFactory.from(context);
       final AuditLogActor actor = extractAuditLogActorHelper.extractLogActor(context);
@@ -33,6 +36,7 @@ public class AuditLogInputFactory {
          .auditLogAction(ACTION)
          .actor(actor)
          .payload(payload)
+         .auditLogKind(context.getKind())
          .success(context.getTh() == null)
          .metadata(metadata)
          .build();
