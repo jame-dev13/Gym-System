@@ -60,8 +60,14 @@ public class AuditLogDocument {
 
    @Field("created_at")
    @Indexed(direction = IndexDirection.DESCENDING)
-   @Builder.Default
-   private final Instant createdAt = Instant.now();
+   private final Instant createdAt;
+
+   @Field("expires_at")
+   @Indexed(
+      name = "audit_log_ttl_idx",
+      expireAfter = "0s"
+   )
+   private final Instant expiresAt;
 
    @Override
    public boolean equals(Object o) {
