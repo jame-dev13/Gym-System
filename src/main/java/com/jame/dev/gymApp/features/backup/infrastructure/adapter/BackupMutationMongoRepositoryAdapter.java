@@ -6,6 +6,8 @@ import com.jame.dev.gymApp.features.backup.infrastructure.persistence.BackupRepo
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.UUID;
+
 @Repository("mongoMutationBackupRepository")
 @RequiredArgsConstructor
 public class BackupMutationMongoRepositoryAdapter implements BackupMutationRepository {
@@ -14,5 +16,10 @@ public class BackupMutationMongoRepositoryAdapter implements BackupMutationRepos
    @Override
    public BackupDocument save(BackupDocument backupDocument) {
       return backupRepository.save(backupDocument);
+   }
+
+   @Override
+   public void deleteBackupById(UUID uuid) {
+      backupRepository.deleteById(uuid);
    }
 }

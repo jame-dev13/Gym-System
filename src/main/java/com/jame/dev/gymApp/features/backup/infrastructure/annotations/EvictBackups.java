@@ -8,7 +8,6 @@ import java.lang.annotation.*;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@Inherited
 @Documented
 @Caching(
    evict = @CacheEvict(value = CacheBackupValues.CACHE_BACKUP, allEntries = true)
