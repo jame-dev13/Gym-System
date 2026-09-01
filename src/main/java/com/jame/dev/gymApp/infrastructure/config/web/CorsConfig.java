@@ -3,6 +3,7 @@ package com.jame.dev.gymApp.infrastructure.config.web;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -39,6 +40,7 @@ public class CorsConfig {
       cors.setAllowedOrigins(origins);
       cors.setAllowedMethods(ALLOWED_METHODS);
       cors.setAllowedHeaders(ALLOWED_HEADERS);
+      cors.setExposedHeaders(List.of(HttpHeaders.CONTENT_DISPOSITION));
       cors.setAllowCredentials(true);
       cors.setMaxAge(3600L);
 
