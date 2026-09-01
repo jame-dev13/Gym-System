@@ -18,8 +18,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.data.redis.cache.BatchStrategies;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
@@ -105,7 +107,9 @@ public class RedisConfig {
          .entryTtl(Duration.ofMinutes(5))
          .disableCachingNullValues();
 
-      return RedisCacheManager.builder(connectionFactory)
+      return RedisCacheManager.builder(
+            RedisCacheWriter.nonLockingRedisCacheWriter(connectionFactory, BatchStrategies.scan(1_000))
+         )
          .cacheDefaults(config)
          .build();
    }

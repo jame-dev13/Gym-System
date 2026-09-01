@@ -10,6 +10,7 @@ import com.jame.dev.gymApp.features.backup.domain.repository.BackupRestoreExecut
 import com.jame.dev.gymApp.features.backup.infrastructure.listener.BackupFailureListener;
 import com.jame.dev.gymApp.features.backup.infrastructure.listener.BackupSuccessListener;
 import com.jame.dev.gymApp.features.backup.infrastructure.path.PathService;
+import com.jame.dev.gymApp.infrastructure.cache.CacheEvictionManager;
 import com.jame.dev.gymApp.infrastructure.security.hash.HashExecutor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class RestoreBackupDatabaseUseCaseService implements RestoreBackupDatabas
    private final BackupRestoreExecutor pgBackupRestoreRepository;
    private final HashExecutor hashExecutor;
    private final PathService pathService;
+   private final CacheEvictionManager cacheEvictionManager;
 
    @Override
    public void restore(final UUID backupId) {
@@ -34,6 +36,7 @@ public class RestoreBackupDatabaseUseCaseService implements RestoreBackupDatabas
       final BackupSuccessListener onSuccess = () -> {
          backupDocument.setBackupStatus(BackupStatus.RESTORED);
          backupMutationRepository.save(backupDocument);
+         cacheEvictionManager.evictApplicationCaches();
       };
 
       final BackupFailureListener onFailure = () -> {
