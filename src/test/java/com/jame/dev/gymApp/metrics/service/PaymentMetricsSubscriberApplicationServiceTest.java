@@ -1,11 +1,11 @@
 package com.jame.dev.gymApp.metrics.service;
 
+import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
 import com.jame.dev.gymApp.features.metrics.api.response.AnnualResumeResponse;
 import com.jame.dev.gymApp.features.metrics.api.response.InvestmentMonthEvolutionResponse;
 import com.jame.dev.gymApp.features.metrics.application.service.PaymentMetricsSubscriberApplicationService;
 import com.jame.dev.gymApp.features.metrics.domain.model.MonthTotal;
 import com.jame.dev.gymApp.features.metrics.domain.repository.PaymentMetricsRepository;
-import com.jame.dev.gymApp.features.auth.infrastructure.security.identity.IdentityExtractorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +14,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -34,14 +33,11 @@ public class PaymentMetricsSubscriberApplicationServiceTest {
 
    private static final String SUBJECT = "user@mail.com";
 
+   private final UserPrincipal principal = new UserPrincipal(
+      1L, SUBJECT, "password", List.<GrantedAuthority>of());
+
    @Mock
    private PaymentMetricsRepository paymentMetricsRepository;
-
-   @Mock
-   private IdentityExtractorService identityExtractorService;
-
-   @Mock
-   private Authentication authentication;
 
    @InjectMocks
    private PaymentMetricsSubscriberApplicationService service;
@@ -55,14 +51,12 @@ public class PaymentMetricsSubscriberApplicationServiceTest {
       final AnnualResumeResponse expected = new AnnualResumeResponse(
          12L, BigDecimal.valueOf(15_000d), BigDecimal.valueOf(1_250d), 8L, 4L);
 
-      when(identityExtractorService.extract(authentication)).thenReturn(SUBJECT);
       when(paymentMetricsRepository.calculateAnnualResume(SUBJECT)).thenReturn(expected);
 
-      final AnnualResumeResponse result = service.getAnnualResume(authentication);
+      final AnnualResumeResponse result = service.getAnnualResume(principal);
 
-      verify(identityExtractorService, times(1)).extract(authentication);
-      verify(paymentMetricsRepository, times(1)).calculateAnnualResume(subjectCaptor.capture());
-      verifyNoMoreInteractions(paymentMetricsRepository, identityExtractorService);
+      verify(paymentMetricsRepository).calculateAnnualResume(subjectCaptor.capture());
+      verifyNoMoreInteractions(paymentMetricsRepository);
 
       assertEquals(SUBJECT, subjectCaptor.getValue(), "Repo should be called with the extracted subject");
       assertNotNull(result, "Result should not be null");
@@ -71,32 +65,28 @@ public class PaymentMetricsSubscriberApplicationServiceTest {
    @Test
    @DisplayName("Should return null when the repo has no annual resume data")
    void getAnnualResume_whenRepoReturnsNull() {
-      when(identityExtractorService.extract(authentication)).thenReturn(SUBJECT);
       when(paymentMetricsRepository.calculateAnnualResume(SUBJECT)).thenReturn(null);
 
-      final AnnualResumeResponse result = service.getAnnualResume(authentication);
+      final AnnualResumeResponse result = service.getAnnualResume(principal);
 
-      verify(identityExtractorService, times(1)).extract(authentication);
-      verify(paymentMetricsRepository, times(1)).calculateAnnualResume(SUBJECT);
-      verifyNoMoreInteractions(paymentMetricsRepository, identityExtractorService);
+      verify(paymentMetricsRepository).calculateAnnualResume(SUBJECT);
+      verifyNoMoreInteractions(paymentMetricsRepository);
 
       assertNull(result, "Result should be null when the repo returns null");
    }
 
    @Test
-   @DisplayName("Should forward the subject extracted from the authentication to the repo")
+   @DisplayName("Should forward the subject extracted from the principal to the repo")
    void getAnnualResume_subjectForwarded() {
-      when(identityExtractorService.extract(authentication)).thenReturn(SUBJECT);
       when(paymentMetricsRepository.calculateAnnualResume(any(String.class)))
          .thenReturn(new AnnualResumeResponse(0L, BigDecimal.ZERO, BigDecimal.ZERO, 0L, 0L));
 
-      final AnnualResumeResponse result = service.getAnnualResume(authentication);
+      final AnnualResumeResponse result = service.getAnnualResume(principal);
 
-      verify(identityExtractorService, times(1)).extract(authentication);
-      verify(paymentMetricsRepository, times(1)).calculateAnnualResume(subjectCaptor.capture());
-      verifyNoMoreInteractions(paymentMetricsRepository, identityExtractorService);
+      verify(paymentMetricsRepository).calculateAnnualResume(subjectCaptor.capture());
+      verifyNoMoreInteractions(paymentMetricsRepository);
 
-      assertEquals(SUBJECT, subjectCaptor.getValue(), "Subject passed to the repo should match the extracted one");
+      assertEquals(SUBJECT, subjectCaptor.getValue(), "Subject passed to the repo should match the principal username");
       assertNotNull(result, "Result should not be null");
    }
 
@@ -107,14 +97,12 @@ public class PaymentMetricsSubscriberApplicationServiceTest {
          new MonthTotal("Jan", BigDecimal.valueOf(1_000d)),
          new MonthTotal("Feb", BigDecimal.valueOf(2_000d)));
 
-      when(identityExtractorService.extract(authentication)).thenReturn(SUBJECT);
       when(paymentMetricsRepository.calculatePaymentEvolutionAlongMonths(SUBJECT)).thenReturn(months);
 
-      final InvestmentMonthEvolutionResponse result = service.getInvestmentMonthEvolution(authentication);
+      final InvestmentMonthEvolutionResponse result = service.getInvestmentMonthEvolution(principal);
 
-      verify(identityExtractorService, times(1)).extract(authentication);
-      verify(paymentMetricsRepository, times(1)).calculatePaymentEvolutionAlongMonths(subjectCaptor.capture());
-      verifyNoMoreInteractions(paymentMetricsRepository, identityExtractorService);
+      verify(paymentMetricsRepository).calculatePaymentEvolutionAlongMonths(subjectCaptor.capture());
+      verifyNoMoreInteractions(paymentMetricsRepository);
 
       assertEquals(SUBJECT, subjectCaptor.getValue(), "Repo should be called with the extracted subject");
       assertNotNull(result, "Response should not be null");
@@ -125,14 +113,12 @@ public class PaymentMetricsSubscriberApplicationServiceTest {
    @Test
    @DisplayName("Should return a response with empty content when there are no payments")
    void getInvestmentMonthEvolution_whenNoPayments() {
-      when(identityExtractorService.extract(authentication)).thenReturn(SUBJECT);
       when(paymentMetricsRepository.calculatePaymentEvolutionAlongMonths(SUBJECT)).thenReturn(List.of());
 
-      final InvestmentMonthEvolutionResponse result = service.getInvestmentMonthEvolution(authentication);
+      final InvestmentMonthEvolutionResponse result = service.getInvestmentMonthEvolution(principal);
 
-      verify(identityExtractorService, times(1)).extract(authentication);
-      verify(paymentMetricsRepository, times(1)).calculatePaymentEvolutionAlongMonths(SUBJECT);
-      verifyNoMoreInteractions(paymentMetricsRepository, identityExtractorService);
+      verify(paymentMetricsRepository).calculatePaymentEvolutionAlongMonths(SUBJECT);
+      verifyNoMoreInteractions(paymentMetricsRepository);
 
       assertNotNull(result, "Response should not be null");
       assertNotNull(result.content(), "Content should not be null");
@@ -142,14 +128,12 @@ public class PaymentMetricsSubscriberApplicationServiceTest {
    @Test
    @DisplayName("Should return a response with null content when the repo returns null")
    void getInvestmentMonthEvolution_whenRepoReturnsNull() {
-      when(identityExtractorService.extract(authentication)).thenReturn(SUBJECT);
       when(paymentMetricsRepository.calculatePaymentEvolutionAlongMonths(SUBJECT)).thenReturn(null);
 
-      final InvestmentMonthEvolutionResponse result = service.getInvestmentMonthEvolution(authentication);
+      final InvestmentMonthEvolutionResponse result = service.getInvestmentMonthEvolution(principal);
 
-      verify(identityExtractorService, times(1)).extract(authentication);
-      verify(paymentMetricsRepository, times(1)).calculatePaymentEvolutionAlongMonths(SUBJECT);
-      verifyNoMoreInteractions(paymentMetricsRepository, identityExtractorService);
+      verify(paymentMetricsRepository).calculatePaymentEvolutionAlongMonths(SUBJECT);
+      verifyNoMoreInteractions(paymentMetricsRepository);
 
       assertNotNull(result, "Response should not be null");
       assertNull(result.content(), "Content should be null when the repo returns null");

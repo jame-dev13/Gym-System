@@ -38,6 +38,7 @@ public class BackupController {
    private final GetBackupByIdUseCase getBackupByIdUseCase;
    private final RestoreBackupDatabaseUseCase restoreBackupDatabaseUseCase;
    private final GetBackupDumpFileUseCase getBackupDumpFileUseCase;
+   private final DeleteBackupByIdUseCase deleteBackupByIdUseCase;
    private final BackupRateLimiter backupRateLimiter;
 
    @GetMapping
@@ -92,5 +93,13 @@ public class BackupController {
    ) {
       restoreBackupDatabaseUseCase.restore(uuid);
       return ResponseEntity.accepted().build();
+   }
+
+   @DeleteMapping("/{id}")
+   public ResponseEntity<Void> deleteBackup(
+      @PathVariable("id") final UUID uuid
+   ) {
+      deleteBackupByIdUseCase.deleteById(uuid);
+      return ResponseEntity.noContent().build();
    }
 }
