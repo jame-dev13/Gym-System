@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.features.subscription.infrastructure.adapter;
 
 import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionActor;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEndingNotification;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.repository.SubscriptionQueryRepository;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.SubscriptionRepository;
@@ -51,5 +52,10 @@ public class SubscriptionQueryJpaRepositoryAdapter implements SubscriptionQueryR
    @Override
    public Optional<SubscriptionActor> findSubscriptionActorById(Long subscriptionId) {
       return subscriptionRepository.findSubscriptionActorById(subscriptionId);
+   }
+
+   @Override
+   public List<SubscriptionEndingNotification> findAllSubscriptionEndings() {
+      return subscriptionRepository.findSubscriptionEndings();
    }
 }

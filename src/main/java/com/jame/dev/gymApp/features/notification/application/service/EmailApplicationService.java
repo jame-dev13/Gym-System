@@ -25,12 +25,12 @@ public class EmailApplicationService implements EmailService {
    private String sender;
 
    @Override
-   @Async("taskExecutor")
+   @Async("mailExecutor")
    public CompletableFuture<Boolean> sendSimpleEmail(@NonNull EmailDetails emailDetails) {
       final MimeMessage message = javaMailSender.createMimeMessage();
-      MimeMessageHelper mime;
+
       try {
-         mime = new MimeMessageHelper(message, true, "UTF-8");
+         final MimeMessageHelper mime = new MimeMessageHelper(message, true, "UTF-8");
          message.setFrom(sender);
          mime.setTo(emailDetails.recipient());
          mime.setSubject(emailDetails.subject());
