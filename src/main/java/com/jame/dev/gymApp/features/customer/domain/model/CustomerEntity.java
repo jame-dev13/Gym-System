@@ -2,14 +2,18 @@ package com.jame.dev.gymApp.features.customer.domain.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.jame.dev.gymApp.domain.model.BaseEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,22 +25,27 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "customers", indexes = {
-   @Index(name = "idx_customer_user_id_unq", columnList = "user_id", unique = true),
    @Index(name = "idx_customer_pagination_id_active", columnList = "id, active")
 })
 @SQLDelete(sql = "UPDATE customers SET active = false, deleted_at = NOW() WHERE id = ?")
-public class CustomerEntity extends BaseEntity {
+@SQLRestriction("active = true")
+@EntityListeners(AuditingEntityListener.class)
+public class CustomerEntity {
 
+   @Id
+   @Setter(AccessLevel.NONE)
+   private Long id;
+
+   @MapsId
    @OneToOne(fetch = FetchType.LAZY,
       optional = false,
       cascade = {CascadeType.REFRESH, CascadeType.MERGE})
    @JoinColumn(
-      name = "user_id",
+      name = "id",
       nullable = false,
-      unique = true,
       foreignKey = @ForeignKey(
          name = "fk_customer_user_id",
-         foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+         foreignKeyDefinition = "FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE"
       ))
    @ToString.Exclude
    @NonNull
@@ -45,6 +54,21 @@ public class CustomerEntity extends BaseEntity {
    @Nullable
    @Column(name = "contact", length = 15)
    private String phoneContact;
+
+   @Column(name = "created_at", updatable = false, nullable = false)
+   @CreatedDate
+   protected Instant createdAt;
+
+   @Column(name = "updated_at")
+   @LastModifiedDate
+   protected Instant updatedAt;
+
+   @Column(name = "deleted_at")
+   protected Instant deletedAt;
+
+   @Column(name = "active", nullable = false)
+   @Builder.Default
+   protected boolean active = true;
 
    @OneToMany(
       mappedBy = "customer",

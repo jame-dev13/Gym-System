@@ -18,6 +18,6 @@ public class UserRecoveredListener {
    @EventListener(UserRecoveredEvent.class)
    @Async("taskExecutor")
    public void recoverCustomerAssociated(final UserRecoveredEvent event) {
-      customerRepository.activateCustomerByUserId(event.userId());
+      customerRepository.activateCustomerById(event.userId());
    }
 }

@@ -28,7 +28,7 @@ public interface PaymentRepository extends CustomJpaRepository<PaymentEntity, Lo
       INNER JOIN customers c
             ON c.id = p.customer_id
       INNER JOIN users u
-            ON u.id = c.user_id
+            ON u.id = c.id
       WHERE u.email = :userEmail AND
       (
         :search IS NULL OR TRIM(:search) = '' OR
@@ -44,7 +44,7 @@ public interface PaymentRepository extends CustomJpaRepository<PaymentEntity, Lo
             INNER JOIN customers c
                ON c.id = p.customer_id
             INNER JOIN users u
-               ON u.id = c.user_id
+               ON u.id = c.id
             WHERE u.email = :userEmail AND
                (
                  :search IS NULL OR TRIM(:search) = '' OR

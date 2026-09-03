@@ -28,7 +28,7 @@ public class CustomerValidator {
          throw new AlreadyExistsException("Customer Already exists.");
       }
 
-      if(customerRepository.existsByUserIdAndActiveFalse(user.getId())) {
+      if(customerRepository.existsByIdAndActiveFalse(user.getId())) {
          throw new NoActiveException("Account is deactivated.");
       }
 

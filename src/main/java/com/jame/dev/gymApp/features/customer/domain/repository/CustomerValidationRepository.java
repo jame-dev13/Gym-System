@@ -6,7 +6,7 @@ public interface CustomerValidationRepository {
 
    boolean existsByUser(final UserEntity userEntity);
 
-   boolean existByUserIdAndActiveFalse(final long userId);
+   boolean existByIdAndActiveFalse(final long id);
 
    boolean existsByIdAndUserEmail(final long id, final String email);
 
