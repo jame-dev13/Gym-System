@@ -31,7 +31,7 @@ public interface PaymentMetricsRepository extends MetricsRepository<PaymentEntit
       INNER JOIN customers c
             ON c.id = p.customer_id
       INNER JOIN users u
-            ON u.id = c.user_id
+            ON u.id = c.id
       WHERE
           u.email = :subject AND
           p.created_at >= DATE_TRUNC('year', CURRENT_DATE) AND
@@ -67,7 +67,7 @@ public interface PaymentMetricsRepository extends MetricsRepository<PaymentEntit
                     SELECT 1
                     FROM customers c
                     INNER JOIN users u
-                          ON u.id = c.user_id
+                          ON u.id = c.id
                     WHERE
                         p.customer_id = c.id AND u.email = :subject
                 )

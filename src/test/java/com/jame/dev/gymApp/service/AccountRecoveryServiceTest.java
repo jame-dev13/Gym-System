@@ -65,8 +65,8 @@ public class AccountRecoveryServiceTest {
               .willReturn(Optional.of(userEntity));
       given(roleMapper.toEntitySet(any(), any()))
               .willReturn(Set.of(roleEntity));
-      given(customerRepository.existsDeactivatedByUserId(anyLong())).willReturn(true);
-      given(customerRepository.findDeactivatedByUserId(anyLong()))
+      given(customerRepository.existsDeactivatedById(anyLong())).willReturn(true);
+      given(customerRepository.findDeactivatedById(anyLong()))
               .willReturn(Optional.of(customerEntity));
       assertDoesNotThrow(
               () -> accountRecoveryService.reActivateUserAccount("any@mail.com", "ABC123")
@@ -76,8 +76,8 @@ public class AccountRecoveryServiceTest {
       then(passwordEncoder).should(times(1)).matches(anyString(), any());
       then(userRepository).should(times(1)).findByEmail(anyString());
       then(roleMapper).should(times(1)).toEntitySet(any(), any());
-      then(customerRepository).should(times(1)).existsDeactivatedByUserId(anyLong());
-      then(customerRepository).should(times(1)).findDeactivatedByUserId(anyLong());
+      then(customerRepository).should(times(1)).existsDeactivatedById(anyLong());
+      then(customerRepository).should(times(1)).findDeactivatedById(anyLong());
       verifyNoMoreInteractions(verificationRepository, passwordEncoder, userRepository, roleMapper, customerRepository);
    }
 
@@ -94,7 +94,7 @@ public class AccountRecoveryServiceTest {
       given(passwordEncoder.matches(anyString(), any())).willReturn(true);
       given(userRepository.findByEmail(anyString()))
               .willReturn(Optional.of(user));
-      given(customerRepository.existsDeactivatedByUserId(anyLong())).willReturn(false);
+      given(customerRepository.existsDeactivatedById(anyLong())).willReturn(false);
 
       assertDoesNotThrow(
               () -> accountRecoveryService.reActivateUserAccount(email, "ABC123")
@@ -103,7 +103,7 @@ public class AccountRecoveryServiceTest {
       then(verificationRepository).should(times(1)).findDeactivatedByUser_Email(anyString());
       then(passwordEncoder).should(times(1)).matches(anyString(), any());
       then(userRepository).should(times(1)).findByEmail(anyString());
-      then(customerRepository).should(times(1)).existsDeactivatedByUserId(anyLong());
+      then(customerRepository).should(times(1)).existsDeactivatedById(anyLong());
       verifyNoMoreInteractions(verificationRepository, passwordEncoder, userRepository, customerRepository);
    }
 
@@ -121,9 +121,9 @@ public class AccountRecoveryServiceTest {
       given(userRepository.findByEmail(anyString()))
               .willReturn(Optional.of(user));
       given(user.isActive()).willReturn(true);
-      given(customerRepository.existsDeactivatedByUserId(anyLong()))
+      given(customerRepository.existsDeactivatedById(anyLong()))
               .willReturn(true);
-      given(customerRepository.findDeactivatedByUserId(anyLong()))
+      given(customerRepository.findDeactivatedById(anyLong()))
               .willReturn(Optional.of(customer));
 
       assertDoesNotThrow(() -> accountRecoveryService.reActivateUserAccount("any@mail.com", "TOKEN"));
@@ -131,8 +131,8 @@ public class AccountRecoveryServiceTest {
       then(verificationRepository).should(times(1)).findDeactivatedByUser_Email(anyString());
       then(passwordEncoder).should(times(1)).matches(anyString(), any());
       then(userRepository).should(times(1)).findByEmail(anyString());
-      then(customerRepository).should(times(1)).existsDeactivatedByUserId(anyLong());
-      then(customerRepository).should(times(1)).findDeactivatedByUserId(anyLong());
+      then(customerRepository).should(times(1)).existsDeactivatedById(anyLong());
+      then(customerRepository).should(times(1)).findDeactivatedById(anyLong());
 
       verifyNoMoreInteractions(userRepository, customerRepository);
    }

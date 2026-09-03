@@ -13,15 +13,10 @@ import java.util.Optional;
 public interface CustomerRepository extends CustomJpaRepository<CustomerEntity, Long> {
    Optional<CustomerEntity> findByUser_Email(final String email);
 
-   @Query(nativeQuery = true, value = """
-      SELECT c.* FROM customers c WHERE c.user_id = :userId
-      """)
-   Optional<CustomerEntity> findDeactivatedByUserId(@Param("userId") final long userId);
-
    @NativeQuery("""
       SELECT c.* FROM customers c
           LEFT JOIN users u
-          ON u.id = c.user_id
+          ON u.id = c.id
           WHERE u.email = :email AND c.active = false
       """)
    Optional<CustomerEntity> findDeactivatedByUserEmail(@Param("email") final String email);
@@ -31,21 +26,21 @@ public interface CustomerRepository extends CustomJpaRepository<CustomerEntity, 
    @Query(nativeQuery = true, value = """
       SELECT EXISTS(
                SELECT 1 FROM customers c
-               WHERE c.user_id = :userId)
+               WHERE c.id = :id)
       """)
-   boolean existsDeactivatedByUserId(@Param("userId") final long userId);
+   boolean existsDeactivatedById(@Param("id") final long id);
 
    @Modifying(clearAutomatically = true, flushAutomatically = true)
    @NativeQuery(value = """
-      UPDATE customers c SET active = true WHERE user_id = :userId
+      UPDATE customers SET active = true WHERE id = :id
       """)
-   void activateByUserId(@Param("userId") long userId);
+   void activateById(@Param("id") long id);
 
    @Modifying(clearAutomatically = true, flushAutomatically = true)
    @NativeQuery("""
       UPDATE customers c SET active = true
       FROM users u
-      WHERE u.id = c.user_id AND u.email = :email
+      WHERE u.id = c.id AND u.email = :email
       """)
    void recoverCustomer(@Param("email") final String email);
 
@@ -55,10 +50,10 @@ public interface CustomerRepository extends CustomJpaRepository<CustomerEntity, 
       """
          SELECT EXISTS(
                  SELECT 1 FROM customers c
-                 WHERE c.user_id = :id AND c.active = false
+                 WHERE c.id = :id AND c.active = false
                )
          """)
-   boolean existsByUserIdAndActiveFalse(@Param("id") final long userId);
+   boolean existsByIdAndActiveFalse(@Param("id") final long id);
 
    @NativeQuery("""
       SELECT c.* FROM customers c
@@ -74,8 +69,6 @@ public interface CustomerRepository extends CustomJpaRepository<CustomerEntity, 
       c.active = false
       """)
    void hardDeleteById(@Param("id") long id);
-
-   void deleteByUser_Id(long userId);
 
    @Query("""
           SELECT c.id

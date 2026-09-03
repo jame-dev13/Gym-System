@@ -60,8 +60,8 @@ public class AccountRecoveryApplicationService implements AccountRecoveryService
 
       final long userId = user.getId();
 
-      if(customerRepository.existsDeactivatedByUserId(userId)) {
-         customerRepository.findDeactivatedByUserId(userId)
+      if(customerRepository.existsDeactivatedById(userId)) {
+         customerRepository.findDeactivatedById(userId)
                  .ifPresent(c -> {
                     if (!c.isActive()) {
                        c.setActive(true);

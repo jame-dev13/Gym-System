@@ -34,7 +34,7 @@ class DeleteCurrentCustomerUseCaseServiceTest {
     void deleteCurrent_deletesByResolvedUserId() {
         assertDoesNotThrow(() -> service.deleteCurrent(principal));
 
-        verify(customerMutationRepository).deleteByUserId(42L);
+        verify(customerMutationRepository).deleteById(42L);
         verifyNoMoreInteractions(customerMutationRepository);
     }
 }

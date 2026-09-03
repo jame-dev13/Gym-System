@@ -27,6 +27,6 @@ public class DeleteCurrentCustomerUseCaseService implements DeleteCurrentCustome
       input = "#principal"
    )
    public void deleteCurrent(AuthPrincipal principal) {
-      mutationRepository.deleteByUserId(principal.id());
+      mutationRepository.deleteById(principal.id());
    }
 }

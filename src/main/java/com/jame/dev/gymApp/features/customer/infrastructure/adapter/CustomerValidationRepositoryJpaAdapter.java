@@ -17,8 +17,8 @@ public class CustomerValidationRepositoryJpaAdapter implements CustomerValidatio
    }
 
    @Override
-   public boolean existByUserIdAndActiveFalse(long userId) {
-      return customerRepository.existsByUserIdAndActiveFalse(userId);
+   public boolean existByIdAndActiveFalse(long id) {
+      return customerRepository.existsByIdAndActiveFalse(id);
    }
 
    @Override
