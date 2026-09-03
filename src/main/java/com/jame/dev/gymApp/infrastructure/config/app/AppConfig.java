@@ -7,6 +7,7 @@ import com.jame.dev.gymApp.application.model.LockProperties;
 import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.auth.infrastructure.auth.AuthenticationUserResolver;
 import com.jame.dev.gymApp.features.backup.domain.model.BackupMapping;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionNotificationConfigData;
 import com.jame.dev.gymApp.infrastructure.properties.SchedulerProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.interceptor.KeyGenerator;
@@ -29,7 +30,7 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 @Configuration
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 @EnableJpaAuditing
-@EnableConfigurationProperties(value = {BackupMapping.class, LockProperties.class, SchedulerProperties.class})
+@EnableConfigurationProperties(value = {BackupMapping.class, LockProperties.class, SchedulerProperties.class, SubscriptionNotificationConfigData.class})
 @EnableScheduling
 public class AppConfig {
 

@@ -1,10 +1,10 @@
 package com.jame.dev.gymApp.features.subscription.infrastructure.notification.template;
 
-import com.jame.dev.gymApp.features.subscription.infrastructure.notification.model.NotifiableSubscription;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEndingNotification;
 
 public class HTMLSubscriptionPeriodTemplate {
 
-   public static String buildTemplateFrom(final NotifiableSubscription ns, long daysUntilEnd) {
+   public static String buildTemplateFrom(final SubscriptionEndingNotification s, long daysUntilEnd) {
       return """
          <!DOCTYPE html>
                   <html lang="en">
@@ -79,10 +79,10 @@ public class HTMLSubscriptionPeriodTemplate {
                   </body>
                   </html>
          """
-         .replace("{{email}}", ns.customerEmail())
-         .replace("{{period}}", ns.period().getPeriod().name())
-         .replace("{{startDate}}", ns.period().getStartPeriod().toString())
-         .replace("{{endDate}}", ns.period().getEndPeriod().toString())
+         .replace("{{email}}", s.subscriberEmail())
+         .replace("{{period}}", s.period().name())
+         .replace("{{startDate}}", s.startDate().toString())
+         .replace("{{endDate}}", s.endingDate().toString())
          .replace("{{daysUntil}}", String.valueOf(daysUntilEnd));
    }
 }

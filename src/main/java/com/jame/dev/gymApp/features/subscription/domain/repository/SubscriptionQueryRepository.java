@@ -1,6 +1,7 @@
 package com.jame.dev.gymApp.features.subscription.domain.repository;
 
 import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionActor;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEndingNotification;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,4 +25,6 @@ public interface SubscriptionQueryRepository {
    Optional<Long> findIdByCustomerEmail(final String email);
 
    Optional<SubscriptionActor> findSubscriptionActorById(final Long subscriptionId);
+
+   List<SubscriptionEndingNotification> findAllSubscriptionEndings();
 }

@@ -9,7 +9,6 @@ import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetB
 import com.jame.dev.gymApp.features.subscription.application.usecases.query.GetPageSubscriptionUseCase;
 import com.jame.dev.gymApp.features.subscription.domain.event.CompletedCheckoutEvent;
 import com.jame.dev.gymApp.features.subscription.domain.model.PaymentPhysicMeta;
-import com.jame.dev.gymApp.features.subscription.infrastructure.notification.service.SubscriptionNotificationAppService;
 import com.jame.dev.gymApp.infrastructure.annotation.Minimum;
 import com.jame.dev.gymApp.infrastructure.annotation.NotNullObject;
 import jakarta.validation.Valid;
@@ -45,7 +44,6 @@ public class SubscriptionAdministrationController {
    private final FinalizeSubscriptionUseCase subscriptionFinalize;
    private final SoftDeleteSubscriptionByIdUseCase subscriptionSoftDelete;
    private final CreatePaymentUseCase createPaymentUseCase;
-   private final SubscriptionNotificationAppService subsNotificationAppService;
    private final CompletedCheckoutUseCase completedCheckoutUseCase;
 
    @GetMapping
@@ -97,12 +95,6 @@ public class SubscriptionAdministrationController {
 
       return ResponseEntity.created(location)
          .body(checkoutResult.subscription());
-   }
-
-   @PostMapping("/notify")
-   public ResponseEntity<Void> notifySubscribers() {
-      subsNotificationAppService.notifySubscriptionEnds();
-      return ResponseEntity.ok().build();
    }
 
    @PutMapping("/{id}")

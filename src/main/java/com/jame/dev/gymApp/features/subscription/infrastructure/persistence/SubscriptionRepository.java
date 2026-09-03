@@ -3,6 +3,7 @@ package com.jame.dev.gymApp.features.subscription.infrastructure.persistence;
 import com.jame.dev.gymApp.domain.repository.CustomJpaRepository;
 import com.jame.dev.gymApp.features.customer.domain.model.CustomerEntity;
 import com.jame.dev.gymApp.features.subscription.application.dto.SubscriptionActor;
+import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEndingNotification;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionStatus;
 import lombok.NonNull;
@@ -12,6 +13,7 @@ import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SubscriptionRepository extends CustomJpaRepository<SubscriptionEntity, Long> {
@@ -60,4 +62,24 @@ public interface SubscriptionRepository extends CustomJpaRepository<Subscription
       WHERE s.id = :subscriptionId
       """)
    Optional<SubscriptionActor> findSubscriptionActorById(@Param("subscriptionId") final Long subscriptionId);
+
+   @Query("""
+          SELECT new com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEndingNotification(
+              u.email,
+              p.startPeriod,
+              p.endPeriod,
+              p.period
+          )
+          FROM SubscriptionEntity s
+          JOIN s.customer c
+          JOIN c.user u
+          JOIN s.subscriptionPeriods p
+          WHERE NOT EXISTS (
+              SELECT p2
+              FROM s.subscriptionPeriods p2
+              WHERE p2.endPeriod > p.endPeriod
+          )
+      """)
+   List<SubscriptionEndingNotification> findSubscriptionEndings();
+
 }
