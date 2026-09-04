@@ -4,4 +4,8 @@ public class UserEntityNotFoundException extends RuntimeException {
    public UserEntityNotFoundException(String message) {
       super(message);
    }
+
+   public UserEntityNotFoundException() {
+      super("User not found.");
+   }
 }

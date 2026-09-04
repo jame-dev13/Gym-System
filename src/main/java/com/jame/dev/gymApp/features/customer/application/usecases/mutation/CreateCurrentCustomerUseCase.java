@@ -9,4 +9,6 @@ public interface CreateCurrentCustomerUseCase {
       final AuthPrincipal principal,
       final CustomerCurrentRequest request
    );
+
+   CustomerResponse createCurrent(AuthPrincipal principal);
 }

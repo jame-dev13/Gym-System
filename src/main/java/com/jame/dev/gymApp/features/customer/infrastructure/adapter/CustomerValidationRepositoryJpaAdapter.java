@@ -30,4 +30,9 @@ public class CustomerValidationRepositoryJpaAdapter implements CustomerValidatio
    public boolean existsByUserEmail(String userEmail) {
       return customerRepository.existsByUser_Email(userEmail);
    }
+
+   @Override
+   public boolean existsById(long id) {
+      return customerRepository.existsById(id);
+   }
 }

@@ -7,10 +7,12 @@ import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
 import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerCurrentRequest;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
+import com.jame.dev.gymApp.features.customer.api.request.CustomerUpdateRequest;
 import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerFactory;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerUpdater;
 import com.jame.dev.gymApp.features.customer.application.usecases.mutation.UpdateCurrentCustomerUseCase;
+import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerMutationRepository;
 import com.jame.dev.gymApp.features.customer.domain.repository.CustomerQueryRepository;
 import com.jame.dev.gymApp.features.customer.infrastructure.annotations.EvictCurrentOnUpdateCustomer;
@@ -45,6 +47,19 @@ public class UpdateCurrentCustomerUseCaseService implements UpdateCurrentCustome
       final var customer = customerQueryRepository.findByUserEmail(username)
          .orElseThrow(() -> new NotFoundException("Customer not found for: " + username));
       customerUpdater.apply(customer, input);
+      final var customerUpdated = mutationRepository.save(customer);
+      return customerFactory.createFromEntity(customerUpdated);
+   }
+
+   @Override
+   @Transactional
+   @EvictCurrentOnUpdateCustomer
+   public CustomerResponse updateCurrent(AuthPrincipal principal, CustomerUpdateRequest updateRequest) {
+      final long id = principal.id();
+      final var customer = customerQueryRepository.findById(id)
+         .orElseThrow(CustomerNotFoundException::new);
+      customer.setPhoneContact(updateRequest.phoneContact());
+      customer.setAddressInfo(updateRequest.customerAddressInfo());
       final var customerUpdated = mutationRepository.save(customer);
       return customerFactory.createFromEntity(customerUpdated);
    }

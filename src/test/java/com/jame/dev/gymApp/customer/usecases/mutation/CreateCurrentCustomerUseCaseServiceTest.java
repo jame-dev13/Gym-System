@@ -4,6 +4,7 @@ import com.jame.dev.gymApp.domain.exception.NoActiveException;
 import com.jame.dev.gymApp.features.auth.domain.exception.AlreadyExistsException;
 import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
 import com.jame.dev.gymApp.features.auth.domain.model.UserPrincipal;
+import com.jame.dev.gymApp.features.customer.api.request.CustomerCreateRequest;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerCurrentRequest;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
 import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
@@ -48,6 +49,9 @@ class CreateCurrentCustomerUseCaseServiceTest {
 
     @Captor
     private ArgumentCaptor<CustomerEntity> customerEntityCaptor;
+
+    @Captor
+    private ArgumentCaptor<CustomerCreateRequest> createRequestCaptor;
 
     private final String authenticatedEmail = "user@mail.com";
     private final AuthPrincipal principal = UserPrincipal.builder()
@@ -114,6 +118,54 @@ class CreateCurrentCustomerUseCaseServiceTest {
         assertThrows(NoActiveException.class, () -> service.createCurrent(principal, request));
 
         verify(customerValidator).validateUserBeforeCreation(any(CustomerRequest.class));
+        verifyNoInteractions(customerMutationRepository, customerFactory);
+    }
+
+    @Test
+    @DisplayName("Should create and return CustomerResponse building the create request from the authenticated principal")
+    void createCurrent_whenAuthenticatedPrincipalIsValid_createsAndReturnsResponse() {
+        final UserEntity userRelated = new UserEntity();
+        final CustomerEntity entity = new CustomerEntity();
+        final CustomerEntity savedEntity = new CustomerEntity();
+        final CustomerResponse response = mock(CustomerResponse.class);
+
+        given(customerValidator.validateUserBeforeCreation(any(CustomerCreateRequest.class))).willReturn(userRelated);
+        given(customerFactory.from(any(UserEntity.class))).willReturn(entity);
+        given(customerMutationRepository.save(any(CustomerEntity.class))).willReturn(savedEntity);
+        given(customerFactory.createFromEntity(any(CustomerEntity.class))).willReturn(response);
+
+        final CustomerResponse result = assertDoesNotThrow(
+            () -> service.createCurrent(principal));
+
+        assertAll(
+            () -> assertNotNull(result, "Result should not be null."),
+            () -> assertSame(response, result, "Result should be the mapped CustomerResponse.")
+        );
+
+        verify(customerValidator).validateUserBeforeCreation(createRequestCaptor.capture());
+        verify(customerFactory).from(any(UserEntity.class));
+        verify(customerMutationRepository).save(customerEntityCaptor.capture());
+        verify(customerFactory).createFromEntity(any(CustomerEntity.class));
+
+        final CustomerCreateRequest capturedRequest = createRequestCaptor.getValue();
+        assertAll(
+            () -> assertNotNull(capturedRequest, "Create request should not be null."),
+            () -> assertEquals(principal.id(), capturedRequest.userId(), "User id should be sourced from the authenticated principal.")
+        );
+        assertSame(entity, customerEntityCaptor.getValue());
+
+        verifyNoMoreInteractions(customerMutationRepository, customerValidator, customerFactory);
+    }
+
+    @Test
+    @DisplayName("Should throw NoActiveException when the authenticated principal user account is deactivated")
+    void createCurrent_whenPrincipalUserDeactivated_throwsNoActiveException() {
+        given(customerValidator.validateUserBeforeCreation(any(CustomerCreateRequest.class)))
+            .willThrow(new NoActiveException("User exists but is unactive."));
+
+        assertThrows(NoActiveException.class, () -> service.createCurrent(principal));
+
+        verify(customerValidator).validateUserBeforeCreation(any(CustomerCreateRequest.class));
         verifyNoInteractions(customerMutationRepository, customerFactory);
     }
 }

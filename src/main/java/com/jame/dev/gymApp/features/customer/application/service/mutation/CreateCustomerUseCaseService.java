@@ -3,6 +3,7 @@ package com.jame.dev.gymApp.features.customer.application.service.mutation;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
+import com.jame.dev.gymApp.features.customer.api.request.CustomerCreateRequest;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
 import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerFactory;
@@ -42,5 +43,15 @@ public class CreateCustomerUseCaseService implements CreateCustomerUseCase {
          .createFromInput(new CustomerFactoryDtoInput(user, request));
       final CustomerEntity customerSaved = customerMutationRepository.save(customerEntity);
       return customerFactory.createFromEntity(customerSaved);
+   }
+
+   @Override
+   @Transactional
+   @EvictOnSaveCustomers
+   public CustomerResponse create(CustomerCreateRequest request) {
+      final var userEntity = customerValidator.validateUserBeforeCreation(request);
+      final var customerEntity = customerFactory.from(userEntity);
+      final var customerPersisted = customerMutationRepository.save(customerEntity);
+      return customerFactory.createFromEntity(customerPersisted);
    }
 }

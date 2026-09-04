@@ -1,5 +1,6 @@
 package com.jame.dev.gymApp.customer.usecases.mutation;
 
+import com.jame.dev.gymApp.features.customer.api.request.CustomerCreateRequest;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
 import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
 import com.jame.dev.gymApp.features.customer.application.contract.CustomerFactory;
@@ -43,6 +44,7 @@ class CreateCustomerUseCaseServiceTest {
     private ArgumentCaptor<CustomerEntity> customerEntityCaptor;
 
     private final CustomerRequest request = new CustomerRequest("john@mail.com", "123456789");
+   private final CustomerCreateRequest createRequest = new CustomerCreateRequest(1L);
 
     @Test
     @DisplayName("Should create and return CustomerResponse when validation passes")
@@ -77,6 +79,42 @@ class CreateCustomerUseCaseServiceTest {
         assertThrows(UserEntityNotFoundException.class, () -> service.create(request));
 
         verify(customerValidator).validateUserBeforeCreation(request);
+        verifyNoInteractions(customerFactory, customerMutationRepository);
+    }
+
+    @Test
+    @DisplayName("Should create and return CustomerResponse when validation passes (create request)")
+    void createWithCreateRequest_whenValidationPasses_createsAndReturnsResponse() {
+        var user = new UserEntity();
+        var entity = new CustomerEntity();
+        var savedEntity = new CustomerEntity();
+        var response = mock(CustomerResponse.class);
+
+        given(customerValidator.validateUserBeforeCreation(any(CustomerCreateRequest.class))).willReturn(user);
+        given(customerFactory.from(any(UserEntity.class))).willReturn(entity);
+        given(customerMutationRepository.save(any(CustomerEntity.class))).willReturn(savedEntity);
+        given(customerFactory.createFromEntity(any(CustomerEntity.class))).willReturn(response);
+
+        var result = service.create(createRequest);
+
+        assertNotNull(result);
+        verify(customerValidator).validateUserBeforeCreation(createRequest);
+        verify(customerFactory).from(any(UserEntity.class));
+        verify(customerMutationRepository).save(customerEntityCaptor.capture());
+        verify(customerFactory).createFromEntity(any(CustomerEntity.class));
+        assertSame(entity, customerEntityCaptor.getValue());
+        verifyNoMoreInteractions(customerMutationRepository, customerValidator, customerFactory);
+    }
+
+    @Test
+    @DisplayName("Should throw exception when validation fails (create request)")
+    void createWithCreateRequest_whenValidationFails_throwsException() {
+        given(customerValidator.validateUserBeforeCreation(any(CustomerCreateRequest.class)))
+                .willThrow(new UserEntityNotFoundException("User not found."));
+
+        assertThrows(UserEntityNotFoundException.class, () -> service.create(createRequest));
+
+        verify(customerValidator).validateUserBeforeCreation(createRequest);
         verifyNoInteractions(customerFactory, customerMutationRepository);
     }
 }
