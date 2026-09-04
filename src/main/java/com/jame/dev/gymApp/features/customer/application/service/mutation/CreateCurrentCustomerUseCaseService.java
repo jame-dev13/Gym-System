@@ -3,8 +3,8 @@ package com.jame.dev.gymApp.features.customer.application.service.mutation;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogAction;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
 import com.jame.dev.gymApp.features.audit.infrastructure.annotation.AuditLog;
-import com.jame.dev.gymApp.features.auth.application.service.IdentityExtractorApplicationService;
 import com.jame.dev.gymApp.features.auth.domain.model.AuthPrincipal;
+import com.jame.dev.gymApp.features.customer.api.request.CustomerCreateRequest;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerCurrentRequest;
 import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
 import com.jame.dev.gymApp.features.customer.api.response.CustomerResponse;
@@ -48,5 +48,17 @@ public class CreateCurrentCustomerUseCaseService implements CreateCurrentCustome
       );
 
       return customerFactory.createFromEntity(customer);
+   }
+
+   @Override
+   @Transactional
+   @EvictOnSaveCustomers
+   public CustomerResponse createCurrent(AuthPrincipal principal) {
+      final long id = principal.id();
+      final CustomerCreateRequest request = new CustomerCreateRequest(id);
+      final UserEntity userRelated = customerValidator.validateUserBeforeCreation(request);
+      final CustomerEntity customer = customerFactory.from(userRelated);
+      final CustomerEntity customerPersisted = mutationRepository.save(customer);
+      return customerFactory.createFromEntity(customerPersisted);
    }
 }

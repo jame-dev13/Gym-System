@@ -100,11 +100,11 @@ public class InitConfig {
          final var userSaved = userRepository.save(userFactory.createFromInput(user));
          saveAndVerifyUser(tokenService, verificationService, userSaved);
 
-         final CustomerEntity customerRequest = CustomerEntity.builder()
-            .user(userSaved)
-            .phoneContact("1112223334")
-            .build();
-         customerRepository.save(customerRequest);
+//         final CustomerEntity customerRequest = CustomerEntity.builder()
+//            .user(userSaved)
+//            .phoneContact("1112223334")
+//            .build();
+//         customerRepository.save(customerRequest);
 
          log.info("Runner InitUsersAndCustomers end execution.");
       };

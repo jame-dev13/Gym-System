@@ -11,4 +11,6 @@ public interface CustomerValidationRepository {
    boolean existsByIdAndUserEmail(final long id, final String email);
 
    boolean existsByUserEmail(final String userEmail);
+
+   boolean existsById(final long id);
 }

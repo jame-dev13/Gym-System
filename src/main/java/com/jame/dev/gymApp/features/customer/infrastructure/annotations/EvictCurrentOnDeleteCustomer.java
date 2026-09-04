@@ -14,7 +14,7 @@ import static com.jame.dev.gymApp.features.metrics.infrastructure.cache.CacheEvo
 @Documented
 @Caching(evict = {
    @CacheEvict(value = {CUSTOMERS, DOWNING_CUSTOMERS, SUBSCRIPTIONS}, allEntries = true),
-   @CacheEvict(value = CUSTOMER, keyGenerator = "authCurrentKeyGen")
+   @CacheEvict(value = CUSTOMER, keyGenerator = "authPrincipalCurrentKeyGen")
 })
 public @interface EvictCurrentOnDeleteCustomer {
 }

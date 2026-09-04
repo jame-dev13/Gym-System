@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jame.dev.gymApp.features.subscription.domain.model.SubscriptionEntity;
 import com.jame.dev.gymApp.features.user.domain.model.UserEntity;
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.*;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -30,6 +30,8 @@ import java.util.List;
 @SQLDelete(sql = "UPDATE customers SET active = false, deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("active = true")
 @EntityListeners(AuditingEntityListener.class)
+@DynamicInsert
+@DynamicUpdate
 public class CustomerEntity {
 
    @Id
@@ -53,22 +55,27 @@ public class CustomerEntity {
 
    @Nullable
    @Column(name = "contact", length = 15)
+   @ColumnDefault("'000 000 0000'")
    private String phoneContact;
 
    @Column(name = "created_at", updatable = false, nullable = false)
    @CreatedDate
-   protected Instant createdAt;
+   private Instant createdAt;
 
    @Column(name = "updated_at")
    @LastModifiedDate
-   protected Instant updatedAt;
+   private Instant updatedAt;
 
    @Column(name = "deleted_at")
-   protected Instant deletedAt;
+   private Instant deletedAt;
 
    @Column(name = "active", nullable = false)
    @Builder.Default
-   protected boolean active = true;
+   private boolean active = true;
+
+   @Embedded
+   @Builder.Default
+   private CustomerAddressInfo addressInfo = new CustomerAddressInfo();
 
    @OneToMany(
       mappedBy = "customer",
