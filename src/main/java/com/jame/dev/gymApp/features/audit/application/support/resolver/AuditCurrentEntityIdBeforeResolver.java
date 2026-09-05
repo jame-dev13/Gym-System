@@ -30,9 +30,7 @@ public class AuditCurrentEntityIdBeforeResolver {
 
    public Long getEntityIdByCurrentAuthentication(final AuthPrincipal auth, final AuditLogEntityType type) {
       return switch (type) {
-         case USER -> auth.id();
-         case CUSTOMER -> customerQueryRepository.findIdByUserEmail(auth.username())
-            .orElseThrow(() -> new NotFoundException("Customer id not found."));
+         case USER, CUSTOMER -> auth.id();
          case SUBSCRIPTION -> subscriptionQueryRepository.findIdByCustomerEmail(auth.username())
             .orElseThrow(() -> new NotFoundException("Subscription id not found."));
          default -> throw new IllegalArgumentException("Type unacceptable here: " + type);

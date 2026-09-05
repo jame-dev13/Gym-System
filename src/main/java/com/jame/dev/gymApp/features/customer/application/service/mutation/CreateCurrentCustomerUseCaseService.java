@@ -53,6 +53,13 @@ public class CreateCurrentCustomerUseCaseService implements CreateCurrentCustome
    @Override
    @Transactional
    @EvictOnSaveCustomers
+   @AuditLog(
+      entityType = AuditLogEntityType.CUSTOMER,
+      action = AuditLogAction.INSERT,
+      result = "#result",
+      entityId = "#result.id",
+      input = "#principal"
+   )
    public CustomerResponse createCurrent(AuthPrincipal principal) {
       final long id = principal.id();
       final CustomerCreateRequest request = new CustomerCreateRequest(id);

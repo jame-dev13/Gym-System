@@ -54,6 +54,12 @@ public class UpdateCurrentCustomerUseCaseService implements UpdateCurrentCustome
    @Override
    @Transactional
    @EvictCurrentOnUpdateCustomer
+   @AuditLog(
+      action = AuditLogAction.UPDATE,
+      entityType = AuditLogEntityType.CUSTOMER,
+      input = "#principal",
+      result = "#result"
+   )
    public CustomerResponse updateCurrent(AuthPrincipal principal, CustomerUpdateRequest updateRequest) {
       final long id = principal.id();
       final var customer = customerQueryRepository.findById(id)

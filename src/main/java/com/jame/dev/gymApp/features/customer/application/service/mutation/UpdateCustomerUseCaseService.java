@@ -57,6 +57,13 @@ public class UpdateCustomerUseCaseService implements UpdateCustomerUseCase {
    @Override
    @Transactional
    @EvictOnUpdateCustomers
+   @AuditLog(
+      action = AuditLogAction.UPDATE,
+      entityType = AuditLogEntityType.CUSTOMER,
+      entityId = "#id",
+      input = "#request",
+      result = "#result"
+   )
    public CustomerResponse update(long id, CustomerUpdateRequest request) {
       final var customerEntity = customerQueryRepository.findById(id)
          .orElseThrow(CustomerNotFoundException::new);
