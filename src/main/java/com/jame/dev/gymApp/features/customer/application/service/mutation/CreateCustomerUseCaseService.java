@@ -48,6 +48,13 @@ public class CreateCustomerUseCaseService implements CreateCustomerUseCase {
    @Override
    @Transactional
    @EvictOnSaveCustomers
+   @AuditLog(
+      action = AuditLogAction.INSERT,
+      entityType = AuditLogEntityType.CUSTOMER,
+      entityId = "#result.id",
+      input = "#request",
+      result = "#result"
+   )
    public CustomerResponse create(CustomerCreateRequest request) {
       final var userEntity = customerValidator.validateUserBeforeCreation(request);
       final var customerEntity = customerFactory.from(userEntity);

@@ -3,9 +3,7 @@ package com.jame.dev.gymApp.features.audit.application.support.resolver;
 import com.jame.dev.gymApp.features.audit.application.model.SubscriptionBeforeUpdateModel;
 import com.jame.dev.gymApp.features.audit.application.model.UserBeforeUpdateModel;
 import com.jame.dev.gymApp.features.audit.domain.model.AuditLogEntityType;
-import com.jame.dev.gymApp.features.customer.api.request.CustomerRequest;
-import com.jame.dev.gymApp.features.customer.domain.exception.CustomerNotFoundException;
-import com.jame.dev.gymApp.features.customer.infrastructure.persistence.CustomerRepository;
+import com.jame.dev.gymApp.features.customer.infrastructure.audit.resolver.CustomerStateBeforeResolver;
 import com.jame.dev.gymApp.features.subscription.domain.exception.SubscriptionNotFoundException;
 import com.jame.dev.gymApp.features.subscription.infrastructure.persistence.SubscriptionRepository;
 import com.jame.dev.gymApp.features.user.application.support.mapper.RoleMapper;
@@ -18,7 +16,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AuditIdQueryBeforeResolver {
    private final UserRepository userRepository;
-   private final CustomerRepository customerRepository;
+   private final CustomerStateBeforeResolver customerStateBeforeResolver;
    private final SubscriptionRepository subscriptionRepository;
    private final RoleMapper roleMapper;
 
@@ -31,9 +29,7 @@ public class AuditIdQueryBeforeResolver {
                .roles(roleMapper.toRoleSet(u.getRoles()))
                .build())
             .orElseThrow(() -> new UserEntityNotFoundException("User entity not found."));
-         case CUSTOMER -> customerRepository.findById(id)
-            .map(c -> new CustomerRequest(c.getUser().getEmail(), c.getPhoneContact()))
-            .orElseThrow(() -> new CustomerNotFoundException("Customer entity not found."));
+         case CUSTOMER -> customerStateBeforeResolver.resolveState(id);
          case SUBSCRIPTION -> subscriptionRepository.findById(id)
             .map(s -> SubscriptionBeforeUpdateModel.builder()
                .membership(s.getMembership().getMembership())
